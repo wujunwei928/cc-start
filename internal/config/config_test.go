@@ -120,3 +120,116 @@ func TestConfigGetProfile(t *testing.T) {
 		t.Error("expected error for non-existent profile")
 	}
 }
+
+func TestAddProfile(t *testing.T) {
+	cfg := &Config{Profiles: []Profile{}}
+
+	// 测试添加新配置
+	p := Profile{Name: "test", BaseURL: "https://example.com", Token: "token123"}
+	if err := cfg.AddProfile(p); err != nil {
+		t.Errorf("AddProfile failed: %v", err)
+	}
+
+	if len(cfg.Profiles) != 1 {
+		t.Errorf("expected 1 profile, got %d", len(cfg.Profiles))
+	}
+
+	// 测试更新已存在的配置
+	p.Token = "newtoken"
+	if err := cfg.AddProfile(p); err != nil {
+		t.Errorf("AddProfile update failed: %v", err)
+	}
+
+	// 验证更新成功
+	profile, _ := cfg.GetProfile("test")
+	if profile.Token != "newtoken" {
+		t.Errorf("expected 'newtoken', got '%s'", profile.Token)
+	}
+
+	// 验证仍然是 1 个配置（更新而非添加）
+	if len(cfg.Profiles) != 1 {
+		t.Errorf("expected 1 profile after update, got %d", len(cfg.Profiles))
+	}
+}
+
+func TestAddProfileValidation(t *testing.T) {
+	cfg := &Config{Profiles: []Profile{}}
+
+	// 测试无效配置（缺少 name）
+	p := Profile{Token: "token"}
+	if err := cfg.AddProfile(p); err == nil {
+		t.Error("expected error for missing name")
+	}
+
+	// 测试无效配置（缺少 token）
+	p = Profile{Name: "test"}
+	if err := cfg.AddProfile(p); err == nil {
+		t.Error("expected error for missing token")
+	}
+}
+
+func TestDeleteProfile(t *testing.T) {
+	cfg := &Config{
+		Profiles: []Profile{
+			{Name: "test", Token: "token"},
+			{Name: "other", Token: "other-token"},
+		},
+		Default: "test",
+	}
+
+	// 测试删除配置
+	if err := cfg.DeleteProfile("test"); err != nil {
+		t.Errorf("DeleteProfile failed: %v", err)
+	}
+
+	// 验证配置已删除
+	if len(cfg.Profiles) != 1 {
+		t.Errorf("expected 1 profile, got %d", len(cfg.Profiles))
+	}
+
+	// 验证默认值被清除
+	if cfg.Default != "" {
+		t.Errorf("default should be cleared after delete, got '%s'", cfg.Default)
+	}
+
+	// 测试删除不存在的配置
+	if err := cfg.DeleteProfile("notexist"); err == nil {
+		t.Error("expected error for non-existent profile")
+	}
+}
+
+func TestSetDefault(t *testing.T) {
+	cfg := &Config{
+		Profiles: []Profile{
+			{Name: "test", Token: "token"},
+			{Name: "other", Token: "other-token"},
+		},
+	}
+
+	// 测试设置默认
+	if err := cfg.SetDefault("test"); err != nil {
+		t.Errorf("SetDefault failed: %v", err)
+	}
+
+	if cfg.Default != "test" {
+		t.Errorf("expected default 'test', got '%s'", cfg.Default)
+	}
+
+	// 测试设置不存在的配置为默认
+	if err := cfg.SetDefault("notexist"); err == nil {
+		t.Error("expected error for non-existent profile")
+	}
+}
+
+func TestGetProfileNoDefault(t *testing.T) {
+	cfg := &Config{
+		Profiles: []Profile{{Name: "test", Token: "token"}},
+		// Default 为空
+	}
+
+	// 测试无默认配置时的行为
+	_, err := cfg.GetProfile("")
+	if err == nil {
+		t.Error("expected error when no default set")
+	}
+}
