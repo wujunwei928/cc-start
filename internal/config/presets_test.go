@@ -1,0 +1,91 @@
+// internal/config/presets_test.go
+package config
+
+import "testing"
+
+func TestGetPresets(t *testing.T) {
+	presets := GetPresets()
+
+	expectedPresets := []string{"anthropic", "moonshot", "bigmodel", "deepseek"}
+	if len(presets) != len(expectedPresets) {
+		t.Errorf("expected %d presets, got %d", len(expectedPresets), len(presets))
+	}
+
+	for _, name := range expectedPresets {
+		found := false
+		for _, p := range presets {
+			if p.Name == name {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("preset '%s' not found", name)
+		}
+	}
+}
+
+func TestGetPresetByName(t *testing.T) {
+	tests := []struct {
+		name     string
+		expected *Profile
+	}{
+		{
+			name: "anthropic",
+			expected: &Profile{
+				Name:    "anthropic",
+				BaseURL: "https://api.anthropic.com",
+				Model:   "claude-sonnet-4-5-20250929",
+			},
+		},
+		{
+			name: "moonshot",
+			expected: &Profile{
+				Name:    "moonshot",
+				BaseURL: "https://api.moonshot.cn/anthropic",
+				Model:   "moonshot-v1-8k",
+			},
+		},
+		{
+			name: "bigmodel",
+			expected: &Profile{
+				Name:    "bigmodel",
+				BaseURL: "https://open.bigmodel.cn/api/anthropic",
+				Model:   "glm-4-plus",
+			},
+		},
+		{
+			name: "deepseek",
+			expected: &Profile{
+				Name:    "deepseek",
+				BaseURL: "https://api.deepseek.com",
+				Model:   "deepseek-chat",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p, err := GetPresetByName(tt.name)
+			if err != nil {
+				t.Fatalf("GetPresetByName failed: %v", err)
+			}
+			if p.Name != tt.expected.Name {
+				t.Errorf("expected name '%s', got '%s'", tt.expected.Name, p.Name)
+			}
+			if p.BaseURL != tt.expected.BaseURL {
+				t.Errorf("expected baseURL '%s', got '%s'", tt.expected.BaseURL, p.BaseURL)
+			}
+			if p.Model != tt.expected.Model {
+				t.Errorf("expected model '%s', got '%s'", tt.expected.Model, p.Model)
+			}
+		})
+	}
+}
+
+func TestGetPresetByNameNotFound(t *testing.T) {
+	_, err := GetPresetByName("notexist")
+	if err == nil {
+		t.Error("expected error for non-existent preset")
+	}
+}
