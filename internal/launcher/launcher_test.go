@@ -2,6 +2,7 @@
 package launcher
 
 import (
+	"encoding/json"
 	"os"
 	"strings"
 	"testing"
@@ -161,5 +162,40 @@ func TestBuildSettingsEmptyBaseURL(t *testing.T) {
 	}
 	if _, exists := env["ANTHROPIC_BASE_URL"]; exists {
 		t.Error("should not have ANTHROPIC_BASE_URL when BaseURL is empty")
+	}
+}
+
+func TestBuildSettingsJSON(t *testing.T) {
+	profile := &config.Profile{
+		Name:    "moonshot",
+		BaseURL: "https://api.moonshot.cn/anthropic",
+		Token:   "test-token",
+		Model:   "moonshot-v1-8k",
+	}
+
+	settings := BuildSettings(profile)
+
+	// 验证可以序列化为 JSON
+	jsonData, err := json.Marshal(settings)
+	if err != nil {
+		t.Fatalf("failed to marshal settings: %v", err)
+	}
+
+	// 验证 JSON 格式正确
+	var parsed map[string]interface{}
+	if err := json.Unmarshal(jsonData, &parsed); err != nil {
+		t.Fatalf("failed to unmarshal settings: %v", err)
+	}
+
+	env, ok := parsed["env"].(map[string]interface{})
+	if !ok {
+		t.Fatal("settings should have env map")
+	}
+
+	if env["ANTHROPIC_AUTH_TOKEN"] != "test-token" {
+		t.Errorf("wrong token value")
+	}
+	if env["ANTHROPIC_BASE_URL"] != "https://api.moonshot.cn/anthropic" {
+		t.Errorf("wrong base URL value")
 	}
 }

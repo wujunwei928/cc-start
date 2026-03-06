@@ -43,17 +43,17 @@ var (
 
 // Model setup TUI 模型
 type Model struct {
-	step        step
-	presets     []string
-	selected    int
-	nameInput   textinput.Model
-	tokenInput  textinput.Model
-	modelInput  textinput.Model
-	isCustom    bool
-	presetName  string
-	baseURL     string
-	err         error
-	profile     *config.Profile
+	step       step
+	presets    []string
+	selected   int
+	nameInput  textinput.Model
+	tokenInput textinput.Model
+	modelInput textinput.Model
+	isCustom   bool
+	presetName string
+	baseURL    string
+	err        error
+	profile    *config.Profile
 }
 
 // InitialModel 创建初始模型
