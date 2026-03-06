@@ -6,7 +6,7 @@ import "testing"
 func TestGetPresets(t *testing.T) {
 	presets := GetPresets()
 
-	expectedPresets := []string{"anthropic", "moonshot", "bigmodel", "deepseek"}
+	expectedPresets := []string{"anthropic", "moonshot", "bigmodel", "deepseek", "minimax"}
 	if len(presets) != len(expectedPresets) {
 		t.Errorf("expected %d presets, got %d", len(expectedPresets), len(presets))
 	}
@@ -42,8 +42,8 @@ func TestGetPresetByName(t *testing.T) {
 			name: "moonshot",
 			expected: &Profile{
 				Name:    "moonshot",
-				BaseURL: "https://api.moonshot.cn/anthropic",
-				Model:   "moonshot-v1-8k",
+				BaseURL: "https://api.kimi.com/coding/",
+				Model:   "kimi-k2.5",
 			},
 		},
 		{
@@ -51,15 +51,23 @@ func TestGetPresetByName(t *testing.T) {
 			expected: &Profile{
 				Name:    "bigmodel",
 				BaseURL: "https://open.bigmodel.cn/api/anthropic",
-				Model:   "glm-4-plus",
+				Model:   "glm-5",
 			},
 		},
 		{
 			name: "deepseek",
 			expected: &Profile{
 				Name:    "deepseek",
-				BaseURL: "https://api.deepseek.com",
+				BaseURL: "https://api.deepseek.com/anthropic",
 				Model:   "deepseek-chat",
+			},
+		},
+		{
+			name: "minimax",
+			expected: &Profile{
+				Name:    "minimax",
+				BaseURL: "https://api.minimaxi.com/anthropic",
+				Model:   "MiniMax-M2.5",
 			},
 		},
 	}

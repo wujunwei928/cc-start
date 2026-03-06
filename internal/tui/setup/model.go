@@ -72,7 +72,7 @@ func InitialModel() Model {
 
 	return Model{
 		step:       stepSelectPreset,
-		presets:    []string{"anthropic", "moonshot", "bigmodel", "deepseek", "自定义"},
+		presets:    []string{"anthropic", "moonshot", "bigmodel", "deepseek", "minimax", "自定义"},
 		selected:   0,
 		nameInput:  nameInput,
 		tokenInput: tokenInput,

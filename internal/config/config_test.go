@@ -91,7 +91,7 @@ func TestConfigGetProfile(t *testing.T) {
 	cfg := &Config{
 		Profiles: []Profile{
 			{Name: "anthropic", BaseURL: "https://api.anthropic.com", Token: "token1"},
-			{Name: "moonshot", BaseURL: "https://api.moonshot.cn/anthropic", Token: "token2"},
+			{Name: "moonshot", BaseURL: "https://api.kimi.com/coding/", Token: "token2"},
 		},
 		Default: "anthropic",
 	}

@@ -29,7 +29,7 @@ func TestBuildSettings(t *testing.T) {
 			name: "custom provider",
 			profile: config.Profile{
 				Name:    "moonshot",
-				BaseURL: "https://api.moonshot.cn/anthropic",
+				BaseURL: "https://api.kimi.com/coding/",
 				Token:   "sk-xxx",
 			},
 			wantKeys: []string{"ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_BASE_URL"},
@@ -168,9 +168,9 @@ func TestBuildSettingsEmptyBaseURL(t *testing.T) {
 func TestBuildSettingsJSON(t *testing.T) {
 	profile := &config.Profile{
 		Name:    "moonshot",
-		BaseURL: "https://api.moonshot.cn/anthropic",
+		BaseURL: "https://api.kimi.com/coding/",
 		Token:   "test-token",
-		Model:   "moonshot-v1-8k",
+		Model:   "kimi-k2.5",
 	}
 
 	settings := BuildSettings(profile)
@@ -195,7 +195,7 @@ func TestBuildSettingsJSON(t *testing.T) {
 	if env["ANTHROPIC_AUTH_TOKEN"] != "test-token" {
 		t.Errorf("wrong token value")
 	}
-	if env["ANTHROPIC_BASE_URL"] != "https://api.moonshot.cn/anthropic" {
+	if env["ANTHROPIC_BASE_URL"] != "https://api.kimi.com/coding/" {
 		t.Errorf("wrong base URL value")
 	}
 }

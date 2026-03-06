@@ -12,18 +12,23 @@ var presets = []Profile{
 	},
 	{
 		Name:    "moonshot",
-		BaseURL: "https://api.moonshot.cn/anthropic",
-		Model:   "moonshot-v1-8k",
+		BaseURL: "https://api.kimi.com/coding/",
+		Model:   "kimi-k2.5",
 	},
 	{
 		Name:    "bigmodel",
 		BaseURL: "https://open.bigmodel.cn/api/anthropic",
-		Model:   "glm-4-plus",
+		Model:   "glm-5",
 	},
 	{
 		Name:    "deepseek",
-		BaseURL: "https://api.deepseek.com",
+		BaseURL: "https://api.deepseek.com/anthropic",
 		Model:   "deepseek-chat",
+	},
+	{
+		Name:    "minimax",
+		BaseURL: "https://api.minimaxi.com/anthropic",
+		Model:   "MiniMax-M2.5",
 	},
 }
 

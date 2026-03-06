@@ -47,9 +47,9 @@ cc-start delete moonshot
 | 供应商 | Base URL | 默认模型 |
 |--------|----------|----------|
 | Anthropic | https://api.anthropic.com | claude-sonnet-4-5-20250929 |
-| Moonshot | https://api.moonshot.cn/anthropic | moonshot-v1-8k |
-| BigModel | https://open.bigmodel.cn/api/anthropic | glm-4-plus |
-| DeepSeek | https://api.deepseek.com | deepseek-chat |
+| Moonshot | https://api.kimi.com/coding/ | moonshot-v1-8k |
+| BigModel | https://open.bigmodel.cn/api/anthropic | glm-5 |
+| DeepSeek | https://api.deepseek.com/anthropic | deepseek-chat |
 
 ## 配置文件
 
