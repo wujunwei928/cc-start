@@ -90,8 +90,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
-		case tea.KeyCtrlC, tea.KeyEsc:
+		case tea.KeyCtrlC:
 			return m, tea.Quit
+
+		case tea.KeyEsc:
+            return m.handleGoBack()
 
 		case tea.KeyUp:
 			if m.step == stepSelectPreset && m.selected > 0 {
@@ -184,37 +187,70 @@ func (m *Model) handleEnter() (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m *Model) handleBackspace(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
-	// 在输入步骤按 Backspace 可以返回上一步
-	if m.step >= stepInputName && m.step < stepConfirm {
-		// 检查输入框是否为空
-		switch m.step {
-		case stepInputName:
-			if m.nameInput.Value() == "" {
-				m.step = stepSelectPreset
-				m.nameInput.Blur()
-				return m, nil
-			}
-		case stepInputToken:
-			if m.tokenInput.Value() == "" {
-				if m.isCustom {
-					m.step = stepInputName
-					m.tokenInput.Blur()
-					m.nameInput.Focus()
-				} else {
-					m.step = stepSelectPreset
-					m.tokenInput.Blur()
-				}
-				return m, nil
-			}
-		case stepInputModel:
-			if m.modelInput.Value() == "" {
-				m.step = stepInputToken
-				m.modelInput.Blur()
-				m.tokenInput.Focus()
-				return m, nil
-			}
+func (m *Model) handleGoBack() (tea.Model, tea.Cmd) {
+	switch m.step {
+	case stepInputModel:
+		m.step = stepInputToken
+		m.modelInput.Blur()
+		m.tokenInput.Focus()
+	case stepInputToken:
+		if m.isCustom {
+			m.step = stepInputName
+			m.nameInput.Focus()
+		} else {
+			m.step = stepSelectPreset
 		}
+		m.tokenInput.Blur()
+	case stepInputName:
+		m.step = stepSelectPreset
+		m.nameInput.Blur()
+	}
+	m.err = nil
+	return m, nil
+}
+
+func (m *Model) handleBackspace(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	// 在输入步骤按 Backspace：
+	// 1. 如果输入框为空，返回上一步
+	// 2. 如果输入框有值，传递给 textinput 处理删除操作
+	switch m.step {
+	case stepInputName:
+		if m.nameInput.Value() == "" {
+			m.step = stepSelectPreset
+			m.nameInput.Blur()
+			return m, nil
+		}
+		// 输入框有值，传递给 textinput 处理
+		var cmd tea.Cmd
+		m.nameInput, cmd = m.nameInput.Update(msg)
+		return m, cmd
+	case stepInputToken:
+		if m.tokenInput.Value() == "" {
+			if m.isCustom {
+				m.step = stepInputName
+				m.tokenInput.Blur()
+				m.nameInput.Focus()
+			} else {
+				m.step = stepSelectPreset
+				m.tokenInput.Blur()
+			}
+			return m, nil
+		}
+		// 输入框有值，传递给 textinput 处理
+		var cmd tea.Cmd
+		m.tokenInput, cmd = m.tokenInput.Update(msg)
+		return m, cmd
+	case stepInputModel:
+		if m.modelInput.Value() == "" {
+			m.step = stepInputToken
+			m.modelInput.Blur()
+			m.tokenInput.Focus()
+			return m, nil
+		}
+		// 输入框有值，传递给 textinput 处理
+		var cmd tea.Cmd
+		m.modelInput, cmd = m.modelInput.Update(msg)
+		return m, cmd
 	}
 	return m, nil
 }
@@ -265,21 +301,21 @@ func (m Model) View() string {
 	case stepInputName:
 		b.WriteString("输入配置名称:\n\n")
 		b.WriteString(fmt.Sprintf("  %s\n\n", m.nameInput.View()))
-		b.WriteString(normalStyle.Render("Enter 确认"))
+		b.WriteString(normalStyle.Render("Enter 确认，ESC 返回"))
 
 	case stepInputToken:
 		b.WriteString(fmt.Sprintf("配置: %s\n", m.nameInput.Value()))
 		b.WriteString(fmt.Sprintf("URL: %s\n\n", m.baseURL))
 		b.WriteString("输入 API Token:\n\n")
 		b.WriteString(fmt.Sprintf("  %s\n\n", m.tokenInput.View()))
-		b.WriteString(normalStyle.Render("Enter 确认"))
+		b.WriteString(normalStyle.Render("Enter 确认，ESC 返回"))
 
 	case stepInputModel:
 		b.WriteString(fmt.Sprintf("配置: %s\n", m.nameInput.Value()))
 		b.WriteString(fmt.Sprintf("URL: %s\n\n", m.baseURL))
 		b.WriteString("输入模型名称（可选）:\n\n")
 		b.WriteString(fmt.Sprintf("  %s\n\n", m.modelInput.View()))
-		b.WriteString(normalStyle.Render("Enter 保存，留空使用默认"))
+		b.WriteString(normalStyle.Render("Enter 保存，ESC 返回"))
 	}
 
 	if m.err != nil {
