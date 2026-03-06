@@ -94,7 +94,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 
 		case tea.KeyEsc:
-            return m.handleGoBack()
+			return m.handleGoBack()
 
 		case tea.KeyUp:
 			if m.step == stepSelectPreset && m.selected > 0 {
