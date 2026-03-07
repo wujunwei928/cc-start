@@ -109,14 +109,7 @@ func (r *REPL) getProfileNames() []string {
 	return names
 }
 
-// executeCommand 执行命令（占位，将在 Task 3 实现）
+// executeCommand 执行命令
 func (r *REPL) executeCommand(cmd string, args []string) {
-	switch cmd {
-	case "help", "?":
-		fmt.Println("命令处理器将在 Task 3 实现")
-	case "exit", "quit", "q":
-		fmt.Println("再见!")
-	default:
-		fmt.Printf("未知命令: %s\n", cmd)
-	}
+	r.ExecuteCommand(cmd, args)
 }
