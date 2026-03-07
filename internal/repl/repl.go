@@ -71,7 +71,7 @@ func (r *REPL) Run() {
 func (r *REPL) printWelcome() {
 	fmt.Println()
 	fmt.Println("CC-Start REPL v1.0")
-	fmt.Println("输入 'help' 查看可用命令，'exit' 退出。")
+	fmt.Println("输入 '/help' 查看可用命令，'/exit' 退出。")
 	fmt.Println()
 }
 
@@ -97,6 +97,11 @@ func (r *REPL) executor(in string) {
 	parts := strings.Fields(in)
 	cmd := parts[0]
 	args := parts[1:]
+
+	// 自动为不以 / 开头的命令添加前缀（兼容性处理）
+	if !strings.HasPrefix(cmd, "/") {
+		cmd = "/" + cmd
+	}
 
 	r.executeCommand(cmd, args)
 }

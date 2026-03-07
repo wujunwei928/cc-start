@@ -264,15 +264,19 @@ func TestCmdHelp(t *testing.T) {
 	// 测试显示所有命令
 	repl.cmdHelp(nil)
 
-	// 测试显示特定命令帮助
-	commands := []string{"list", "use", "run", "edit", "delete", "copy", "rename"}
+	// 测试显示特定命令帮助（支持带或不带 / 前缀）
+	commands := []string{"/list", "/use", "/run", "/edit", "/delete", "/copy", "/rename"}
 	for _, cmd := range commands {
 		repl.cmdHelp([]string{cmd})
 	}
 
 	// 测试别名
-	repl.cmdHelp([]string{"ls"})
-	repl.cmdHelp([]string{"?"})
+	repl.cmdHelp([]string{"/ls"})
+	repl.cmdHelp([]string{"/?"})
+
+	// 测试不带 / 前缀（兼容性）
+	repl.cmdHelp([]string{"list"})
+	repl.cmdHelp([]string{"use"})
 
 	// 测试未知命令
 	repl.cmdHelp([]string{"unknown"})
@@ -290,38 +294,39 @@ func TestCmdClear(t *testing.T) {
 func TestExecuteCommand(t *testing.T) {
 	repl, _ := setupTestREPL(t)
 
-	// 测试所有命令及其别名
+	// 测试所有命令及其别名（使用 / 前缀）
 	testCases := []struct {
 		cmd  string
 		args []string
 	}{
-		{"list", nil},
-		{"ls", nil},
-		{"use", []string{"test1"}},
-		{"switch", []string{"test1"}},
-		{"current", nil},
-		{"status", nil},
-		{"default", nil},
-		{"show", []string{"test1"}},
-		{"add", nil},
-		{"new", nil},
-		{"edit", nil},
-		{"delete", nil}, // 不传参数，避免实际删除
-		{"rm", nil},
-		{"copy", nil},
-		{"cp", nil},
-		{"rename", nil},
-		{"mv", nil},
-		{"test", nil},
-		{"export", nil},
-		{"import", nil},
-		{"history", nil},
-		{"help", nil},
-		{"?", nil},
-		{"clear", nil},
-		{"cls", nil},
-		{"setup", nil},
-		{"unknown", nil}, // 未知命令
+		{"/list", nil},
+		{"/ls", nil},
+		{"/use", []string{"test1"}},
+		{"/switch", []string{"test1"}},
+		{"/current", nil},
+		{"/status", nil},
+		{"/default", nil},
+		{"/show", []string{"test1"}},
+		{"/add", nil},
+		{"/new", nil},
+		{"/edit", nil},
+		{"/delete", nil}, // 不传参数，避免实际删除
+		{"/rm", nil},
+		{"/copy", nil},
+		{"/cp", nil},
+		{"/rename", nil},
+		{"/mv", nil},
+		{"/test", nil},
+		{"/export", nil},
+		{"/import", nil},
+		{"/history", nil},
+		{"/help", nil},
+		{"/?", nil},
+		{"/h", nil},
+		{"/clear", nil},
+		{"/cls", nil},
+		{"/setup", nil},
+		{"/unknown", nil}, // 未知命令
 	}
 
 	for _, tc := range testCases {

@@ -31,22 +31,22 @@ func TestCompleterCommandCompletion(t *testing.T) {
 	c := NewCompleter(func() []string { return []string{"moonshot", "deepseek"} })
 
 	// 测试命令补全
-	doc := newTestDocument("li")
+	doc := newTestDocument("/li")
 
 	suggestions := c.Complete(doc)
 	if len(suggestions) == 0 {
-		t.Error("expected suggestions for 'li'")
+		t.Error("expected suggestions for '/li'")
 	}
 
 	found := false
 	for _, s := range suggestions {
-		if s.Text == "list" {
+		if s.Text == "/list" {
 			found = true
 			break
 		}
 	}
 	if !found {
-		t.Error("expected 'list' in suggestions")
+		t.Error("expected '/list' in suggestions")
 	}
 }
 
@@ -54,12 +54,12 @@ func TestCompleterProfileCompletion(t *testing.T) {
 	profiles := []string{"moonshot", "deepseek", "anthropic"}
 	c := NewCompleter(func() []string { return profiles })
 
-	// 测试配置名补全 - 需要输入 "use " (带空格)
-	doc := newTestDocument("use ")
+	// 测试配置名补全 - 需要输入 "/use " (带空格)
+	doc := newTestDocument("/use ")
 
 	suggestions := c.Complete(doc)
 	if len(suggestions) == 0 {
-		t.Error("expected profile suggestions for 'use '")
+		t.Error("expected profile suggestions for '/use '")
 	}
 
 	found := false
@@ -86,7 +86,7 @@ func TestCompleterAllCommands(t *testing.T) {
 	}
 
 	// 检查关键命令存在
-	expectedCmds := []string{"list", "use", "exit", "help", "run"}
+	expectedCmds := []string{"/list", "/use", "/exit", "/help", "/run"}
 	for _, expected := range expectedCmds {
 		found := false
 		for _, s := range suggestions {
@@ -105,19 +105,19 @@ func TestCompleterAliasCompletion(t *testing.T) {
 	c := NewCompleter(nil)
 
 	// 测试别名补全
-	doc := newTestDocument("q")
+	doc := newTestDocument("/q")
 
 	suggestions := c.Complete(doc)
 
 	found := false
 	for _, s := range suggestions {
-		if s.Text == "q" { // exit 的别名
+		if s.Text == "/q" { // exit 的别名
 			found = true
 			break
 		}
 	}
 	if !found {
-		t.Error("expected alias 'q' in suggestions")
+		t.Error("expected alias '/q' in suggestions")
 	}
 }
 
@@ -125,7 +125,7 @@ func TestCompleterNoProfileGetter(t *testing.T) {
 	c := NewCompleter(nil) // 无 profile 获取器
 
 	// 尝试获取 profile 补全
-	doc := newTestDocument("use ")
+	doc := newTestDocument("/use ")
 
 	suggestions := c.Complete(doc)
 	if len(suggestions) != 0 {
@@ -138,8 +138,8 @@ func TestCompleterNeedsProfileCommands(t *testing.T) {
 	c := NewCompleter(func() []string { return profiles })
 
 	// 测试所有需要 profile 的命令
-	cmds := []string{"use", "switch", "show", "edit", "delete", "rm",
-		"test", "default", "copy", "cp", "rename", "mv", "run"}
+	cmds := []string{"/use", "/switch", "/show", "/edit", "/delete", "/rm",
+		"/test", "/default", "/copy", "/cp", "/rename", "/mv", "/run"}
 
 	for _, cmd := range cmds {
 		doc := newTestDocument(cmd + " ")
@@ -166,7 +166,7 @@ func TestCompleterUnknownCommand(t *testing.T) {
 	c := NewCompleter(func() []string { return []string{"moonshot"} })
 
 	// 测试未知命令后无补全
-	doc := newTestDocument("unknown ")
+	doc := newTestDocument("/unknown ")
 
 	suggestions := c.Complete(doc)
 	if len(suggestions) != 0 {
@@ -197,11 +197,11 @@ func TestCompleterCommandWithPartialMatch(t *testing.T) {
 		input    string
 		expected string
 	}{
-		{"ex", "exit"},
-		{"he", "help"},
-		{"hi", "history"},
-		{"cl", "clear"},
-		{"de", "default"},
+		{"/ex", "/exit"},
+		{"/he", "/help"},
+		{"/hi", "/history"},
+		{"/cl", "/clear"},
+		{"/de", "/default"},
 	}
 
 	for _, tc := range testCases {
@@ -235,15 +235,15 @@ func TestCompleteCommand(t *testing.T) {
 	hasCmd := false
 	hasAlias := false
 	for _, s := range suggestions {
-		if s.Text == "exit" {
+		if s.Text == "/exit" {
 			hasCmd = true
 		}
-		if s.Text == "q" || s.Text == "quit" {
+		if s.Text == "/q" || s.Text == "/quit" {
 			hasAlias = true
 		}
 	}
 	if !hasCmd {
-		t.Error("expected 'exit' command in suggestions")
+		t.Error("expected '/exit' command in suggestions")
 	}
 	if !hasAlias {
 		t.Error("expected alias in suggestions")
@@ -255,8 +255,8 @@ func TestCompleteProfile(t *testing.T) {
 	profiles := []string{"moonshot", "deepseek"}
 	c := NewCompleter(func() []string { return profiles })
 
-	doc := newTestDocument("use ")
-	suggestions := c.completeProfile([]string{"use"}, doc)
+	doc := newTestDocument("/use ")
+	suggestions := c.completeProfile([]string{"/use"}, doc)
 
 	if len(suggestions) != 2 {
 		t.Errorf("expected 2 profile suggestions, got %d", len(suggestions))
@@ -284,11 +284,11 @@ func TestCompleterFuzzyFilterCommands(t *testing.T) {
 		shouldMatch string
 		desc        string
 	}{
-		{"lst", "list", "模糊匹配 lst -> list"},
-		{"xit", "exit", "模糊匹配 xit -> exit"},
-		{"hlp", "help", "模糊匹配 hlp -> help"},
-		{"dlt", "delete", "模糊匹配 dlt -> delete"},
-		{"rnm", "rename", "模糊匹配 rnm -> rename"},
+		{"/lst", "/list", "模糊匹配 /lst -> /list"},
+		{"/xit", "/exit", "模糊匹配 /xit -> /exit"},
+		{"/hlp", "/help", "模糊匹配 /hlp -> /help"},
+		{"/dlt", "/delete", "模糊匹配 /dlt -> /delete"},
+		{"/rnm", "/rename", "模糊匹配 /rnm -> /rename"},
 	}
 
 	for _, tc := range testCases {
@@ -327,7 +327,7 @@ func TestCompleterFuzzyFilterProfiles(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
-			doc := newTestDocument("use " + tc.input)
+			doc := newTestDocument("/use " + tc.input)
 			suggestions := c.Complete(doc)
 
 			found := false
@@ -338,7 +338,7 @@ func TestCompleterFuzzyFilterProfiles(t *testing.T) {
 				}
 			}
 			if !found {
-				t.Errorf("fuzzy filter: expected '%s' in suggestions for input 'use %s'", tc.shouldMatch, tc.input)
+				t.Errorf("fuzzy filter: expected '%s' in suggestions for input '/use %s'", tc.shouldMatch, tc.input)
 			}
 		})
 	}

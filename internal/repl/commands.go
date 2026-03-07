@@ -29,7 +29,7 @@ func maskAPIKey(key string) string {
 func (r *REPL) cmdList(args []string) {
 	if len(r.cfg.Profiles) == 0 {
 		PrintWarning("尚未配置任何供应商")
-		PrintInfo("运行 'setup' 创建配置")
+		PrintInfo("运行 '/setup' 创建配置")
 		return
 	}
 
@@ -73,7 +73,7 @@ func (r *REPL) cmdList(args []string) {
 // cmdUse 切换当前会话配置
 func (r *REPL) cmdUse(args []string) {
 	if len(args) == 0 {
-		PrintError("请指定配置名称: use <name>")
+		PrintError("请指定配置名称: /use <name>")
 		return
 	}
 
@@ -95,7 +95,7 @@ func (r *REPL) cmdUse(args []string) {
 func (r *REPL) cmdCurrent(args []string) {
 	if r.currentName == "" {
 		PrintWarning("当前未选择任何配置")
-		PrintInfo("使用 'use <name>' 选择配置")
+		PrintInfo("使用 '/use <name>' 选择配置")
 		return
 	}
 
@@ -154,7 +154,7 @@ func (r *REPL) cmdShow(args []string) {
 	}
 
 	if name == "" {
-		PrintError("请指定配置名称: show <name>")
+		PrintError("请指定配置名称: /show <name>")
 		return
 	}
 
@@ -176,8 +176,8 @@ func (r *REPL) cmdShow(args []string) {
 
 // cmdAdd 添加配置（提示使用 setup）
 func (r *REPL) cmdAdd(args []string) {
-	PrintInfo("请使用 'setup' 命令进行交互式配置")
-	PrintInfo("或使用 'import' 命令导入配置文件")
+	PrintInfo("请使用 '/setup' 命令进行交互式配置")
+	PrintInfo("或使用 '/import' 命令导入配置文件")
 }
 
 // cmdEdit 编辑配置
@@ -190,7 +190,7 @@ func (r *REPL) cmdEdit(args []string) {
 	}
 
 	if name == "" {
-		PrintError("请指定配置名称: edit <name>")
+		PrintError("请指定配置名称: /edit <name>")
 		return
 	}
 
@@ -230,7 +230,7 @@ func (r *REPL) cmdEdit(args []string) {
 // cmdDelete 删除配置
 func (r *REPL) cmdDelete(args []string) {
 	if len(args) == 0 {
-		PrintError("请指定配置名称: delete <name>")
+		PrintError("请指定配置名称: /delete <name>")
 		return
 	}
 
@@ -275,7 +275,7 @@ func (r *REPL) cmdDelete(args []string) {
 // cmdCopy 复制配置
 func (r *REPL) cmdCopy(args []string) {
 	if len(args) < 2 {
-		PrintError("用法: copy <源配置> <新配置>")
+		PrintError("用法: /copy <源配置> <新配置>")
 		return
 	}
 
@@ -320,7 +320,7 @@ func (r *REPL) cmdCopy(args []string) {
 // cmdRename 重命名配置
 func (r *REPL) cmdRename(args []string) {
 	if len(args) < 2 {
-		PrintError("用法: rename <旧名称> <新名称>")
+		PrintError("用法: /rename <旧名称> <新名称>")
 		return
 	}
 
@@ -376,7 +376,7 @@ func (r *REPL) cmdTest(args []string) {
 	}
 
 	if name == "" {
-		PrintError("请指定配置名称: test <name>")
+		PrintError("请指定配置名称: /test <name>")
 		return
 	}
 
@@ -457,7 +457,7 @@ func (r *REPL) cmdExport(args []string) {
 // cmdImport 从文件导入配置
 func (r *REPL) cmdImport(args []string) {
 	if len(args) == 0 {
-		PrintError("请指定文件路径: import <file>")
+		PrintError("请指定文件路径: /import <file>")
 		return
 	}
 
@@ -492,7 +492,7 @@ func (r *REPL) cmdImport(args []string) {
 		}
 
 		if exists {
-			fmt.Printf("配置 '%s' 已存在，跳过 (使用 'delete' 删除后重试)\n", p.Name)
+			fmt.Printf("配置 '%s' 已存在，跳过 (使用 '/delete' 删除后重试)\n", p.Name)
 			skipped++
 			continue
 		}
@@ -548,199 +548,205 @@ func (r *REPL) cmdHelp(args []string) {
 
 	// 配置管理
 	fmt.Println("配置管理:")
-	fmt.Println("  list, ls          列出所有配置")
-	fmt.Println("  use, switch       切换当前会话配置")
-	fmt.Println("  current, status   显示当前配置")
-	fmt.Println("  default           设置默认配置")
-	fmt.Println("  show              显示配置详情")
-	fmt.Println("  add, new          添加配置（提示使用 setup）")
-	fmt.Println("  edit              编辑配置")
-	fmt.Println("  delete, rm        删除配置")
-	fmt.Println("  copy, cp          复制配置")
-	fmt.Println("  rename, mv        重命名配置")
+	fmt.Println("  /list, /ls          列出所有配置")
+	fmt.Println("  /use, /switch       切换当前会话配置")
+	fmt.Println("  /current, /status   显示当前配置")
+	fmt.Println("  /default            设置默认配置")
+	fmt.Println("  /show               显示配置详情")
+	fmt.Println("  /add, /new          添加配置（提示使用 setup）")
+	fmt.Println("  /edit               编辑配置")
+	fmt.Println("  /delete, /rm        删除配置")
+	fmt.Println("  /copy, /cp          复制配置")
+	fmt.Println("  /rename, /mv        重命名配置")
 	fmt.Println()
 
 	// 测试与导入导出
 	fmt.Println("测试与导入导出:")
-	fmt.Println("  test              测试 API 连通性")
-	fmt.Println("  export            导出配置到 stdout 或文件")
-	fmt.Println("  import            从文件导入配置")
+	fmt.Println("  /test               测试 API 连通性")
+	fmt.Println("  /export             导出配置到 stdout 或文件")
+	fmt.Println("  /import             从文件导入配置")
 	fmt.Println()
 
 	// 辅助命令
 	fmt.Println("辅助命令:")
-	fmt.Println("  history           显示命令历史")
-	fmt.Println("  help, ?           显示帮助")
-	fmt.Println("  clear, cls        清屏")
-	fmt.Println("  exit, quit, q     退出")
+	fmt.Println("  /history            显示命令历史")
+	fmt.Println("  /help, /?, /h       显示帮助")
+	fmt.Println("  /clear, /cls        清屏")
+	fmt.Println("  /exit, /quit, /q    退出")
 	fmt.Println()
 
 	// 启动
 	fmt.Println("启动 Claude Code:")
-	fmt.Println("  run [profile] [-- args...]  使用当前或指定配置启动")
-	fmt.Println("  setup             运行配置向导")
+	fmt.Println("  /run [profile] [-- args...]  使用当前或指定配置启动")
+	fmt.Println("  /setup              运行配置向导")
 	fmt.Println()
 }
 
 // showCommandHelp 显示特定命令的详细帮助
 func (r *REPL) showCommandHelp(cmd string) {
 	helpTexts := map[string]string{
-		"list": `list, ls - 列出所有配置
+		"/list": `/list, /ls - 列出所有配置
 
-用法: list
+用法: /list
 
 显示所有已配置的供应商，包括名称、Base URL、模型和状态。
 状态标记:
   默认 - 默认配置
   当前 - 当前会话使用的配置`,
-		"use": `use, switch - 切换当前会话配置
+		"/use": `/use, /switch - 切换当前会话配置
 
-用法: use <name>
+用法: /use <name>
 
 切换当前 REPL 会话使用的配置。
 注意: 此命令只影响当前会话，不会修改默认配置。
 
 示例:
-  use moonshot    切换到 moonshot 配置`,
-		"current": `current, status - 显示当前配置
+  /use moonshot    切换到 moonshot 配置`,
+		"/current": `/current, /status - 显示当前配置
 
-用法: current
+用法: /current
 
 显示当前会话使用的配置详情，包括 Base URL、模型和 Token。`,
-		"default": `default - 设置或显示默认配置
+		"/default": `/default - 设置或显示默认配置
 
 用法:
-  default           显示当前默认配置
-  default <name>    设置指定配置为默认
+  /default           显示当前默认配置
+  /default <name>    设置指定配置为默认
 
 设置的默认配置会持久化到配置文件。
 
 示例:
-  default           显示当前默认配置
-  default moonshot  将 moonshot 设为默认`,
-		"show": `show - 显示配置详情
+  /default           显示当前默认配置
+  /default moonshot  将 moonshot 设为默认`,
+		"/show": `/show - 显示配置详情
 
-用法: show [name]
+用法: /show [name]
 
 显示指定配置的详细信息。如果省略名称，显示当前配置。
 
 示例:
-  show           显示当前配置详情
-  show moonshot  显示 moonshot 配置详情`,
-		"add": `add, new - 添加配置
+  /show           显示当前配置详情
+  /show moonshot  显示 moonshot 配置详情`,
+		"/add": `/add, /new - 添加配置
 
-用法: add
+用法: /add
 
 启动交互式配置向导添加新的供应商配置。
-建议直接使用 'setup' 命令。`,
-		"edit": `edit - 编辑配置
+建议直接使用 '/setup' 命令。`,
+		"/edit": `/edit - 编辑配置
 
-用法: edit [name]
+用法: /edit [name]
 
 启动交互式向导编辑现有配置。如果省略名称，编辑当前配置。
 
 示例:
-  edit           编辑当前配置
-  edit moonshot  编辑 moonshot 配置`,
-		"delete": `delete, rm - 删除配置
+  /edit           编辑当前配置
+  /edit moonshot  编辑 moonshot 配置`,
+		"/delete": `/delete, /rm - 删除配置
 
-用法: delete <name>
+用法: /delete <name>
 
 删除指定的配置。删除前会要求确认。
 
 示例:
-  delete moonshot  删除 moonshot 配置`,
-		"copy": `copy, cp - 复制配置
+  /delete moonshot  删除 moonshot 配置`,
+		"/copy": `/copy, /cp - 复制配置
 
-用法: copy <source> <target>
+用法: /copy <source> <target>
 
 复制现有配置到新名称。
 
 示例:
-  copy moonshot moonshot-backup  复制 moonshot 到 moonshot-backup`,
-		"rename": `rename, mv - 重命名配置
+  /copy moonshot moonshot-backup  复制 moonshot 到 moonshot-backup`,
+		"/rename": `/rename, /mv - 重命名配置
 
-用法: rename <old> <new>
+用法: /rename <old> <new>
 
 重命名配置。会自动更新默认配置引用。
 
 示例:
-  rename moonshot kimi  将 moonshot 重命名为 kimi`,
-		"test": `test - 测试 API 连通性
+  /rename moonshot kimi  将 moonshot 重命名为 kimi`,
+		"/test": `/test - 测试 API 连通性
 
-用法: test [name]
+用法: /test [name]
 
 测试指定配置的 API 端点连通性。如果省略名称，测试当前配置。
 
 示例:
-  test           测试当前配置
-  test moonshot  测试 moonshot 的 API 连通性`,
-		"export": `export - 导出配置
+  /test           测试当前配置
+  /test moonshot  测试 moonshot 的 API 连通性`,
+		"/export": `/export - 导出配置
 
-用法: export [file]
+用法: /export [file]
 
 导出配置到 JSON 格式。如果指定文件，保存到文件；否则输出到 stdout。
 
 示例:
-  export                    输出配置到屏幕
-  export backup.json        保存配置到 backup.json`,
-		"import": `import - 导入配置
+  /export                    输出配置到屏幕
+  /export backup.json        保存配置到 backup.json`,
+		"/import": `/import - 导入配置
 
-用法: import <file>
+用法: /import <file>
 
 从 JSON 文件导入配置。已存在的同名配置会被跳过。
 
 示例:
-  import backup.json  从 backup.json 导入配置`,
-		"history": `history - 显示命令历史
+  /import backup.json  从 backup.json 导入配置`,
+		"/history": `/history - 显示命令历史
 
-用法: history
+用法: /history
 
 显示最近 20 条执行的命令。`,
-		"run": `run - 启动 Claude Code
+		"/run": `/run - 启动 Claude Code
 
-用法: run [profile] [-- args...]
+用法: /run [profile] [-- args...]
 
 使用指定或当前配置启动 Claude Code。
 
 示例:
-  run                    使用当前配置启动
-  run moonshot           使用 moonshot 配置启动
-  run -- --help          使用当前配置启动，传递 --help 给 claude
-  run moonshot -- --help 使用 moonshot 配置启动，传递 --help`,
-		"setup": `setup - 运行配置向导
+  /run                    使用当前配置启动
+  /run moonshot           使用 moonshot 配置启动
+  /run -- --help          使用当前配置启动，传递 --help 给 claude
+  /run moonshot -- --help 使用 moonshot 配置启动，传递 --help`,
+		"/setup": `/setup - 运行配置向导
 
-用法: setup
+用法: /setup
 
 启动交互式配置向导，添加新的供应商配置。`,
-		"clear": `clear, cls - 清屏
+		"/clear": `/clear, /cls - 清屏
 
-用法: clear
+用法: /clear
 
 清除终端屏幕。`,
-		"exit": `exit, quit, q - 退出 REPL
+		"/exit": `/exit, /quit, /q - 退出 REPL
 
-用法: exit
+用法: /exit
 
 退出 CC-Start REPL。`,
 	}
 
-	// 标准化命令名
+	// 标准化命令名（支持不带斜杠的输入）
 	normalizedCmd := cmd
-	aliases := map[string]string{
-		"ls":     "list",
-		"switch": "use",
-		"status": "current",
-		"new":    "add",
-		"rm":     "delete",
-		"cp":     "copy",
-		"mv":     "rename",
-		"?":      "help",
-		"cls":    "clear",
-		"quit":   "exit",
-		"q":      "exit",
+	if !strings.HasPrefix(cmd, "/") {
+		normalizedCmd = "/" + cmd
 	}
-	if n, ok := aliases[cmd]; ok {
+
+	// 别名映射
+	aliases := map[string]string{
+		"/ls":     "/list",
+		"/switch": "/use",
+		"/status": "/current",
+		"/new":    "/add",
+		"/rm":     "/delete",
+		"/cp":     "/copy",
+		"/mv":     "/rename",
+		"/?":      "/help",
+		"/h":      "/help",
+		"/cls":    "/clear",
+		"/quit":   "/exit",
+		"/q":      "/exit",
+	}
+	if n, ok := aliases[normalizedCmd]; ok {
 		normalizedCmd = n
 	}
 
@@ -750,7 +756,7 @@ func (r *REPL) showCommandHelp(cmd string) {
 		fmt.Println()
 	} else {
 		PrintError("未知命令: %s", cmd)
-		PrintInfo("输入 'help' 查看所有可用命令")
+		PrintInfo("输入 '/help' 查看所有可用命令")
 	}
 }
 
@@ -798,8 +804,8 @@ func (r *REPL) cmdRun(args []string) {
 	}
 
 	if profileName == "" {
-		PrintError("请先选择配置: use <name>")
-		PrintInfo("或指定配置名: run <profile>")
+		PrintError("请先选择配置: /use <name>")
+		PrintInfo("或指定配置名: /run <profile>")
 		return
 	}
 
@@ -845,55 +851,55 @@ func (r *REPL) cmdSetup(args []string) {
 func (r *REPL) ExecuteCommand(cmd string, args []string) {
 	switch cmd {
 	// 配置查看
-	case "list", "ls":
+	case "/list", "/ls":
 		r.cmdList(args)
-	case "use", "switch":
+	case "/use", "/switch":
 		r.cmdUse(args)
-	case "current", "status":
+	case "/current", "/status":
 		r.cmdCurrent(args)
-	case "default":
+	case "/default":
 		r.cmdDefault(args)
-	case "show":
+	case "/show":
 		r.cmdShow(args)
 
 	// 配置管理
-	case "add", "new":
+	case "/add", "/new":
 		r.cmdAdd(args)
-	case "edit":
+	case "/edit":
 		r.cmdEdit(args)
-	case "delete", "rm":
+	case "/delete", "/rm":
 		r.cmdDelete(args)
-	case "copy", "cp":
+	case "/copy", "/cp":
 		r.cmdCopy(args)
-	case "rename", "mv":
+	case "/rename", "/mv":
 		r.cmdRename(args)
 
 	// 测试与导入导出
-	case "test":
+	case "/test":
 		r.cmdTest(args)
-	case "export":
+	case "/export":
 		r.cmdExport(args)
-	case "import":
+	case "/import":
 		r.cmdImport(args)
 
 	// 辅助命令
-	case "history":
+	case "/history":
 		r.cmdHistory(args)
-	case "help", "?":
+	case "/help", "/?", "/h":
 		r.cmdHelp(args)
-	case "clear", "cls":
+	case "/clear", "/cls":
 		r.cmdClear(args)
-	case "exit", "quit", "q":
+	case "/exit", "/quit", "/q":
 		r.cmdExit(args)
 
 	// 启动
-	case "run":
+	case "/run":
 		r.cmdRun(args)
-	case "setup":
+	case "/setup":
 		r.cmdSetup(args)
 
 	default:
 		PrintError("未知命令: %s", cmd)
-		PrintInfo("输入 'help' 查看可用命令")
+		PrintInfo("输入 '/help' 查看可用命令")
 	}
 }

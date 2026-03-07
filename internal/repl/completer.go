@@ -33,24 +33,25 @@ func NewCompleter(getProfiles func() []string) *Completer {
 
 func (c *Completer) getCommandDefs() []CommandDef {
 	return []CommandDef{
-		{Name: "list", Aliases: []string{"ls"}, Description: "列出所有配置", ArgsHint: ""},
-		{Name: "use", Aliases: []string{"switch"}, Description: "切换当前配置", ArgsHint: "<name>"},
-		{Name: "current", Aliases: []string{"status"}, Description: "显示当前配置", ArgsHint: ""},
-		{Name: "default", Description: "设置默认配置", ArgsHint: "<name>"},
-		{Name: "show", Description: "显示配置详情", ArgsHint: "<name>"},
-		{Name: "add", Aliases: []string{"new"}, Description: "添加新配置", ArgsHint: ""},
-		{Name: "edit", Description: "编辑配置", ArgsHint: "<name>"},
-		{Name: "delete", Aliases: []string{"rm"}, Description: "删除配置", ArgsHint: "<name>"},
-		{Name: "copy", Aliases: []string{"cp"}, Description: "复制配置", ArgsHint: "<from> <to>"},
-		{Name: "rename", Aliases: []string{"mv"}, Description: "重命名配置", ArgsHint: "<old> <new>"},
-		{Name: "test", Description: "测试 API 连通性", ArgsHint: "<name>"},
-		{Name: "export", Description: "导出配置", ArgsHint: "[file]"},
-		{Name: "import", Description: "导入配置", ArgsHint: "<file>"},
-		{Name: "history", Description: "显示命令历史", ArgsHint: ""},
-		{Name: "help", Aliases: []string{"?"}, Description: "显示帮助", ArgsHint: "[cmd]"},
-		{Name: "clear", Aliases: []string{"cls"}, Description: "清屏", ArgsHint: ""},
-		{Name: "exit", Aliases: []string{"quit", "q"}, Description: "退出 REPL", ArgsHint: ""},
-		{Name: "run", Description: "启动 Claude Code", ArgsHint: "[profile] [-- args]"},
+		{Name: "/list", Aliases: []string{"/ls"}, Description: "列出所有配置", ArgsHint: ""},
+		{Name: "/use", Aliases: []string{"/switch"}, Description: "切换当前配置", ArgsHint: "<name>"},
+		{Name: "/current", Aliases: []string{"/status"}, Description: "显示当前配置", ArgsHint: ""},
+		{Name: "/default", Description: "设置默认配置", ArgsHint: "<name>"},
+		{Name: "/show", Description: "显示配置详情", ArgsHint: "<name>"},
+		{Name: "/add", Aliases: []string{"/new"}, Description: "添加新配置", ArgsHint: ""},
+		{Name: "/edit", Description: "编辑配置", ArgsHint: "<name>"},
+		{Name: "/delete", Aliases: []string{"/rm"}, Description: "删除配置", ArgsHint: "<name>"},
+		{Name: "/copy", Aliases: []string{"/cp"}, Description: "复制配置", ArgsHint: "<from> <to>"},
+		{Name: "/rename", Aliases: []string{"/mv"}, Description: "重命名配置", ArgsHint: "<old> <new>"},
+		{Name: "/test", Description: "测试 API 连通性", ArgsHint: "<name>"},
+		{Name: "/export", Description: "导出配置", ArgsHint: "[file]"},
+		{Name: "/import", Description: "导入配置", ArgsHint: "<file>"},
+		{Name: "/history", Description: "显示命令历史", ArgsHint: ""},
+		{Name: "/help", Aliases: []string{"/?", "/h"}, Description: "显示帮助", ArgsHint: "[cmd]"},
+		{Name: "/clear", Aliases: []string{"/cls"}, Description: "清屏", ArgsHint: ""},
+		{Name: "/exit", Aliases: []string{"/quit", "/q"}, Description: "退出 REPL", ArgsHint: ""},
+		{Name: "/run", Description: "启动 Claude Code", ArgsHint: "[profile] [-- args]"},
+		{Name: "/setup", Description: "运行配置向导", ArgsHint: ""},
 	}
 }
 
@@ -69,9 +70,9 @@ func (c *Completer) Complete(d prompt.Document) []prompt.Suggest {
 
 	// 需要配置名补全的命令
 	needsProfile := map[string]bool{
-		"use": true, "switch": true, "show": true, "edit": true,
-		"delete": true, "rm": true, "test": true, "default": true,
-		"copy": true, "cp": true, "rename": true, "mv": true, "run": true,
+		"/use": true, "/switch": true, "/show": true, "/edit": true,
+		"/delete": true, "/rm": true, "/test": true, "/default": true,
+		"/copy": true, "/cp": true, "/rename": true, "/mv": true, "/run": true,
 	}
 
 	if needsProfile[cmdName] {
