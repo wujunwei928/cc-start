@@ -31,3 +31,6 @@ Thumbs.db
 
 # 用户配置（包含 Token）
 profiles.json
+
+# Worktrees
+.worktrees/
