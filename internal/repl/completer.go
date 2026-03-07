@@ -81,7 +81,7 @@ func (c *Completer) Complete(d prompt.Document) []prompt.Suggest {
 	return []prompt.Suggest{}
 }
 
-// completeCommand 补全命令名
+// completeCommand 补全命令名（支持模糊过滤）
 func (c *Completer) completeCommand(words []string) []prompt.Suggest {
 	suggestions := make([]prompt.Suggest, 0, len(c.commands)*2)
 
@@ -98,10 +98,15 @@ func (c *Completer) completeCommand(words []string) []prompt.Suggest {
 		}
 	}
 
+	// 如果有输入，使用模糊过滤
+	if len(words) > 0 {
+		return prompt.FilterFuzzy(suggestions, words[0], true)
+	}
+
 	return suggestions
 }
 
-// completeProfile 补全配置名
+// completeProfile 补全配置名（支持模糊过滤）
 func (c *Completer) completeProfile(words []string, d prompt.Document) []prompt.Suggest {
 	if c.getProfiles == nil {
 		return []prompt.Suggest{}
@@ -114,6 +119,14 @@ func (c *Completer) completeProfile(words []string, d prompt.Document) []prompt.
 		suggestions = append(suggestions, prompt.Suggest{
 			Text: p,
 		})
+	}
+
+	// 获取当前正在输入的参数，进行模糊过滤
+	if len(words) >= 2 {
+		currentArg := d.GetWordBeforeCursor()
+		if currentArg != "" {
+			return prompt.FilterFuzzy(suggestions, currentArg, true)
+		}
 	}
 
 	return suggestions

@@ -274,3 +274,72 @@ func TestCompleteProfile(t *testing.T) {
 		t.Error("expected 'deepseek' in suggestions")
 	}
 }
+
+// 测试命令模糊过滤功能
+func TestCompleterFuzzyFilterCommands(t *testing.T) {
+	c := NewCompleter(nil)
+
+	testCases := []struct {
+		input       string
+		shouldMatch string
+		desc        string
+	}{
+		{"lst", "list", "模糊匹配 lst -> list"},
+		{"xit", "exit", "模糊匹配 xit -> exit"},
+		{"hlp", "help", "模糊匹配 hlp -> help"},
+		{"dlt", "delete", "模糊匹配 dlt -> delete"},
+		{"rnm", "rename", "模糊匹配 rnm -> rename"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			doc := newTestDocument(tc.input)
+			suggestions := c.Complete(doc)
+
+			found := false
+			for _, s := range suggestions {
+				if s.Text == tc.shouldMatch {
+					found = true
+					break
+				}
+			}
+			if !found {
+				t.Errorf("fuzzy filter: expected '%s' in suggestions for input '%s'", tc.shouldMatch, tc.input)
+			}
+		})
+	}
+}
+
+// 测试配置名模糊过滤功能
+func TestCompleterFuzzyFilterProfiles(t *testing.T) {
+	profiles := []string{"moonshot-v1", "deepseek-chat", "anthropic-claude"}
+	c := NewCompleter(func() []string { return profiles })
+
+	testCases := []struct {
+		input       string
+		shouldMatch string
+		desc        string
+	}{
+		{"mst", "moonshot-v1", "模糊匹配 mst -> moonshot-v1"},
+		{"dpk", "deepseek-chat", "模糊匹配 dpk -> deepseek-chat"},
+		{"acl", "anthropic-claude", "模糊匹配 acl -> anthropic-claude"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			doc := newTestDocument("use " + tc.input)
+			suggestions := c.Complete(doc)
+
+			found := false
+			for _, s := range suggestions {
+				if s.Text == tc.shouldMatch {
+					found = true
+					break
+				}
+			}
+			if !found {
+				t.Errorf("fuzzy filter: expected '%s' in suggestions for input 'use %s'", tc.shouldMatch, tc.input)
+			}
+		})
+	}
+}
