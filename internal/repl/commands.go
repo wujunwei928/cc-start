@@ -182,8 +182,49 @@ func (r *REPL) cmdAdd(args []string) {
 
 // cmdEdit 编辑配置
 func (r *REPL) cmdEdit(args []string) {
-	PrintWarning("功能开发中，敬请期待")
-	PrintInfo("临时方案: 使用 'export' 导出后编辑，再用 'import' 导入")
+	name := ""
+	if len(args) > 0 {
+		name = args[0]
+	} else if r.currentName != "" {
+		name = r.currentName
+	}
+
+	if name == "" {
+		PrintError("请指定配置名称: edit <name>")
+		return
+	}
+
+	profile, err := r.cfg.GetProfile(name)
+	if err != nil {
+		PrintError("%v", err)
+		return
+	}
+
+	// 使用编辑模式启动 TUI
+	m := setup.InitialModelWithProfile(*profile)
+	p := tea.NewProgram(m, tea.WithAltScreen())
+
+	result, err := p.Run()
+	if err != nil {
+		PrintError("启动 TUI 失败: %v", err)
+		return
+	}
+
+	// 重新加载配置
+	cfg, err := config.LoadConfig(r.cfgPath)
+	if err != nil {
+		PrintError("重新加载配置失败: %v", err)
+		return
+	}
+	r.cfg = cfg
+
+	if final, ok := result.(setup.Model); ok && final.Done() {
+		PrintSuccess("配置 '%s' 已更新", final.GetName())
+		// 如果编辑的是当前配置，更新 currentName
+		if name != final.GetName() {
+			r.currentName = final.GetName()
+		}
+	}
 }
 
 // cmdDelete 删除配置
@@ -495,6 +536,12 @@ func (r *REPL) cmdHistory(args []string) {
 
 // cmdHelp 显示帮助
 func (r *REPL) cmdHelp(args []string) {
+	// 如果有参数，显示特定命令的详细帮助
+	if len(args) > 0 {
+		r.showCommandHelp(args[0])
+		return
+	}
+
 	fmt.Println()
 	fmt.Println("可用命令:")
 	fmt.Println()
@@ -507,7 +554,7 @@ func (r *REPL) cmdHelp(args []string) {
 	fmt.Println("  default           设置默认配置")
 	fmt.Println("  show              显示配置详情")
 	fmt.Println("  add, new          添加配置（提示使用 setup）")
-	fmt.Println("  edit              编辑配置（开发中）")
+	fmt.Println("  edit              编辑配置")
 	fmt.Println("  delete, rm        删除配置")
 	fmt.Println("  copy, cp          复制配置")
 	fmt.Println("  rename, mv        重命名配置")
@@ -530,9 +577,181 @@ func (r *REPL) cmdHelp(args []string) {
 
 	// 启动
 	fmt.Println("启动 Claude Code:")
-	fmt.Println("  run [args...]     使用当前配置启动 Claude Code")
+	fmt.Println("  run [profile] [-- args...]  使用当前或指定配置启动")
 	fmt.Println("  setup             运行配置向导")
 	fmt.Println()
+}
+
+// showCommandHelp 显示特定命令的详细帮助
+func (r *REPL) showCommandHelp(cmd string) {
+	helpTexts := map[string]string{
+		"list": `list, ls - 列出所有配置
+
+用法: list
+
+显示所有已配置的供应商，包括名称、Base URL、模型和状态。
+状态标记:
+  默认 - 默认配置
+  当前 - 当前会话使用的配置`,
+		"use": `use, switch - 切换当前会话配置
+
+用法: use <name>
+
+切换当前 REPL 会话使用的配置。
+注意: 此命令只影响当前会话，不会修改默认配置。
+
+示例:
+  use moonshot    切换到 moonshot 配置`,
+		"current": `current, status - 显示当前配置
+
+用法: current
+
+显示当前会话使用的配置详情，包括 Base URL、模型和 Token。`,
+		"default": `default - 设置或显示默认配置
+
+用法:
+  default           显示当前默认配置
+  default <name>    设置指定配置为默认
+
+设置的默认配置会持久化到配置文件。
+
+示例:
+  default           显示当前默认配置
+  default moonshot  将 moonshot 设为默认`,
+		"show": `show - 显示配置详情
+
+用法: show [name]
+
+显示指定配置的详细信息。如果省略名称，显示当前配置。
+
+示例:
+  show           显示当前配置详情
+  show moonshot  显示 moonshot 配置详情`,
+		"add": `add, new - 添加配置
+
+用法: add
+
+启动交互式配置向导添加新的供应商配置。
+建议直接使用 'setup' 命令。`,
+		"edit": `edit - 编辑配置
+
+用法: edit [name]
+
+启动交互式向导编辑现有配置。如果省略名称，编辑当前配置。
+
+示例:
+  edit           编辑当前配置
+  edit moonshot  编辑 moonshot 配置`,
+		"delete": `delete, rm - 删除配置
+
+用法: delete <name>
+
+删除指定的配置。删除前会要求确认。
+
+示例:
+  delete moonshot  删除 moonshot 配置`,
+		"copy": `copy, cp - 复制配置
+
+用法: copy <source> <target>
+
+复制现有配置到新名称。
+
+示例:
+  copy moonshot moonshot-backup  复制 moonshot 到 moonshot-backup`,
+		"rename": `rename, mv - 重命名配置
+
+用法: rename <old> <new>
+
+重命名配置。会自动更新默认配置引用。
+
+示例:
+  rename moonshot kimi  将 moonshot 重命名为 kimi`,
+		"test": `test - 测试 API 连通性
+
+用法: test [name]
+
+测试指定配置的 API 端点连通性。如果省略名称，测试当前配置。
+
+示例:
+  test           测试当前配置
+  test moonshot  测试 moonshot 的 API 连通性`,
+		"export": `export - 导出配置
+
+用法: export [file]
+
+导出配置到 JSON 格式。如果指定文件，保存到文件；否则输出到 stdout。
+
+示例:
+  export                    输出配置到屏幕
+  export backup.json        保存配置到 backup.json`,
+		"import": `import - 导入配置
+
+用法: import <file>
+
+从 JSON 文件导入配置。已存在的同名配置会被跳过。
+
+示例:
+  import backup.json  从 backup.json 导入配置`,
+		"history": `history - 显示命令历史
+
+用法: history
+
+显示最近 20 条执行的命令。`,
+		"run": `run - 启动 Claude Code
+
+用法: run [profile] [-- args...]
+
+使用指定或当前配置启动 Claude Code。
+
+示例:
+  run                    使用当前配置启动
+  run moonshot           使用 moonshot 配置启动
+  run -- --help          使用当前配置启动，传递 --help 给 claude
+  run moonshot -- --help 使用 moonshot 配置启动，传递 --help`,
+		"setup": `setup - 运行配置向导
+
+用法: setup
+
+启动交互式配置向导，添加新的供应商配置。`,
+		"clear": `clear, cls - 清屏
+
+用法: clear
+
+清除终端屏幕。`,
+		"exit": `exit, quit, q - 退出 REPL
+
+用法: exit
+
+退出 CC-Start REPL。`,
+	}
+
+	// 标准化命令名
+	normalizedCmd := cmd
+	aliases := map[string]string{
+		"ls":     "list",
+		"switch": "use",
+		"status": "current",
+		"new":    "add",
+		"rm":     "delete",
+		"cp":     "copy",
+		"mv":     "rename",
+		"?":      "help",
+		"cls":    "clear",
+		"quit":   "exit",
+		"q":      "exit",
+	}
+	if n, ok := aliases[cmd]; ok {
+		normalizedCmd = n
+	}
+
+	if help, ok := helpTexts[normalizedCmd]; ok {
+		fmt.Println()
+		fmt.Println(help)
+		fmt.Println()
+	} else {
+		PrintError("未知命令: %s", cmd)
+		PrintInfo("输入 'help' 查看所有可用命令")
+	}
 }
 
 // cmdClear 清屏
@@ -547,22 +766,53 @@ func (r *REPL) cmdExit(args []string) {
 }
 
 // cmdRun 启动 Claude Code
+// 用法: run [profile] [-- args...]
+// - 无参数：使用当前配置启动
+// - run <profile>：使用指定配置启动
+// - run -- <args>：使用当前配置启动，传递参数给 claude
+// - run <profile> -- <args>：使用指定配置启动，传递参数给 claude
 func (r *REPL) cmdRun(args []string) {
-	if r.currentName == "" {
+	profileName := r.currentName
+	launchArgs := args
+
+	// 解析参数
+	for i, arg := range args {
+		if arg == "--" {
+			// -- 后的参数传递给 claude
+			launchArgs = args[i+1:]
+			if i > 0 {
+				// -- 前有参数，作为 profile 名称
+				profileName = args[0]
+			}
+			break
+		}
+	}
+
+	// 如果没有 -- 分隔符，检查第一个参数是否为 profile 名称
+	if len(args) > 0 && len(launchArgs) == len(args) {
+		// 尝试将第一个参数作为 profile 名称
+		if _, err := r.cfg.GetProfile(args[0]); err == nil {
+			profileName = args[0]
+			launchArgs = args[1:]
+		}
+	}
+
+	if profileName == "" {
 		PrintError("请先选择配置: use <name>")
+		PrintInfo("或指定配置名: run <profile>")
 		return
 	}
 
-	profile, err := r.cfg.GetProfile(r.currentName)
+	profile, err := r.cfg.GetProfile(profileName)
 	if err != nil {
-		PrintError("当前配置无效: %v", err)
+		PrintError("配置无效: %v", err)
 		return
 	}
 
 	// 保存历史，确保退出后历史不丢失
 	r.history.Add("run " + strings.Join(args, " "))
 
-	if err := launcher.Launch(profile, args); err != nil {
+	if err := launcher.Launch(profile, launchArgs); err != nil {
 		PrintError("启动失败: %v", err)
 	}
 }

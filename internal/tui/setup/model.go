@@ -54,6 +54,9 @@ type Model struct {
 	baseURL    string
 	err        error
 	profile    *config.Profile
+	// 编辑模式
+	isEdit       bool
+	originalName string // 原始配置名，用于重命名时更新引用
 }
 
 // InitialModel 创建初始模型
@@ -77,6 +80,48 @@ func InitialModel() Model {
 		nameInput:  nameInput,
 		tokenInput: tokenInput,
 		modelInput: modelInput,
+	}
+}
+
+// InitialModelWithProfile 创建编辑模式的模型
+func InitialModelWithProfile(p config.Profile) Model {
+	nameInput := textinput.New()
+	nameInput.Placeholder = "配置名称"
+	nameInput.SetValue(p.Name)
+	nameInput.Focus()
+
+	tokenInput := textinput.New()
+	tokenInput.Placeholder = "API Token"
+	tokenInput.SetValue(p.Token)
+	tokenInput.EchoMode = textinput.EchoPassword
+	tokenInput.EchoCharacter = '•'
+
+	modelInput := textinput.New()
+	modelInput.Placeholder = "模型名称（可选）"
+	modelInput.SetValue(p.Model)
+
+	// 查找匹配的预设
+	presets := []string{"anthropic", "moonshot", "bigmodel", "deepseek", "minimax", "自定义"}
+	selected := len(presets) - 1 // 默认选择"自定义"
+	for i, preset := range presets[:len(presets)-1] {
+		if presetConf, err := config.GetPresetByName(preset); err == nil {
+			if presetConf.BaseURL == p.BaseURL {
+				selected = i
+				break
+			}
+		}
+	}
+
+	return Model{
+		step:         stepInputName, // 编辑模式直接从名称输入开始
+		presets:      presets,
+		selected:     selected,
+		nameInput:    nameInput,
+		tokenInput:   tokenInput,
+		modelInput:   modelInput,
+		baseURL:      p.BaseURL,
+		isEdit:       true,
+		originalName: p.Name,
 	}
 }
 
@@ -194,7 +239,8 @@ func (m *Model) handleGoBack() (tea.Model, tea.Cmd) {
 		m.modelInput.Blur()
 		m.tokenInput.Focus()
 	case stepInputToken:
-		if m.isCustom {
+		// 编辑模式或自定义模式返回名称输入，否则返回预设选择
+		if m.isEdit || m.isCustom {
 			m.step = stepInputName
 			m.nameInput.Focus()
 		} else {
@@ -202,6 +248,10 @@ func (m *Model) handleGoBack() (tea.Model, tea.Cmd) {
 		}
 		m.tokenInput.Blur()
 	case stepInputName:
+		// 编辑模式直接退出，新建模式回到预设选择
+		if m.isEdit {
+			return m, tea.Quit
+		}
 		m.step = stepSelectPreset
 		m.nameInput.Blur()
 	}
@@ -216,6 +266,10 @@ func (m *Model) handleBackspace(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch m.step {
 	case stepInputName:
 		if m.nameInput.Value() == "" {
+			// 编辑模式直接退出
+			if m.isEdit {
+				return m, tea.Quit
+			}
 			m.step = stepSelectPreset
 			m.nameInput.Blur()
 			return m, nil
@@ -226,7 +280,8 @@ func (m *Model) handleBackspace(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m, cmd
 	case stepInputToken:
 		if m.tokenInput.Value() == "" {
-			if m.isCustom {
+			// 编辑模式或自定义模式返回名称输入，否则返回预设选择
+			if m.isEdit || m.isCustom {
 				m.step = stepInputName
 				m.tokenInput.Blur()
 				m.nameInput.Focus()
@@ -266,6 +321,16 @@ func (m *Model) saveProfile() {
 	// 保存到文件
 	cfgPath := config.GetConfigPath()
 	cfg, _ := config.LoadConfig(cfgPath)
+
+	if m.isEdit && m.originalName != "" && m.originalName != m.profile.Name {
+		// 编辑模式且名称改变：需要删除旧配置
+		cfg.DeleteProfile(m.originalName)
+		// 如果旧名称是默认配置，更新默认名称
+		if cfg.Default == m.originalName {
+			cfg.Default = m.profile.Name
+		}
+	}
+
 	cfg.AddProfile(*m.profile)
 
 	// 如果是第一个配置，设为默认
@@ -281,7 +346,11 @@ func (m *Model) saveProfile() {
 func (m Model) View() string {
 	var b strings.Builder
 
-	b.WriteString(titleStyle.Render("🚀 CC-Start 配置向导"))
+	if m.isEdit {
+		b.WriteString(titleStyle.Render("✏️ 编辑配置"))
+	} else {
+		b.WriteString(titleStyle.Render("🚀 CC-Start 配置向导"))
+	}
 	b.WriteString("\n\n")
 
 	switch m.step {
@@ -299,6 +368,9 @@ func (m Model) View() string {
 		b.WriteString(normalStyle.Render("↑/↓ 选择，Enter 确认"))
 
 	case stepInputName:
+		if m.isEdit {
+			b.WriteString(fmt.Sprintf("URL: %s\n\n", m.baseURL))
+		}
 		b.WriteString("输入配置名称:\n\n")
 		b.WriteString(fmt.Sprintf("  %s\n\n", m.nameInput.View()))
 		b.WriteString(normalStyle.Render("Enter 确认，ESC 返回"))
