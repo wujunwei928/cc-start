@@ -5,6 +5,29 @@ import (
 	"testing"
 )
 
+func TestRootCommand(t *testing.T) {
+	if rootCmd == nil {
+		t.Error("rootCmd should not be nil")
+	}
+
+	if rootCmd.Use != "cc-start" {
+		t.Errorf("expected Use 'cc-start', got '%s'", rootCmd.Use)
+	}
+}
+
+func TestRunCommandExists(t *testing.T) {
+	runCmdFound := false
+	for _, cmd := range rootCmd.Commands() {
+		if cmd.Name() == "run" {
+			runCmdFound = true
+			break
+		}
+	}
+	if !runCmdFound {
+		t.Error("run command should exist")
+	}
+}
+
 func TestFindDashSeparator(t *testing.T) {
 	tests := []struct {
 		name     string
