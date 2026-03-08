@@ -6,16 +6,31 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/sahilm/fuzzy"
+	"github.com/wujunwei/cc-start/internal/i18n"
+	"github.com/wujunwei/cc-start/internal/theme"
+)
+
+// SettingsMode 设置面板模式
+type SettingsMode int
+
+const (
+	SettingsModeMain SettingsMode = iota
+	SettingsModeLanguage
+	SettingsModeTheme
 )
 
 // SettingsPanel 系统设置面板
 type SettingsPanel struct {
-	visible  bool
-	query    string
-	items    []SettingsItem
-	selected int
-	styles   Styles
-	width    int
+	visible   bool
+	query     string
+	items     []SettingsItem
+	selected  int
+	styles    Styles
+	width     int
+	mode      SettingsMode
+	subItems  []SettingsItem
+	i18n      *i18n.Manager
+	prevItems []SettingsItem
 }
 
 // SettingsItem 设置项
@@ -28,19 +43,42 @@ type SettingsItem struct {
 }
 
 // NewSettingsPanel 创建设置面板
-func NewSettingsPanel(styles Styles) *SettingsPanel {
+func NewSettingsPanel(styles Styles, i18nMgr *i18n.Manager) *SettingsPanel {
 	return &SettingsPanel{
 		styles: styles,
-		items:  getDefaultSettings(),
+		i18n:   i18nMgr,
+		items:  getMainSettings(i18nMgr),
+		mode:   SettingsModeMain,
 	}
 }
 
-func getDefaultSettings() []SettingsItem {
+func getMainSettings(i18nMgr *i18n.Manager) []SettingsItem {
 	return []SettingsItem{
-		{Key: "lang", Label: "语言 / Language", Description: "设置界面语言", Value: "中文", Action: "setting:lang"},
-		{Key: "theme", Label: "主题 / Theme", Description: "设置显示主题", Value: "默认", Action: "setting:theme"},
-		{Key: "editor", Label: "编辑器 / Editor", Description: "设置默认编辑器", Value: "系统默认", Action: "setting:editor"},
+		{Key: "lang", Label: i18nMgr.T(i18n.MsgSettingsLanguage), Description: i18nMgr.T(i18n.MsgSettingsLanguage) + " Settings", Value: "", Action: "setting:lang"},
+		{Key: "theme", Label: i18nMgr.T(i18n.MsgSettingsTheme), Description: i18nMgr.T(i18n.MsgSettingsTheme) + " Settings", Value: "", Action: "setting:theme"},
 	}
+}
+
+func getLanguageOptions(i18nMgr *i18n.Manager) []SettingsItem {
+	return []SettingsItem{
+		{Key: "zh", Label: "中文", Description: "Chinese", Action: "lang:zh"},
+		{Key: "en", Label: "English", Description: "English", Action: "lang:en"},
+		{Key: "ja", Label: "日本語", Description: "Japanese", Action: "lang:ja"},
+	}
+}
+
+func getThemeOptions(i18nMgr *i18n.Manager) []SettingsItem {
+	themes := theme.GetAllThemes()
+	items := make([]SettingsItem, len(themes))
+	for i, t := range themes {
+		items[i] = SettingsItem{
+			Key:         t.Name,
+			Label:       t.DisplayName,
+			Description: "",
+			Action:      "theme:" + t.Name,
+		}
+	}
+	return items
 }
 
 // Toggle 切换显示状态
@@ -49,7 +87,19 @@ func (s *SettingsPanel) Toggle() {
 	if s.visible {
 		s.query = ""
 		s.selected = 0
+		s.mode = SettingsModeMain
+		s.items = getMainSettings(s.i18n)
 	}
+}
+
+// SetI18n 设置 i18n 管理器
+func (s *SettingsPanel) SetI18n(i18nMgr *i18n.Manager) {
+	s.i18n = i18nMgr
+}
+
+// SetStyles 设置样式
+func (s *SettingsPanel) SetStyles(styles Styles) {
+	s.styles = styles
 }
 
 // IsVisible 返回是否可见
@@ -121,11 +171,17 @@ func (s *SettingsPanel) Render() string {
 
 	var sections []string
 
-	// 标题
-	title := s.styles.PaletteTitle.Render("⚙ 系统设置 / Settings")
+	var title string
+	switch s.mode {
+	case SettingsModeLanguage:
+		title = s.styles.PaletteTitle.Render("🌐 " + s.i18n.T(i18n.MsgSettingsLanguage))
+	case SettingsModeTheme:
+		title = s.styles.PaletteTitle.Render("🎨 " + s.i18n.T(i18n.MsgSettingsTheme))
+	default:
+		title = s.styles.PaletteTitle.Render(s.i18n.T(i18n.MsgSettingsTitle))
+	}
 	sections = append(sections, title)
 
-	// 输入框
 	inputStyle := lipgloss.NewStyle().
 		Border(lipgloss.NormalBorder()).
 		BorderForeground(mutedColor).
@@ -134,12 +190,11 @@ func (s *SettingsPanel) Render() string {
 	input := inputStyle.Render("> " + s.query)
 	sections = append(sections, input)
 
-	// 设置列表
 	items := s.filteredItems()
 	var listLines []string
 	for i, item := range items {
 		if i >= 10 {
-			break // 最多显示 10 条
+			break
 		}
 		valueStr := ""
 		if item.Value != "" {
@@ -157,8 +212,7 @@ func (s *SettingsPanel) Render() string {
 		sections = append(sections, strings.Join(listLines, "\n"))
 	}
 
-	// 提示
-	hint := lipgloss.NewStyle().Foreground(mutedColor).Render("↑↓ 导航  enter 确认  esc 关闭")
+	hint := lipgloss.NewStyle().Foreground(mutedColor).Render(s.i18n.T(i18n.MsgSettingsHint))
 	sections = append(sections, hint)
 
 	return s.styles.Palette.Render(strings.Join(sections, "\n"))
@@ -180,4 +234,35 @@ func (s *SettingsPanel) SelectedItem() *SettingsItem {
 		return &items[s.selected]
 	}
 	return nil
+}
+
+// EnterSubMenu 进入子菜单
+func (s *SettingsPanel) EnterSubMenu(mode SettingsMode) {
+	s.prevItems = s.items
+	s.mode = mode
+	switch mode {
+	case SettingsModeLanguage:
+		s.items = getLanguageOptions(s.i18n)
+	case SettingsModeTheme:
+		s.items = getThemeOptions(s.i18n)
+	}
+	s.selected = 0
+	s.query = ""
+}
+
+// BackToMain 返回主菜单
+func (s *SettingsPanel) BackToMain() {
+	s.mode = SettingsModeMain
+	if len(s.prevItems) > 0 {
+		s.items = s.prevItems
+	} else {
+		s.items = getMainSettings(s.i18n)
+	}
+	s.selected = 0
+	s.query = ""
+}
+
+// GetMode 获取当前模式
+func (s *SettingsPanel) GetMode() SettingsMode {
+	return s.mode
 }

@@ -12,6 +12,8 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/wujunwei/cc-start/internal/config"
+	"github.com/wujunwei/cc-start/internal/i18n"
+	"github.com/wujunwei/cc-start/internal/theme"
 	"github.com/wujunwei/cc-start/internal/tui/setup"
 )
 
@@ -38,9 +40,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 
 		case keyMatches(msg, m.keys.CtrlP):
-			// Ctrl+P 打开系统设置面板
 			if m.settings == nil {
-				m.settings = NewSettingsPanel(m.styles)
+				m.settings = NewSettingsPanel(m.styles, m.i18n)
 			}
 			m.settings.Toggle()
 			return m, nil
@@ -66,7 +67,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// 检测 "/" 字符输入 - 打开命令面板
 			if msg.String() == "/" && m.input.Value() == "" {
 				if m.palette == nil {
-					m.palette = NewCommandPalette(m.styles)
+					m.palette = NewCommandPalette(m.styles, m.i18n)
 				}
 				m.palette.Toggle()
 				return m, nil
@@ -151,19 +152,28 @@ func (m Model) updateSettings(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
 	case "enter":
 		action := m.settings.SelectedAction()
-		m.settings.Toggle()
 		if action != "" {
+			if m.settings.GetMode() != SettingsModeMain {
+				result := m.handleSettingAction(action)
+				m.settings.BackToMain()
+				m.settings.Toggle()
+				return result
+			}
+			m.settings.Toggle()
 			return m.handleSettingAction(action)
 		}
 		return m, nil
 	case "esc":
+		if m.settings.GetMode() != SettingsModeMain {
+			m.settings.BackToMain()
+			return m, nil
+		}
 		m.settings.Toggle()
 		return m, nil
 	case "up", "down", "backspace":
 		m.settings.HandleKey(msg.String())
 		return m, nil
 	default:
-		// 字符输入
 		if len(msg.Runes) > 0 {
 			m.settings.HandleKey(string(msg.Runes))
 		}
@@ -173,16 +183,84 @@ func (m Model) updateSettings(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 // handleSettingAction 处理设置动作
 func (m Model) handleSettingAction(action string) (tea.Model, tea.Cmd) {
+	if strings.HasPrefix(action, "lang:") {
+		lang := strings.TrimPrefix(action, "lang:")
+		return m.applyLanguageChange(lang)
+	}
+	if strings.HasPrefix(action, "theme:") {
+		themeName := strings.TrimPrefix(action, "theme:")
+		return m.applyThemeChange(themeName)
+	}
+
 	switch action {
 	case "setting:lang":
-		m.output.Write("● 语言设置功能开发中...\n  当前语言: 中文\n  后续将支持更多语言选项")
+		if m.settings != nil {
+			m.settings.EnterSubMenu(SettingsModeLanguage)
+			m.settings.visible = true
+		}
+		return m, nil
 	case "setting:theme":
-		m.output.Write("● 主题设置功能开发中...\n  当前主题: 默认\n  后续将支持更多主题选项")
-	case "setting:editor":
-		m.output.Write("● 编辑器设置功能开发中...\n  当前编辑器: 系统默认\n  后续将支持自定义编辑器配置")
+		if m.settings != nil {
+			m.settings.EnterSubMenu(SettingsModeTheme)
+			m.settings.visible = true
+		}
+		return m, nil
 	default:
 		m.output.Write("● 未知设置项: " + action)
 	}
+	return m, nil
+}
+
+// applyLanguageChange 应用语言更改
+func (m *Model) applyLanguageChange(lang string) (tea.Model, tea.Cmd) {
+	if err := m.i18n.SetLanguage(lang); err != nil {
+		m.output.WriteError("不支持的语言: " + lang)
+		return m, nil
+	}
+
+	m.config.Settings.Language = lang
+	if err := m.config.Save(m.configPath); err != nil {
+		m.output.WriteError("保存配置失败: " + err.Error())
+		return m, nil
+	}
+
+	m.input.Placeholder = m.i18n.T(i18n.MsgREPLInputPrompt)
+	if m.palette != nil {
+		m.palette.SetI18n(m.i18n)
+	}
+	if m.settings != nil {
+		m.settings.SetI18n(m.i18n)
+	}
+
+	m.output.WriteSuccess("语言已切换: " + lang)
+	return m, nil
+}
+
+// applyThemeChange 应用主题更改
+func (m *Model) applyThemeChange(themeName string) (tea.Model, tea.Cmd) {
+	newTheme, err := theme.GetTheme(themeName)
+	if err != nil {
+		m.output.WriteError("不支持的主题: " + themeName)
+		return m, nil
+	}
+
+	m.theme = newTheme
+	m.styles = NewStylesFromTheme(newTheme)
+
+	m.config.Settings.Theme = themeName
+	if err := m.config.Save(m.configPath); err != nil {
+		m.output.WriteError("保存配置失败: " + err.Error())
+		return m, nil
+	}
+
+	if m.settings != nil {
+		m.settings.SetStyles(m.styles)
+	}
+	if m.palette != nil {
+		m.palette.SetStyles(m.styles)
+	}
+
+	m.output.WriteSuccess("主题已切换: " + themeName)
 	return m, nil
 }
 
