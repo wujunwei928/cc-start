@@ -75,14 +75,4 @@ func (m *Manager) loadTranslations() {
 	}
 }
 
-func getZhTranslations() map[string]string {
-	return map[string]string{}
-}
 
-func getEnTranslations() map[string]string {
-	return map[string]string{}
-}
-
-func getJaTranslations() map[string]string {
-	return map[string]string{}
-}

@@ -75,3 +75,31 @@ func TestGetSupportedLanguages(t *testing.T) {
 		}
 	}
 }
+
+func TestZhTranslations(t *testing.T) {
+	m := NewManager()
+	m.SetLanguage(LangZH)
+
+	tests := []struct {
+		key  string
+		want string
+	}{
+		{MsgCommonSuccess, "成功"},
+		{MsgCommonError, "错误"},
+		{MsgSettingsTitle, "⚙ 系统设置"},
+		{MsgSettingsLanguage, "语言 / Language"},
+		{MsgSettingsTheme, "主题 / Theme"},
+		{MsgCmdList, "列出所有配置"},
+		{MsgREPLWelcome, "欢迎使用 CC-Start"},
+		{MsgErrProfileNotFound, "配置 '%s' 不存在"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.key, func(t *testing.T) {
+			got := m.T(tt.key)
+			if got != tt.want {
+				t.Errorf("T(%s) = %s, want %s", tt.key, got, tt.want)
+			}
+		})
+	}
+}
