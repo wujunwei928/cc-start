@@ -7,6 +7,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/wujunwei/cc-start/internal/config"
+	"github.com/wujunwei/cc-start/internal/launcher"
 )
 
 // REPL 交互式 REPL
@@ -55,9 +56,18 @@ func (r *REPL) Run() {
 		tea.WithAltScreen(),
 	)
 
-	if _, err := p.Run(); err != nil {
+	finalModel, err := p.Run()
+	if err != nil {
 		fmt.Fprintf(os.Stderr, "启动失败: %v\n", err)
 		os.Exit(1)
+	}
+
+	// 检查是否有待执行的启动命令
+	if m, ok := finalModel.(Model); ok && m.PendingLaunch != nil {
+		if err := launcher.Launch(&m.PendingLaunch.Profile, m.PendingLaunch.Args); err != nil {
+			fmt.Fprintf(os.Stderr, "启动失败: %v\n", err)
+			os.Exit(1)
+		}
 	}
 }
 

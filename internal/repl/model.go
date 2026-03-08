@@ -62,6 +62,12 @@ func defaultKeyMap() keyMap {
 	}
 }
 
+// PendingLaunch 待执行的启动命令
+type PendingLaunch struct {
+	Profile config.Profile
+	Args    []string
+}
+
 // Model REPL 主模型
 type Model struct {
 	// 配置
@@ -90,6 +96,9 @@ type Model struct {
 	// 窗口尺寸
 	width  int
 	height int
+
+	// 待执行的启动命令
+	PendingLaunch *PendingLaunch
 }
 
 // NewModel 创建新的 REPL Model
