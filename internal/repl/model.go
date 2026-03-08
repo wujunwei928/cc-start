@@ -94,15 +94,15 @@ type Model struct {
 	history *History
 	histIdx int
 
-	styles Styles
+	Styles Styles
 
 	width  int
 	height int
 
 	PendingLaunch *PendingLaunch
 
-	i18n  *i18n.Manager
-	theme *theme.Theme
+	I18n  *i18n.Manager
+	Theme *theme.Theme
 }
 
 // NewModel 创建新的 REPL Model

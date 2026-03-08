@@ -41,7 +41,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case keyMatches(msg, m.keys.CtrlP):
 			if m.settings == nil {
-				m.settings = NewSettingsPanel(m.styles, m.i18n)
+				m.settings = NewSettingsPanel(m.Styles, m.i18n)
 			}
 			m.settings.Toggle()
 			return m, nil
@@ -65,9 +65,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		default:
 			// 检测 "/" 字符输入 - 打开命令面板
-			if msg.String() == "/" && m.input.Value() == "" {
+			if msg.String() == "/" && m.Input.Value() == "" {
 				if m.palette == nil {
-					m.palette = NewCommandPalette(m.styles, m.i18n)
+					m.palette = NewCommandPalette(m.Styles, m.i18n)
 				}
 				m.palette.Toggle()
 				return m, nil
@@ -244,8 +244,8 @@ func (m *Model) applyThemeChange(themeName string) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	m.theme = newTheme
-	m.styles = NewStylesFromTheme(newTheme)
+	m.Theme = newTheme
+	m.Styles = NewStylesFromTheme(newTheme)
 
 	m.config.Settings.Theme = themeName
 	if err := m.config.Save(m.configPath); err != nil {
@@ -254,10 +254,10 @@ func (m *Model) applyThemeChange(themeName string) (tea.Model, tea.Cmd) {
 	}
 
 	if m.settings != nil {
-		m.settings.SetStyles(m.styles)
+		m.settings.SetStyles(m.Styles)
 	}
 	if m.palette != nil {
-		m.palette.SetStyles(m.styles)
+		m.palette.SetStyles(m.Styles)
 	}
 
 	m.output.WriteSuccess("主题已切换: " + themeName)

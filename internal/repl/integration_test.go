@@ -2,7 +2,6 @@
 package repl
 
 import (
-	"os"
 	"testing"
 
 	"github.com/wujunwei/cc-start/internal/config"
@@ -30,17 +29,17 @@ func TestLanguageSwitch(t *testing.T) {
 		t.Fatalf("NewModel() error: %v", err)
 	}
 
-	if model.i18n.T(i18n.MsgCommonSuccess) != "成功" {
+	if model.I18n.T(i18n.MsgCommonSuccess) != "成功" {
 		t.Errorf("Initial language not zh")
 	}
 
-	model.i18n.SetLanguage("en")
-	if model.i18n.T(i18n.MsgCommonSuccess) != "Success" {
+	model.I18n.SetLanguage("en")
+	if model.I18n.T(i18n.MsgCommonSuccess) != "Success" {
 		t.Errorf("Language switch to en failed")
 	}
 
-	model.i18n.SetLanguage("ja")
-	if model.i18n.T(i18n.MsgCommonSuccess) != "成功" {
+	model.I18n.SetLanguage("ja")
+	if model.I18n.T(i18n.MsgCommonSuccess) != "成功" {
 		t.Errorf("Language switch to ja failed")
 	}
 }
@@ -65,8 +64,8 @@ func TestThemeSwitch(t *testing.T) {
 		t.Fatalf("NewModel() error: %v", err)
 	}
 
-	if model.theme.Name != "default" {
-		t.Errorf("Initial theme not default, got %s", model.theme.Name)
+	if model.Theme.Name != "default" {
+		t.Errorf("Initial theme not default, got %s", model.Theme.Name)
 	}
 
 	oceanTheme, err := theme.GetTheme("ocean")
@@ -74,15 +73,15 @@ func TestThemeSwitch(t *testing.T) {
 		t.Fatalf("GetTheme(ocean) error: %v", err)
 	}
 
-	model.theme = oceanTheme
-	model.styles = *NewStylesFromTheme(oceanTheme)
+	model.Theme = oceanTheme
+	model.Styles = NewStylesFromTheme(oceanTheme)
 
-	if model.theme.Name != "ocean" {
-		t.Errorf("Theme not switched to ocean, got %s", model.theme.Name)
+	if model.Theme.Name != "ocean" {
+		t.Errorf("Theme not switched to ocean, got %s", model.Theme.Name)
 	}
 
-	if model.theme.Colors.Primary != "#00bfff" {
-		t.Errorf("Ocean theme primary color incorrect, got %s", model.theme.Colors.Primary)
+	if model.Theme.Colors.Primary != "#00bfff" {
+		t.Errorf("Ocean theme primary color incorrect, got %s", model.Theme.Colors.Primary)
 	}
 }
 
