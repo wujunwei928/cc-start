@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/sahilm/fuzzy"
+	"github.com/wujunwei/cc-start/internal/i18n"
 )
 
 // CommandPalette 命令面板
@@ -17,6 +18,7 @@ type CommandPalette struct {
 	selected int
 	styles   Styles
 	width    int
+	i18n     *i18n.Manager
 }
 
 // PaletteItem 命令面板项
@@ -28,33 +30,34 @@ type PaletteItem struct {
 }
 
 // NewCommandPalette 创建命令面板
-func NewCommandPalette(styles Styles) *CommandPalette {
+func NewCommandPalette(styles Styles, i18nMgr *i18n.Manager) *CommandPalette {
 	return &CommandPalette{
 		styles: styles,
-		items:  getDefaultCommands(),
+		i18n:   i18nMgr,
+		items:  getDefaultCommands(i18nMgr),
 	}
 }
 
-func getDefaultCommands() []PaletteItem {
+func getDefaultCommands(i18nMgr *i18n.Manager) []PaletteItem {
 	return []PaletteItem{
-		{Cmd: "/list", Description: "列出所有配置", Aliases: []string{"/ls"}, Group: "配置管理"},
-		{Cmd: "/use", Description: "切换当前会话配置", Aliases: []string{"/switch"}, Group: "配置管理"},
-		{Cmd: "/current", Description: "显示当前配置", Aliases: []string{"/status"}, Group: "配置管理"},
-		{Cmd: "/default", Description: "设置默认配置", Group: "配置管理"},
-		{Cmd: "/show", Description: "显示配置详情", Group: "配置管理"},
-		{Cmd: "/edit", Description: "编辑配置", Group: "配置管理"},
-		{Cmd: "/delete", Description: "删除配置", Aliases: []string{"/rm"}, Group: "配置管理"},
-		{Cmd: "/copy", Description: "复制配置", Aliases: []string{"/cp"}, Group: "配置管理"},
-		{Cmd: "/rename", Description: "重命名配置", Aliases: []string{"/mv"}, Group: "配置管理"},
-		{Cmd: "/test", Description: "测试 API 连通性", Group: "测试"},
-		{Cmd: "/export", Description: "导出配置", Group: "导入导出"},
-		{Cmd: "/import", Description: "导入配置", Group: "导入导出"},
-		{Cmd: "/history", Description: "显示命令历史", Group: "辅助"},
-		{Cmd: "/help", Description: "显示帮助", Aliases: []string{"/?", "/h"}, Group: "辅助"},
-		{Cmd: "/clear", Description: "清屏", Aliases: []string{"/cls"}, Group: "辅助"},
-		{Cmd: "/run", Description: "启动 Claude Code", Group: "启动"},
-		{Cmd: "/setup", Description: "运行配置向导", Group: "启动"},
-		{Cmd: "/exit", Description: "退出 REPL", Aliases: []string{"/quit", "/q"}, Group: "启动"},
+		{Cmd: "/list", Description: i18nMgr.T(i18n.MsgCmdList), Aliases: []string{"/ls"}, Group: "config"},
+		{Cmd: "/use", Description: i18nMgr.T(i18n.MsgCmdUse), Aliases: []string{"/switch"}, Group: "config"},
+		{Cmd: "/current", Description: i18nMgr.T(i18n.MsgCmdCurrent), Aliases: []string{"/status"}, Group: "config"},
+		{Cmd: "/default", Description: i18nMgr.T(i18n.MsgCmdDefault), Group: "config"},
+		{Cmd: "/show", Description: i18nMgr.T(i18n.MsgCmdShow), Group: "config"},
+		{Cmd: "/edit", Description: i18nMgr.T(i18n.MsgCmdEdit), Group: "config"},
+		{Cmd: "/delete", Description: i18nMgr.T(i18n.MsgCmdDelete), Aliases: []string{"/rm"}, Group: "config"},
+		{Cmd: "/copy", Description: i18nMgr.T(i18n.MsgCmdCopy), Aliases: []string{"/cp"}, Group: "config"},
+		{Cmd: "/rename", Description: i18nMgr.T(i18n.MsgCmdRename), Aliases: []string{"/mv"}, Group: "config"},
+		{Cmd: "/test", Description: i18nMgr.T(i18n.MsgCmdTest), Group: "test"},
+		{Cmd: "/export", Description: i18nMgr.T(i18n.MsgCmdExport), Group: "io"},
+		{Cmd: "/import", Description: i18nMgr.T(i18n.MsgCmdImport), Group: "io"},
+		{Cmd: "/history", Description: i18nMgr.T(i18n.MsgCmdHistory), Group: "util"},
+		{Cmd: "/help", Description: i18nMgr.T(i18n.MsgCmdHelp), Aliases: []string{"/?", "/h"}, Group: "util"},
+		{Cmd: "/clear", Description: i18nMgr.T(i18n.MsgCmdClear), Aliases: []string{"/cls"}, Group: "util"},
+		{Cmd: "/run", Description: i18nMgr.T(i18n.MsgCmdRun), Group: "launch"},
+		{Cmd: "/setup", Description: i18nMgr.T(i18n.MsgCmdSetup), Group: "launch"},
+		{Cmd: "/exit", Description: i18nMgr.T(i18n.MsgCmdExit), Aliases: []string{"/quit", "/q"}, Group: "launch"},
 	}
 }
 
@@ -136,11 +139,9 @@ func (p *CommandPalette) Render() string {
 
 	var sections []string
 
-	// 标题
-	title := p.styles.PaletteTitle.Render("Commands")
+	title := p.styles.PaletteTitle.Render(p.i18n.T(i18n.MsgPaletteTitle))
 	sections = append(sections, title)
 
-	// 输入框
 	inputStyle := lipgloss.NewStyle().
 		Border(lipgloss.NormalBorder()).
 		BorderForeground(mutedColor).
@@ -149,12 +150,11 @@ func (p *CommandPalette) Render() string {
 	input := inputStyle.Render("> " + p.query)
 	sections = append(sections, input)
 
-	// 命令列表
 	items := p.filteredItems()
 	var listLines []string
 	for i, item := range items {
 		if i >= 10 {
-			break // 最多显示 10 条
+			break
 		}
 		if i == p.selected {
 			line := p.styles.PaletteActive.Render("● " + item.Cmd + "  " + item.Description)
@@ -168,8 +168,7 @@ func (p *CommandPalette) Render() string {
 		sections = append(sections, strings.Join(listLines, "\n"))
 	}
 
-	// 提示
-	hint := lipgloss.NewStyle().Foreground(mutedColor).Render("↑↓ 导航  enter 确认  esc 关闭")
+	hint := lipgloss.NewStyle().Foreground(mutedColor).Render(p.i18n.T(i18n.MsgSettingsHint))
 	sections = append(sections, hint)
 
 	return p.styles.Palette.Render(strings.Join(sections, "\n"))
@@ -182,6 +181,17 @@ func (p *CommandPalette) SelectedCommand() string {
 		return items[p.selected].Cmd
 	}
 	return ""
+}
+
+// SetI18n 设置 i18n 管理器
+func (p *CommandPalette) SetI18n(i18nMgr *i18n.Manager) {
+	p.i18n = i18nMgr
+	p.items = getDefaultCommands(i18nMgr)
+}
+
+// SetStyles 设置样式
+func (p *CommandPalette) SetStyles(styles Styles) {
+	p.styles = styles
 }
 
 // 键绑定（避免未使用警告）
