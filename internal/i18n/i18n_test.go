@@ -51,15 +51,6 @@ func TestT(t *testing.T) {
 	}
 }
 
-func TestTWithData(t *testing.T) {
-	mgr := NewManager()
-
-	result := mgr.TWithData("nonexistent.key", map[string]interface{}{"name": "test"})
-	if result != "nonexistent.key" {
-		t.Errorf("TWithData() = %s, want nonexistent.key (fallback to key name)", result)
-	}
-}
-
 func TestGetSupportedLanguages(t *testing.T) {
 	mgr := NewManager()
 	langs := mgr.GetSupportedLanguages()

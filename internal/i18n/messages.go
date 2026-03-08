@@ -27,18 +27,24 @@ const (
 )
 
 const (
-	MsgCmdList   = "cmd.list"
-	MsgCmdUse    = "cmd.use"
-	MsgCmdSetup  = "cmd.setup"
-	MsgCmdAdd    = "cmd.add"
-	MsgCmdRemove = "cmd.remove"
-	MsgCmdEdit   = "cmd.edit"
-	MsgCmdShow   = "cmd.show"
-	MsgCmdDelete = "cmd.delete"
-	MsgCmdConfig = "cmd.config"
-	MsgCmdHelp   = "cmd.help"
-	MsgCmdExit   = "cmd.exit"
-	MsgCmdClear  = "cmd.clear"
+	MsgCmdList     = "cmd.list"
+	MsgCmdUse      = "cmd.use"
+	MsgCmdSetup    = "cmd.setup"
+	MsgCmdEdit     = "cmd.edit"
+	MsgCmdShow     = "cmd.show"
+	MsgCmdDelete   = "cmd.delete"
+	MsgCmdHelp     = "cmd.help"
+	MsgCmdExit     = "cmd.exit"
+	MsgCmdClear    = "cmd.clear"
+	MsgCmdCopy     = "cmd.copy"
+	MsgCmdRename   = "cmd.rename"
+	MsgCmdTest     = "cmd.test"
+	MsgCmdExport   = "cmd.export"
+	MsgCmdImport   = "cmd.import"
+	MsgCmdRun      = "cmd.run"
+	MsgCmdHistory  = "cmd.history"
+	MsgCmdDefault  = "cmd.default"
+	MsgCmdCurrent  = "cmd.current"
 )
 
 const (
