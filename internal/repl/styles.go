@@ -1,7 +1,10 @@
 // internal/repl/styles.go
 package repl
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"github.com/charmbracelet/lipgloss"
+	"github.com/wujunwei/cc-start/internal/theme"
+)
 
 // 配色方案（参考 crush 深色主题）
 var (
@@ -105,6 +108,82 @@ func DefaultStyles() Styles {
 
 		PaletteActive: lipgloss.NewStyle().
 			Foreground(accentColor).
+			Bold(true).
+			Padding(0, 2),
+	}
+}
+
+// NewStylesFromTheme 从主题创建样式
+func NewStylesFromTheme(t *theme.Theme) Styles {
+	fg := lipgloss.Color(t.Colors.Foreground)
+	muted := lipgloss.Color(t.Colors.Muted)
+	accent := lipgloss.Color(t.Colors.Accent)
+	success := lipgloss.Color(t.Colors.Success)
+	errorCol := lipgloss.Color(t.Colors.Error)
+	warning := lipgloss.Color(t.Colors.Warning)
+	info := lipgloss.Color(t.Colors.Info)
+	primary := lipgloss.Color(t.Colors.Primary)
+	highlight := lipgloss.Color(t.Colors.Highlight)
+
+	return Styles{
+		App: lipgloss.NewStyle().
+			Padding(1, 2),
+
+		Prefix: lipgloss.NewStyle().
+			Foreground(accent).
+			Bold(true),
+
+		Input: lipgloss.NewStyle().
+			Foreground(fg),
+
+		Output: lipgloss.NewStyle().
+			Foreground(fg).
+			Padding(1, 0),
+
+		HelpBar: lipgloss.NewStyle().
+			Foreground(muted).
+			Padding(0, 1),
+
+		Success: lipgloss.NewStyle().
+			Foreground(success).
+			SetString("✓"),
+
+		Error: lipgloss.NewStyle().
+			Foreground(errorCol).
+			SetString("✗"),
+
+		Warning: lipgloss.NewStyle().
+			Foreground(warning).
+			SetString("⚠"),
+
+		Info: lipgloss.NewStyle().
+			Foreground(info).
+			SetString("●"),
+
+		Palette: lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(muted).
+			Padding(0, 1).
+			Width(50),
+
+		PaletteTitle: lipgloss.NewStyle().
+			Foreground(primary).
+			Bold(true).
+			Padding(0, 1),
+
+		PaletteInput: lipgloss.NewStyle().
+			Border(lipgloss.NormalBorder()).
+			BorderForeground(muted).
+			Padding(0, 1).
+			Margin(1, 0),
+
+		PaletteItem: lipgloss.NewStyle().
+			Foreground(fg).
+			Padding(0, 2),
+
+		PaletteActive: lipgloss.NewStyle().
+			Foreground(highlight).
+			Background(lipgloss.Color(t.Colors.PaletteActive)).
 			Bold(true).
 			Padding(0, 2),
 	}
