@@ -51,13 +51,13 @@ func (m Model) renderHelpBar() string {
 	var hints []string
 
 	if m.palette != nil && m.palette.IsVisible() {
-		hints = []string{"↑↓ 导航", "enter 确认", "esc 关闭"}
+		hints = []string{"up/down navigate", "enter confirm", "esc close"}
 	} else {
 		hints = []string{
-			"ctrl+p 命令",
-			"↑↓ 历史",
-			"enter 执行",
-			"ctrl+c 退出",
+			"ctrl+p commands",
+			"up/down history",
+			"enter execute",
+			"ctrl+c exit",
 		}
 	}
 

@@ -100,8 +100,9 @@ func NewModel(cfgPath string) (Model, error) {
 	}
 
 	ti := textinput.New()
-	ti.Placeholder = "输入命令..."
+	ti.Placeholder = "Enter command..."
 	ti.Focus()
+	ti.Prompt = ""
 
 	h := help.New()
 	hist := NewHistory()
