@@ -32,6 +32,7 @@ func (p *Profile) Validate() error {
 type Config struct {
 	Profiles []Profile `json:"profiles"`
 	Default  string    `json:"default,omitempty"`
+	Settings Settings  `json:"settings,omitempty"`
 }
 
 // GetProfile 获取指定配置，name 为空时返回默认配置
@@ -96,6 +97,16 @@ func (c *Config) SetDefault(name string) error {
 	return fmt.Errorf("profile '%s' not found", name)
 }
 
+// UpdateSetting 更新设置项
+func (c *Config) UpdateSetting(key, value string) {
+	switch key {
+	case "language":
+		c.Settings.Language = value
+	case "theme":
+		c.Settings.Theme = value
+	}
+}
+
 // Save 保存配置到文件
 func (c *Config) Save(path string) error {
 	// 确保目录存在
@@ -133,6 +144,14 @@ func LoadConfig(path string) (*Config, error) {
 
 	if cfg.Profiles == nil {
 		cfg.Profiles = []Profile{}
+	}
+
+	// 迁移：如果 settings 为空，设置默认值
+	if cfg.Settings.Language == "" {
+		cfg.Settings.Language = "zh"
+	}
+	if cfg.Settings.Theme == "" {
+		cfg.Settings.Theme = "default"
 	}
 
 	return &cfg, nil

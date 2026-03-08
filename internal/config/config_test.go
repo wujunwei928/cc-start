@@ -233,3 +233,66 @@ func TestGetProfileNoDefault(t *testing.T) {
 		t.Error("expected error when no default set")
 	}
 }
+
+func TestConfigWithSettings(t *testing.T) {
+	cfg := &Config{
+		Profiles: []Profile{
+			{Name: "test", Token: "xxx"},
+		},
+		Default: "test",
+		Settings: Settings{
+			Language: "en",
+			Theme:    "ocean",
+		},
+	}
+
+	if cfg.Settings.Language != "en" {
+		t.Errorf("Settings.Language = %s, want en", cfg.Settings.Language)
+	}
+
+	if cfg.Settings.Theme != "ocean" {
+		t.Errorf("Settings.Theme = %s, want ocean", cfg.Settings.Theme)
+	}
+}
+
+func TestLoadConfigWithEmptySettings(t *testing.T) {
+	// 创建临时配置文件（没有 settings 字段）
+	tmpDir := t.TempDir()
+	configPath := tmpDir + "/profiles.json"
+
+	data := `{
+		"profiles": [{"name": "test", "token": "xxx"}],
+		"default": "test"
+	}`
+	if err := os.WriteFile(configPath, []byte(data), 0600); err != nil {
+		t.Fatal(err)
+	}
+
+	cfg, err := LoadConfig(configPath)
+	if err != nil {
+		t.Fatalf("LoadConfig() error: %v", err)
+	}
+
+	// 验证默认值
+	if cfg.Settings.Language != "zh" {
+		t.Errorf("Settings.Language = %s, want zh (default)", cfg.Settings.Language)
+	}
+
+	if cfg.Settings.Theme != "default" {
+		t.Errorf("Settings.Theme = %s, want default", cfg.Settings.Theme)
+	}
+}
+
+func TestUpdateSetting(t *testing.T) {
+	cfg := &Config{}
+
+	cfg.UpdateSetting("language", "en")
+	if cfg.Settings.Language != "en" {
+		t.Errorf("UpdateSetting(language, en) failed")
+	}
+
+	cfg.UpdateSetting("theme", "ocean")
+	if cfg.Settings.Theme != "ocean" {
+		t.Errorf("UpdateSetting(theme, ocean) failed")
+	}
+}
