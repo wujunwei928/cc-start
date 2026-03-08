@@ -4,8 +4,6 @@ package repl
 import (
 	"fmt"
 	"strings"
-
-	"github.com/charmbracelet/lipgloss"
 )
 
 // View 渲染 UI
@@ -22,30 +20,30 @@ func (m Model) View() string {
 		sections = append(sections, outputContent)
 	}
 
-	// 输入区
-	prefix := m.Styles.Prefix.Render(m.getPromptPrefix())
-	inputLine := lipgloss.JoinHorizontal(lipgloss.Left, prefix, m.input.View())
-	sections = append(sections, inputLine)
-
 	// 设置面板（覆盖层）
 	if m.settings != nil && m.settings.IsVisible() {
 		settingsView := m.settings.Render()
 		sections = append(sections, "\n"+settingsView)
-		return lipgloss.JoinVertical(lipgloss.Left, sections...) + "\n"
+		return strings.Join(sections, "\n") + "\n"
 	}
 
 	// 命令面板（覆盖层）
 	if m.palette != nil && m.palette.IsVisible() {
 		paletteView := m.palette.Render()
 		sections = append(sections, "\n"+paletteView)
-		return lipgloss.JoinVertical(lipgloss.Left, sections...) + "\n"
+		return strings.Join(sections, "\n") + "\n"
 	}
+
+	// 输入区 - 直接拼接，不使用 lipgloss 组合
+	prefix := m.Styles.Prefix.Render(m.getPromptPrefix())
+	inputLine := prefix + m.input.View()
+	sections = append(sections, inputLine)
 
 	// 帮助栏
 	helpBar := m.renderHelpBar()
-	sections = append(sections, helpBar)
+	sections = append(sections, "", helpBar)
 
-	return lipgloss.JoinVertical(lipgloss.Left, sections...) + "\n"
+	return strings.Join(sections, "\n") + "\n"
 }
 
 // renderOutput 渲染输出区（限制高度）

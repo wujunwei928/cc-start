@@ -38,8 +38,6 @@ func New(cfgPath string) (*REPL, error) {
 
 // Run 启动 REPL（使用 Bubble Tea）
 func (r *REPL) Run() {
-	r.printWelcome()
-
 	model, err := NewModel(r.cfgPath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "加载配置失败: %v\n", err)
@@ -69,12 +67,4 @@ func (r *REPL) Run() {
 			os.Exit(1)
 		}
 	}
-}
-
-func (r *REPL) printWelcome() {
-	fmt.Println()
-	fmt.Println("CC-Start REPL v2.0")
-	fmt.Println("输入 '/' 打开命令面板，'/help' 查看帮助，'/exit' 退出。")
-	fmt.Println("按 ctrl+p 打开系统设置。")
-	fmt.Println()
 }

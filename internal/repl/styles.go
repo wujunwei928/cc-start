@@ -64,8 +64,7 @@ func DefaultStyles() Styles {
 			Foreground(textColor),
 
 		Output: lipgloss.NewStyle().
-			Foreground(textColor).
-			Padding(0, 0, 1, 0), // 只在底部添加间距
+			Foreground(textColor),
 
 		HelpBar: lipgloss.NewStyle().
 			Foreground(mutedColor).
@@ -146,8 +145,7 @@ func NewStylesFromTheme(t *theme.Theme) Styles {
 			Foreground(fg),
 
 		Output: lipgloss.NewStyle().
-			Foreground(fg).
-			Padding(0, 0, 1, 0), // 只在底部添加间距
+			Foreground(fg),
 
 		HelpBar: lipgloss.NewStyle().
 			Foreground(muted).

@@ -133,6 +133,11 @@ func NewModel(cfgPath string) (Model, error) {
 	hist := NewHistory()
 	out := NewOutputBuffer(100)
 
+	// 写入欢迎信息到输出缓冲区（在 TUI 内显示）
+	out.WriteInfo("CC-Start REPL v2.0")
+	out.Write("输入 '/' 打开命令面板，'/help' 查看帮助，'/exit' 退出。")
+	out.Write("按 ctrl+p 打开系统设置。")
+
 	return Model{
 		config:         cfg,
 		configPath:     cfgPath,
