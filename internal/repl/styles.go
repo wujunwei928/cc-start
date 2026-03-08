@@ -1,0 +1,111 @@
+// internal/repl/styles.go
+package repl
+
+import "github.com/charmbracelet/lipgloss"
+
+// 配色方案（参考 crush 深色主题）
+var (
+	// 背景色
+	bgColor      = lipgloss.Color("#1a1a2e")
+	surfaceColor = lipgloss.Color("#16213e")
+
+	// 文字色
+	textColor   = lipgloss.Color("#e0e0e0")
+	mutedColor  = lipgloss.Color("#6c7086")
+	accentColor = lipgloss.Color("#89b4fa")
+
+	// 状态色
+	successColor = lipgloss.Color("#a6e3a1")
+	errorColor   = lipgloss.Color("#f38ba8")
+	warningColor = lipgloss.Color("#fab387")
+	infoColor    = lipgloss.Color("#89dceb")
+)
+
+// Styles 包含所有 UI 样式
+type Styles struct {
+	// 主界面
+	App     lipgloss.Style
+	Prefix  lipgloss.Style
+	Input   lipgloss.Style
+	Output  lipgloss.Style
+	HelpBar lipgloss.Style
+
+	// 输出样式
+	Success lipgloss.Style
+	Error   lipgloss.Style
+	Warning lipgloss.Style
+	Info    lipgloss.Style
+
+	// 命令面板
+	Palette       lipgloss.Style
+	PaletteTitle  lipgloss.Style
+	PaletteInput  lipgloss.Style
+	PaletteList   lipgloss.Style
+	PaletteItem   lipgloss.Style
+	PaletteActive lipgloss.Style
+}
+
+// DefaultStyles 返回默认样式
+func DefaultStyles() Styles {
+	return Styles{
+		App: lipgloss.NewStyle().
+			Padding(1, 2),
+
+		Prefix: lipgloss.NewStyle().
+			Foreground(accentColor).
+			Bold(true),
+
+		Input: lipgloss.NewStyle().
+			Foreground(textColor),
+
+		Output: lipgloss.NewStyle().
+			Foreground(textColor).
+			Padding(1, 0),
+
+		HelpBar: lipgloss.NewStyle().
+			Foreground(mutedColor).
+			Padding(0, 1),
+
+		Success: lipgloss.NewStyle().
+			Foreground(successColor).
+			SetString("✓"),
+
+		Error: lipgloss.NewStyle().
+			Foreground(errorColor).
+			SetString("✗"),
+
+		Warning: lipgloss.NewStyle().
+			Foreground(warningColor).
+			SetString("⚠"),
+
+		Info: lipgloss.NewStyle().
+			Foreground(infoColor).
+			SetString("●"),
+
+		Palette: lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(mutedColor).
+			Padding(0, 1).
+			Width(50),
+
+		PaletteTitle: lipgloss.NewStyle().
+			Foreground(accentColor).
+			Bold(true).
+			Padding(0, 1),
+
+		PaletteInput: lipgloss.NewStyle().
+			Border(lipgloss.NormalBorder()).
+			BorderForeground(mutedColor).
+			Padding(0, 1).
+			Margin(1, 0),
+
+		PaletteItem: lipgloss.NewStyle().
+			Foreground(textColor).
+			Padding(0, 2),
+
+		PaletteActive: lipgloss.NewStyle().
+			Foreground(accentColor).
+			Bold(true).
+			Padding(0, 2),
+	}
+}
