@@ -193,6 +193,7 @@ func NewStylesFromTheme(t *theme.Theme) Styles {
 
 		PaletteItem: lipgloss.NewStyle().
 			Foreground(fg).
+			Background(lipgloss.Color(t.Colors.PaletteInactive)).
 			Padding(0, 2),
 
 		PaletteActive: lipgloss.NewStyle().
