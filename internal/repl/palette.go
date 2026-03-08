@@ -153,7 +153,7 @@ func (p *CommandPalette) Render() string {
 	items := p.filteredItems()
 	var listLines []string
 	for i, item := range items {
-		if i >= 10 {
+		if i >= 15 {
 			break
 		}
 		if i == p.selected {
@@ -167,6 +167,9 @@ func (p *CommandPalette) Render() string {
 	if len(listLines) > 0 {
 		sections = append(sections, strings.Join(listLines, "\n"))
 	}
+
+	// 添加空行间距
+	sections = append(sections, "")
 
 	hint := lipgloss.NewStyle().Foreground(mutedColor).Render(p.i18n.T(i18n.MsgSettingsHint))
 	sections = append(sections, hint)

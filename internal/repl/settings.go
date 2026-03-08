@@ -193,7 +193,7 @@ func (s *SettingsPanel) Render() string {
 	items := s.filteredItems()
 	var listLines []string
 	for i, item := range items {
-		if i >= 10 {
+		if i >= 15 {
 			break
 		}
 		valueStr := ""
@@ -211,6 +211,9 @@ func (s *SettingsPanel) Render() string {
 	if len(listLines) > 0 {
 		sections = append(sections, strings.Join(listLines, "\n"))
 	}
+
+	// 添加空行间距
+	sections = append(sections, "")
 
 	hint := lipgloss.NewStyle().Foreground(mutedColor).Render(s.i18n.T(i18n.MsgSettingsHint))
 	sections = append(sections, hint)
