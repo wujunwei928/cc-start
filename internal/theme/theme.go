@@ -47,3 +47,22 @@ func GetTheme(name string) (*Theme, error) {
 func GetAllThemes() []Theme {
 	return presets
 }
+
+// ApplyTheme 将主题颜色应用到样式映射
+func ApplyTheme(t *Theme) map[string]string {
+	return map[string]string{
+		"background":     t.Colors.Background,
+		"foreground":     t.Colors.Foreground,
+		"primary":        t.Colors.Primary,
+		"success":        t.Colors.Success,
+		"error":          t.Colors.Error,
+		"warning":        t.Colors.Warning,
+		"info":           t.Colors.Info,
+		"muted":          t.Colors.Muted,
+		"border":         t.Colors.Border,
+		"accent":         t.Colors.Accent,
+		"highlight":      t.Colors.Highlight,
+		"palette_bg":     t.Colors.PaletteBg,
+		"palette_active": t.Colors.PaletteActive,
+	}
+}

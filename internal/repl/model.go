@@ -7,6 +7,8 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/wujunwei/cc-start/internal/config"
+	"github.com/wujunwei/cc-start/internal/i18n"
+	"github.com/wujunwei/cc-start/internal/theme"
 )
 
 // Focus 当前焦点状态
@@ -75,36 +77,32 @@ type PendingLaunch struct {
 
 // Model REPL 主模型
 type Model struct {
-	// 配置
 	config     *config.Config
 	configPath string
 
-	// 当前状态
 	currentProfile string
 	focus          Focus
 	quitting       bool
 	keys           keyMap
 
-	// 组件
 	input    textinput.Model
 	output   *OutputBuffer
 	palette  *CommandPalette
 	settings *SettingsPanel
 	help     help.Model
 
-	// 历史记录
 	history *History
 	histIdx int
 
-	// 样式
 	styles Styles
 
-	// 窗口尺寸
 	width  int
 	height int
 
-	// 待执行的启动命令
 	PendingLaunch *PendingLaunch
+
+	i18n  *i18n.Manager
+	theme *theme.Theme
 }
 
 // NewModel 创建新的 REPL Model
@@ -114,8 +112,20 @@ func NewModel(cfgPath string) (Model, error) {
 		return Model{}, err
 	}
 
+	i18nMgr := i18n.NewManager()
+	if cfg.Settings.Language != "" {
+		i18nMgr.SetLanguage(cfg.Settings.Language)
+	}
+
+	currentTheme, err := theme.GetTheme(cfg.Settings.Theme)
+	if err != nil {
+		currentTheme, _ = theme.GetTheme("default")
+	}
+
+	styles := NewStylesFromTheme(currentTheme)
+
 	ti := textinput.New()
-	ti.Placeholder = "Enter command..."
+	ti.Placeholder = i18nMgr.T(i18n.MsgREPLInputPrompt)
 	ti.Focus()
 	ti.Prompt = ""
 
@@ -133,7 +143,9 @@ func NewModel(cfgPath string) (Model, error) {
 		output:         out,
 		history:        hist,
 		help:           h,
-		styles:         DefaultStyles(),
+		styles:         styles,
+		i18n:           i18nMgr,
+		theme:          currentTheme,
 	}, nil
 }
 
