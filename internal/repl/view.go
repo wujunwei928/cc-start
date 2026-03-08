@@ -18,11 +18,11 @@ func (m Model) View() string {
 
 	// 输入区
 	prefix := m.Styles.Prefix.Render(m.getPromptPrefix())
-	inputLine := lipgloss.JoinHorizontal(lipgloss.Left, prefix, m.Input)
+	inputLine := lipgloss.JoinHorizontal(lipgloss.Left, prefix, m.input.View())
+	sections = append(sections, inputLine)
 
 	outputContent := m.output.Render(m.Styles, m.width)
 	sections = append(sections, m.Styles.Output.Render(outputContent))
-	}
 
 	// 设置面板（覆盖层）
 	if m.settings != nil && m.settings.IsVisible() {

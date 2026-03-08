@@ -143,9 +143,9 @@ func NewModel(cfgPath string) (Model, error) {
 		output:         out,
 		history:        hist,
 		help:           h,
-		styles:         styles,
-		i18n:           i18nMgr,
-		theme:          currentTheme,
+		Styles:         styles,
+		I18n:           i18nMgr,
+		Theme:          currentTheme,
 	}, nil
 }
 

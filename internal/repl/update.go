@@ -41,7 +41,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case keyMatches(msg, m.keys.CtrlP):
 			if m.settings == nil {
-				m.settings = NewSettingsPanel(m.Styles, m.i18n)
+				m.settings = NewSettingsPanel(m.Styles, m.I18n)
 			}
 			m.settings.Toggle()
 			return m, nil
@@ -65,9 +65,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		default:
 			// 检测 "/" 字符输入 - 打开命令面板
-			if msg.String() == "/" && m.Input.Value() == "" {
+			if msg.String() == "/" && m.input.Value() == "" {
 				if m.palette == nil {
-					m.palette = NewCommandPalette(m.Styles, m.i18n)
+					m.palette = NewCommandPalette(m.Styles, m.I18n)
 				}
 				m.palette.Toggle()
 				return m, nil
@@ -213,7 +213,7 @@ func (m Model) handleSettingAction(action string) (tea.Model, tea.Cmd) {
 
 // applyLanguageChange 应用语言更改
 func (m *Model) applyLanguageChange(lang string) (tea.Model, tea.Cmd) {
-	if err := m.i18n.SetLanguage(lang); err != nil {
+	if err := m.I18n.SetLanguage(lang); err != nil {
 		m.output.WriteError("不支持的语言: " + lang)
 		return m, nil
 	}
@@ -224,12 +224,12 @@ func (m *Model) applyLanguageChange(lang string) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	m.input.Placeholder = m.i18n.T(i18n.MsgREPLInputPrompt)
+	m.input.Placeholder = m.I18n.T(i18n.MsgREPLInputPrompt)
 	if m.palette != nil {
-		m.palette.SetI18n(m.i18n)
+		m.palette.SetI18n(m.I18n)
 	}
 	if m.settings != nil {
-		m.settings.SetI18n(m.i18n)
+		m.settings.SetI18n(m.I18n)
 	}
 
 	m.output.WriteSuccess("语言已切换: " + lang)
