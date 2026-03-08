@@ -124,6 +124,13 @@ func (m Model) executeInput() (tea.Model, tea.Cmd) {
 }
 
 func (m Model) executeCommand(cmd string, args []string) (tea.Model, tea.Cmd) {
+	// 检查退出命令
+	switch cmd {
+	case "/exit", "/quit", "/q":
+		m.quitting = true
+		return m, tea.Quit
+	}
+
 	// 收集输出
 	output := m.collectCommandOutput(cmd, args)
 	m.output.Write(output)
@@ -147,8 +154,6 @@ func (m *Model) collectCommandOutput(cmd string, args []string) string {
 		buf.WriteString(m.formatHelp())
 	case "/clear", "/cls":
 		m.output.Clear()
-	case "/exit", "/quit", "/q":
-		m.quitting = true
 	default:
 		// 其他命令暂时返回提示
 		buf.WriteString(fmt.Sprintf("命令 %s 暂未实现\n", cmd))
