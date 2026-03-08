@@ -103,3 +103,59 @@ func TestZhTranslations(t *testing.T) {
 		})
 	}
 }
+
+func TestEnTranslations(t *testing.T) {
+	m := NewManager()
+	m.SetLanguage(LangEN)
+
+	tests := []struct {
+		key  string
+		want string
+	}{
+		{MsgCommonSuccess, "Success"},
+		{MsgCommonError, "Error"},
+		{MsgSettingsTitle, "⚙ Settings"},
+		{MsgSettingsLanguage, "Language"},
+		{MsgSettingsTheme, "Theme"},
+		{MsgCmdList, "List all profiles"},
+		{MsgREPLWelcome, "Welcome to CC-Start"},
+		{MsgErrProfileNotFound, "Profile '%s' not found"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.key, func(t *testing.T) {
+			got := m.T(tt.key)
+			if got != tt.want {
+				t.Errorf("T(%s) = %s, want %s", tt.key, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestJaTranslations(t *testing.T) {
+	m := NewManager()
+	m.SetLanguage(LangJA)
+
+	tests := []struct {
+		key  string
+		want string
+	}{
+		{MsgCommonSuccess, "成功"},
+		{MsgCommonError, "エラー"},
+		{MsgSettingsTitle, "⚙ 設定"},
+		{MsgSettingsLanguage, "言語"},
+		{MsgSettingsTheme, "テーマ"},
+		{MsgCmdList, "すべてのプロファイルを一覧表示"},
+		{MsgREPLWelcome, "CC-Startへようこそ"},
+		{MsgErrProfileNotFound, "プロファイル '%s' が見つかりません"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.key, func(t *testing.T) {
+			got := m.T(tt.key)
+			if got != tt.want {
+				t.Errorf("T(%s) = %s, want %s", tt.key, got, tt.want)
+			}
+		})
+	}
+}
