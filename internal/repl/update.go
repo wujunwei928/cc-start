@@ -135,14 +135,6 @@ func (m *Model) collectCommandOutput(cmd string, args []string) string {
 	// 使用 strings.Builder 收集输出
 	var buf strings.Builder
 
-	// 保存当前配置到 REPL 兼容结构
-	repl := &REPL{
-		cfg:         m.config,
-		cfgPath:     m.configPath,
-		currentName: m.currentProfile,
-		history:     m.history,
-	}
-
 	// 执行命令（输出会被打印到 stdout）
 	// 这里我们需要捕获输出
 	// 暂时使用简化的方式
@@ -158,8 +150,8 @@ func (m *Model) collectCommandOutput(cmd string, args []string) string {
 	case "/exit", "/quit", "/q":
 		m.quitting = true
 	default:
-		// 调用原有命令逻辑
-		repl.ExecuteCommand(cmd, args)
+		// 其他命令暂时返回提示
+		buf.WriteString(fmt.Sprintf("命令 %s 暂未实现\n", cmd))
 	}
 
 	return buf.String()

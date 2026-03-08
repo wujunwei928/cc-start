@@ -3,9 +3,9 @@ package repl
 
 import (
 	"fmt"
-	"strings"
+	"os"
 
-	"github.com/c-bata/go-prompt"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/wujunwei/cc-start/internal/config"
 )
 
@@ -13,7 +13,6 @@ import (
 type REPL struct {
 	cfg         *config.Config
 	cfgPath     string
-	completer   *Completer
 	history     *History
 	currentName string
 }
@@ -33,88 +32,39 @@ func New(cfgPath string) (*REPL, error) {
 
 	repl.currentName = cfg.Default
 
-	repl.completer = NewCompleter(func() []string {
-		return repl.getProfileNames()
-	})
-
 	return repl, nil
 }
 
-// Run 启动 REPL
+// Run 启动 REPL（使用 Bubble Tea）
 func (r *REPL) Run() {
 	r.printWelcome()
 
-	if len(r.cfg.Profiles) == 0 {
-		PrintWarning("尚未配置任何供应商")
-		fmt.Println("运行 'setup' 创建配置，或 'help' 查看帮助")
-		fmt.Println()
+	model, err := NewModel(r.cfgPath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "加载配置失败: %v\n", err)
+		os.Exit(1)
 	}
 
-	p := prompt.New(
-		r.executor,
-		r.completer.Complete,
-		prompt.OptionTitle("cc-start"),
-		prompt.OptionPrefix(r.getPromptPrefix()),
-		prompt.OptionLivePrefix(r.changeLivePrefix),
-		prompt.OptionHistory(r.history.GetCommands()),
-		prompt.OptionAddKeyBind(prompt.KeyBind{
-			Key: prompt.ControlL,
-			Fn: func(buf *prompt.Buffer) {
-				fmt.Print("\033[2J\033[H")
-			},
-		}),
+	// 同步状态
+	model.currentProfile = r.currentName
+	model.config = r.cfg
+	model.history = r.history
+
+	p := tea.NewProgram(
+		model,
+		tea.WithAltScreen(),
 	)
 
-	p.Run()
+	if _, err := p.Run(); err != nil {
+		fmt.Fprintf(os.Stderr, "启动失败: %v\n", err)
+		os.Exit(1)
+	}
 }
 
 func (r *REPL) printWelcome() {
 	fmt.Println()
-	fmt.Println("CC-Start REPL v1.0")
+	fmt.Println("CC-Start REPL v2.0")
 	fmt.Println("输入 '/help' 查看可用命令，'/exit' 退出。")
+	fmt.Println("按 ctrl+p 打开命令面板。")
 	fmt.Println()
-}
-
-func (r *REPL) getPromptPrefix() string {
-	if r.currentName != "" {
-		return fmt.Sprintf("cc-start [%s]> ", r.currentName)
-	}
-	return "cc-start> "
-}
-
-func (r *REPL) changeLivePrefix() (string, bool) {
-	return r.getPromptPrefix(), true
-}
-
-func (r *REPL) executor(in string) {
-	in = strings.TrimSpace(in)
-	if in == "" {
-		return
-	}
-
-	r.history.Add(in)
-
-	parts := strings.Fields(in)
-	cmd := parts[0]
-	args := parts[1:]
-
-	// 自动为不以 / 开头的命令添加前缀（兼容性处理）
-	if !strings.HasPrefix(cmd, "/") {
-		cmd = "/" + cmd
-	}
-
-	r.executeCommand(cmd, args)
-}
-
-func (r *REPL) getProfileNames() []string {
-	names := make([]string, 0, len(r.cfg.Profiles))
-	for _, p := range r.cfg.Profiles {
-		names = append(names, p.Name)
-	}
-	return names
-}
-
-// executeCommand 执行命令
-func (r *REPL) executeCommand(cmd string, args []string) {
-	r.ExecuteCommand(cmd, args)
 }
