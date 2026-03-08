@@ -21,6 +21,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		// 设置面板激活时的处理
+		if m.settings != nil && m.settings.IsVisible() {
+			return m.updateSettings(msg)
+		}
+
 		// 命令面板激活时的处理
 		if m.palette != nil && m.palette.IsVisible() {
 			return m.updatePalette(msg)
@@ -33,10 +38,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 
 		case keyMatches(msg, m.keys.CtrlP):
-			if m.palette == nil {
-				m.palette = NewCommandPalette(m.styles)
+			// Ctrl+P 打开系统设置面板
+			if m.settings == nil {
+				m.settings = NewSettingsPanel(m.styles)
 			}
-			m.palette.Toggle()
+			m.settings.Toggle()
 			return m, nil
 
 		case keyMatches(msg, m.keys.CtrlL):
@@ -52,7 +58,20 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case keyMatches(msg, m.keys.Down):
 			return m.navigateHistory(1)
 
+		case keyMatches(msg, m.keys.Esc):
+			// 关闭面板（如果有打开的话）
+			return m, nil
+
 		default:
+			// 检测 "/" 字符输入 - 打开命令面板
+			if msg.String() == "/" && m.input.Value() == "" {
+				if m.palette == nil {
+					m.palette = NewCommandPalette(m.styles)
+				}
+				m.palette.Toggle()
+				return m, nil
+			}
+
 			// 更新输入框
 			var cmd tea.Cmd
 			m.input, cmd = m.input.Update(msg)
@@ -65,6 +84,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.help.Width = msg.Width
 		if m.palette != nil {
 			m.palette.SetWidth(msg.Width)
+		}
+		if m.settings != nil {
+			m.settings.SetWidth(msg.Width)
 		}
 		return m, nil
 
@@ -123,6 +145,45 @@ func (m Model) updatePalette(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 	}
+}
+
+func (m Model) updateSettings(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch msg.String() {
+	case "enter":
+		action := m.settings.SelectedAction()
+		m.settings.Toggle()
+		if action != "" {
+			return m.handleSettingAction(action)
+		}
+		return m, nil
+	case "esc":
+		m.settings.Toggle()
+		return m, nil
+	case "up", "down", "backspace":
+		m.settings.HandleKey(msg.String())
+		return m, nil
+	default:
+		// 字符输入
+		if len(msg.Runes) > 0 {
+			m.settings.HandleKey(string(msg.Runes))
+		}
+		return m, nil
+	}
+}
+
+// handleSettingAction 处理设置动作
+func (m Model) handleSettingAction(action string) (tea.Model, tea.Cmd) {
+	switch action {
+	case "setting:lang":
+		m.output.Write("● 语言设置功能开发中...\n  当前语言: 中文\n  后续将支持更多语言选项")
+	case "setting:theme":
+		m.output.Write("● 主题设置功能开发中...\n  当前主题: 默认\n  后续将支持更多主题选项")
+	case "setting:editor":
+		m.output.Write("● 编辑器设置功能开发中...\n  当前编辑器: 系统默认\n  后续将支持自定义编辑器配置")
+	default:
+		m.output.Write("● 未知设置项: " + action)
+	}
+	return m, nil
 }
 
 func (m Model) executeInput() (tea.Model, tea.Cmd) {

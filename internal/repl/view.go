@@ -27,10 +27,18 @@ func (m Model) View() string {
 		sections = append(sections, m.styles.Output.Render(outputContent))
 	}
 
+	// 设置面板（覆盖层）
+	if m.settings != nil && m.settings.IsVisible() {
+		settingsView := m.settings.Render()
+		sections = append(sections, "\n"+settingsView)
+		return lipgloss.JoinVertical(lipgloss.Left, sections...) + "\n"
+	}
+
 	// 命令面板（覆盖层）
 	if m.palette != nil && m.palette.IsVisible() {
 		paletteView := m.palette.Render()
 		sections = append(sections, "\n"+paletteView)
+		return lipgloss.JoinVertical(lipgloss.Left, sections...) + "\n"
 	}
 
 	// 帮助栏
@@ -50,11 +58,14 @@ func (m Model) getPromptPrefix() string {
 func (m Model) renderHelpBar() string {
 	var hints []string
 
-	if m.palette != nil && m.palette.IsVisible() {
+	if m.settings != nil && m.settings.IsVisible() {
+		hints = []string{"up/down navigate", "enter confirm", "esc close"}
+	} else if m.palette != nil && m.palette.IsVisible() {
 		hints = []string{"up/down navigate", "enter confirm", "esc close"}
 	} else {
 		hints = []string{
-			"ctrl+p commands",
+			"/ commands",
+			"ctrl+p settings",
 			"up/down history",
 			"enter execute",
 			"ctrl+c exit",

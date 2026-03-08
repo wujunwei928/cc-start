@@ -26,6 +26,7 @@ type keyMap struct {
 	CtrlC key.Binding
 	CtrlL key.Binding
 	Esc   key.Binding
+	Space key.Binding
 }
 
 // defaultKeyMap 默认快捷键
@@ -45,7 +46,7 @@ func defaultKeyMap() keyMap {
 		),
 		CtrlP: key.NewBinding(
 			key.WithKeys("ctrl+p"),
-			key.WithHelp("ctrl+p", "命令面板"),
+			key.WithHelp("ctrl+p", "系统设置"),
 		),
 		CtrlC: key.NewBinding(
 			key.WithKeys("ctrl+c"),
@@ -58,6 +59,10 @@ func defaultKeyMap() keyMap {
 		Esc: key.NewBinding(
 			key.WithKeys("esc"),
 			key.WithHelp("esc", "关闭面板"),
+		),
+		Space: key.NewBinding(
+			key.WithKeys(" "),
+			key.WithHelp("space", "输入"),
 		),
 	}
 }
@@ -81,10 +86,11 @@ type Model struct {
 	keys           keyMap
 
 	// 组件
-	input   textinput.Model
-	output  *OutputBuffer
-	palette *CommandPalette
-	help    help.Model
+	input    textinput.Model
+	output   *OutputBuffer
+	palette  *CommandPalette
+	settings *SettingsPanel
+	help     help.Model
 
 	// 历史记录
 	history *History

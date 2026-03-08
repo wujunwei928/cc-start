@@ -74,7 +74,7 @@ func (r *REPL) Run() {
 func (r *REPL) printWelcome() {
 	fmt.Println()
 	fmt.Println("CC-Start REPL v2.0")
-	fmt.Println("输入 '/help' 查看可用命令，'/exit' 退出。")
-	fmt.Println("按 ctrl+p 打开命令面板。")
+	fmt.Println("输入 '/' 打开命令面板，'/help' 查看帮助，'/exit' 退出。")
+	fmt.Println("按 ctrl+p 打开系统设置。")
 	fmt.Println()
 }
