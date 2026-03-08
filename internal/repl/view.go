@@ -16,13 +16,16 @@ func (m Model) View() string {
 
 	var sections []string
 
+	// 输出区（限制高度，确保输入行始终可见）
+	outputContent := m.renderOutput()
+	if outputContent != "" {
+		sections = append(sections, outputContent)
+	}
+
 	// 输入区
 	prefix := m.Styles.Prefix.Render(m.getPromptPrefix())
 	inputLine := lipgloss.JoinHorizontal(lipgloss.Left, prefix, m.input.View())
 	sections = append(sections, inputLine)
-
-	outputContent := m.output.Render(m.Styles, m.width)
-	sections = append(sections, m.Styles.Output.Render(outputContent))
 
 	// 设置面板（覆盖层）
 	if m.settings != nil && m.settings.IsVisible() {
@@ -43,6 +46,41 @@ func (m Model) View() string {
 	sections = append(sections, helpBar)
 
 	return lipgloss.JoinVertical(lipgloss.Left, sections...) + "\n"
+}
+
+// renderOutput 渲染输出区（限制高度）
+func (m Model) renderOutput() string {
+	outputContent := m.output.Render(m.Styles, m.width)
+	if outputContent == "" {
+		return ""
+	}
+
+	// 计算可用高度（保留空间给输入行和帮助栏）
+	availableHeight := m.height - 3 // 输入行(1) + 空行(1) + 帮助栏(1)
+	if availableHeight < 5 {
+		availableHeight = 5 // 最小高度
+	}
+
+	// 按行分割
+	lines := strings.Split(outputContent, "\n")
+
+	// 移除末尾的空行（由strings.Split产生的）
+	for len(lines) > 0 && lines[len(lines)-1] == "" {
+		lines = lines[:len(lines)-1]
+	}
+
+	// 只显示最近的 N 行
+	if len(lines) > availableHeight {
+		lines = lines[len(lines)-availableHeight:]
+	}
+
+	// 重新组合
+	if len(lines) == 0 {
+		return ""
+	}
+
+	outputContent = strings.Join(lines, "\n") + "\n"
+	return m.Styles.Output.Render(outputContent)
 }
 
 func (m Model) getPromptPrefix() string {

@@ -34,10 +34,12 @@ type Styles struct {
 	HelpBar lipgloss.Style
 
 	// 输出样式
-	Success lipgloss.Style
-	Error   lipgloss.Style
-	Warning lipgloss.Style
-	Info    lipgloss.Style
+	Success   lipgloss.Style
+	Error     lipgloss.Style
+	Warning   lipgloss.Style
+	Info      lipgloss.Style
+	Command   lipgloss.Style
+	Separator lipgloss.Style
 
 	// 命令面板
 	Palette       lipgloss.Style
@@ -63,7 +65,7 @@ func DefaultStyles() Styles {
 
 		Output: lipgloss.NewStyle().
 			Foreground(textColor).
-			Padding(1, 0),
+			Padding(0, 0, 1, 0), // 只在底部添加间距
 
 		HelpBar: lipgloss.NewStyle().
 			Foreground(mutedColor).
@@ -84,6 +86,13 @@ func DefaultStyles() Styles {
 		Info: lipgloss.NewStyle().
 			Foreground(infoColor).
 			SetString("●"),
+
+		Command: lipgloss.NewStyle().
+			Foreground(mutedColor).
+			Bold(true),
+
+		Separator: lipgloss.NewStyle().
+			Foreground(mutedColor),
 
 		Palette: lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
@@ -138,7 +147,7 @@ func NewStylesFromTheme(t *theme.Theme) Styles {
 
 		Output: lipgloss.NewStyle().
 			Foreground(fg).
-			Padding(1, 0),
+			Padding(0, 0, 1, 0), // 只在底部添加间距
 
 		HelpBar: lipgloss.NewStyle().
 			Foreground(muted).
@@ -159,6 +168,13 @@ func NewStylesFromTheme(t *theme.Theme) Styles {
 		Info: lipgloss.NewStyle().
 			Foreground(info).
 			SetString("●"),
+
+		Command: lipgloss.NewStyle().
+			Foreground(muted).
+			Bold(true),
+
+		Separator: lipgloss.NewStyle().
+			Foreground(muted),
 
 		Palette: lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).

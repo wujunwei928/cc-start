@@ -85,21 +85,45 @@ func (b *OutputBuffer) Lines() []OutputLine {
 
 // Render 渲染输出
 func (b *OutputBuffer) Render(styles Styles, width int) string {
+	if len(b.lines) == 0 {
+		return ""
+	}
+
 	var sb strings.Builder
-	for _, line := range b.lines {
+
+	for i, line := range b.lines {
 		var styled string
 		switch line.Type {
 		case OutputSuccess:
-			styled = styles.Success.Render() + " " + line.Content
+			// 成功消息：绿色 ✓ 前缀
+			styled = styles.Success.Render("✓") + " " + line.Content
 		case OutputError:
-			styled = styles.Error.Render() + " " + line.Content
+			// 错误消息：红色 ✗ 前缀
+			styled = styles.Error.Render("✗") + " " + line.Content
 		case OutputWarning:
-			styled = styles.Warning.Render() + " " + line.Content
+			// 警告消息：黄色 ⚠ 前缀
+			styled = styles.Warning.Render("⚠") + " " + line.Content
 		case OutputInfo:
-			styled = styles.Info.Render() + " " + line.Content
+			// 信息消息：蓝色 ● 前缀或原始内容
+			if strings.HasPrefix(line.Content, "$ ") {
+				// 命令行：原始内容
+				styled = styles.Command.Render(line.Content)
+			} else if strings.HasPrefix(line.Content, "───") {
+				// 分隔线：灰色
+				styled = styles.Separator.Render(line.Content)
+			} else {
+				// 其他信息：蓝色 ● 前缀
+				styled = styles.Info.Render("●") + " " + line.Content
+			}
 		default:
 			styled = line.Content
 		}
+
+		// 在命令行前添加空行
+		if i > 0 && strings.HasPrefix(line.Content, "$ ") {
+			sb.WriteString("\n")
+		}
+
 		sb.WriteString(styled + "\n")
 	}
 	return sb.String()

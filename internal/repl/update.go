@@ -307,7 +307,19 @@ func (m Model) executeCommand(cmd string, args []string) (tea.Model, tea.Cmd) {
 
 	// 收集输出
 	output := m.collectCommandOutput(cmd, args)
-	m.output.Write(output)
+
+	// 只在有输出时才添加装饰
+	if output != "" {
+		// 显示执行的命令
+		cmdLine := cmd
+		if len(args) > 0 {
+			cmdLine = cmd + " " + strings.Join(args, " ")
+		}
+		m.output.WriteInfo("$ " + cmdLine)
+
+		// 写入输出
+		m.output.Write(output)
+	}
 	return m, nil
 }
 
@@ -344,7 +356,7 @@ func (m *Model) collectCommandOutput(cmd string, args []string) string {
 		return m.formatHelp()
 	case "/clear", "/cls":
 		m.output.Clear()
-		return ""
+		return "✓ 屏幕已清空"
 	default:
 		return fmt.Sprintf("未知命令: %s\n输入 '/help' 查看可用命令", cmd)
 	}
