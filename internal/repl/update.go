@@ -154,10 +154,10 @@ func (m Model) updateSettings(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		action := m.settings.SelectedAction()
 		if action != "" {
 			if m.settings.GetMode() != SettingsModeMain {
-				result := m.handleSettingAction(action)
+				result, cmd := m.handleSettingAction(action)
 				m.settings.BackToMain()
 				m.settings.Toggle()
-				return result
+				return result, cmd
 			}
 			m.settings.Toggle()
 			return m.handleSettingAction(action)
