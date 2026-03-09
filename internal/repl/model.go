@@ -75,6 +75,13 @@ type PendingLaunch struct {
 	Args    []string
 }
 
+// PendingSetup 待执行的设置向导
+type PendingSetup struct {
+	IsEdit   bool
+	Profile  *config.Profile // 编辑模式时的配置
+	EditName string          // 编辑模式时的原始名称
+}
+
 // Model REPL 主模型
 type Model struct {
 	config     *config.Config
@@ -100,6 +107,7 @@ type Model struct {
 	height int
 
 	PendingLaunch *PendingLaunch
+	PendingSetup  *PendingSetup
 
 	I18n  *i18n.Manager
 	Theme *theme.Theme

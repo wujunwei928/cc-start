@@ -14,7 +14,6 @@ import (
 	"github.com/wujunwei928/cc-start/internal/config"
 	"github.com/wujunwei928/cc-start/internal/i18n"
 	"github.com/wujunwei928/cc-start/internal/theme"
-	"github.com/wujunwei928/cc-start/internal/tui/setup"
 )
 
 // Update 处理消息更新
@@ -695,22 +694,11 @@ func (m *Model) cmdImport(args []string) string {
 
 // runSetup 运行配置向导
 func (m Model) runSetup(args []string) (tea.Model, tea.Cmd) {
-	return m, func() tea.Msg {
-		// 退出当前 TUI，启动 setup
-		tea.Quit()
-		setupModel := setup.InitialModel()
-		p := tea.NewProgram(setupModel, tea.WithAltScreen())
-		result, err := p.Run()
-		if err != nil {
-			return ConfigReloadMsg{}
-		}
-
-		profileSaved := ""
-		if final, ok := result.(setup.Model); ok && final.Done() {
-			profileSaved = final.GetName()
-		}
-		return ConfigReloadMsg{ProfileSaved: profileSaved}
+	m.PendingSetup = &PendingSetup{
+		IsEdit: false,
 	}
+	m.quitting = true
+	return m, tea.Quit
 }
 
 // runEdit 编辑配置
@@ -733,21 +721,13 @@ func (m Model) runEdit(args []string) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	return m, func() tea.Msg {
-		tea.Quit()
-		setupModel := setup.InitialModelWithProfile(*profile)
-		p := tea.NewProgram(setupModel, tea.WithAltScreen())
-		result, err := p.Run()
-		if err != nil {
-			return ConfigReloadMsg{}
-		}
-
-		profileSaved := ""
-		if final, ok := result.(setup.Model); ok && final.Done() {
-			profileSaved = final.GetName()
-		}
-		return ConfigReloadMsg{ProfileSaved: profileSaved}
+	m.PendingSetup = &PendingSetup{
+		IsEdit:   true,
+		Profile:  profile,
+		EditName: name,
 	}
+	m.quitting = true
+	return m, tea.Quit
 }
 
 // runLaunch 启动 Claude Code
