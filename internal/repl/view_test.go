@@ -166,6 +166,63 @@ func TestViewRenderAfterCommand(t *testing.T) {
 	}
 }
 
+// TestAutocompleteInView 测试自动补全在视图中的渲染
+func TestAutocompleteInView(t *testing.T) {
+	model, err := NewModel("")
+	if err != nil {
+		t.Fatalf("创建模型失败: %v", err)
+	}
+
+	model.currentProfile = "test"
+	model.width = 80
+
+	// 初始状态不应该有自动补全
+	view := model.View()
+	if strings.Contains(view, "● /") {
+		t.Error("初始状态不应该显示自动补全")
+	}
+
+	// 触发自动补全
+	model.input.SetValue("/")
+	if model.autocomplete == nil {
+		model.autocomplete = NewAutocomplete(model.Styles, model.I18n)
+	}
+	model.autocomplete.Show("/")
+
+	view = model.View()
+	if !strings.Contains(view, "/list") && !strings.Contains(view, "/use") {
+		t.Error("显示自动补全时应该包含命令")
+	}
+}
+
+// TestAutocompleteHelpBarDynamic 测试自动补全时帮助栏的动态提示
+func TestAutocompleteHelpBarDynamic(t *testing.T) {
+	model, err := NewModel("")
+	if err != nil {
+		t.Fatalf("创建模型失败: %v", err)
+	}
+
+	model.currentProfile = "test"
+	model.width = 80
+
+	// 初始帮助栏
+	helpBar := model.renderHelpBar()
+	if !strings.Contains(helpBar, "/ commands") {
+		t.Error("初始帮助栏应该包含 '/ commands'")
+	}
+
+	// 显示自动补全时的帮助栏
+	if model.autocomplete == nil {
+		model.autocomplete = NewAutocomplete(model.Styles, model.I18n)
+	}
+	model.autocomplete.Show("/")
+
+	helpBar = model.renderHelpBar()
+	if !strings.Contains(helpBar, "tab complete") && !strings.Contains(helpBar, "tab 补全") {
+		t.Errorf("自动补全显示时帮助栏应该包含 'tab complete' 或 'tab 补全'，实际是: %s", helpBar)
+	}
+}
+
 // TestMultipleCommandOutputSpacing 测试多个命令输出之间应该有空行分隔
 func TestMultipleCommandOutputSpacing(t *testing.T) {
 	model, err := NewModel("")

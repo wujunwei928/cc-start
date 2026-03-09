@@ -39,6 +39,14 @@ func (m Model) View() string {
 	inputLine := prefix + m.input.View()
 	sections = append(sections, inputLine)
 
+	// 自动补全列表（在输入框下方）
+	if m.autocomplete != nil && m.autocomplete.IsVisible() {
+		acView := m.autocomplete.Render(m.width)
+		if acView != "" {
+			sections = append(sections, acView)
+		}
+	}
+
 	// 帮助栏
 	helpBar := m.renderHelpBar()
 	sections = append(sections, "", helpBar)
@@ -95,6 +103,8 @@ func (m Model) renderHelpBar() string {
 		hints = []string{"up/down navigate", "enter confirm", "esc close"}
 	} else if m.palette != nil && m.palette.IsVisible() {
 		hints = []string{"up/down navigate", "enter confirm", "esc close"}
+	} else if m.autocomplete != nil && m.autocomplete.IsVisible() {
+		hints = []string{"↑↓ navigate", "tab complete", "esc close", "enter execute"}
 	} else {
 		hints = []string{
 			"/ commands",
