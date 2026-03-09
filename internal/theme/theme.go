@@ -11,11 +11,11 @@ type ColorScheme struct {
 	Foreground string
 	Muted      string
 
-	Primary  string
-	Success  string
-	Error    string
-	Warning  string
-	Info     string
+	Primary string
+	Success string
+	Error   string
+	Warning string
+	Info    string
 
 	Border    string
 	Accent    string

@@ -84,9 +84,9 @@ func (m Model) renderOutput() string {
 
 func (m Model) getPromptPrefix() string {
 	if m.currentProfile != "" {
-		return fmt.Sprintf("cc-start [%s]>", m.currentProfile)
+		return fmt.Sprintf("cc-start [%s]> ", m.currentProfile)
 	}
-	return "cc-start>"
+	return "cc-start> "
 }
 
 func (m Model) renderHelpBar() string {

@@ -32,7 +32,7 @@ func TestNewManager(t *testing.T) {
 	if m == nil {
 		t.Fatal("NewManager() returned nil")
 	}
-	
+
 	if m.currentLang != "zh" {
 		t.Errorf("default language = %s, want zh", m.currentLang)
 	}
@@ -40,7 +40,7 @@ func TestNewManager(t *testing.T) {
 
 func TestSetLanguage(t *testing.T) {
 	m := NewManager()
-	
+
 	tests := []struct {
 		name    string
 		lang    string
@@ -51,7 +51,7 @@ func TestSetLanguage(t *testing.T) {
 		{"valid ja", "ja", false},
 		{"invalid", "fr", true},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := m.SetLanguage(tt.lang)
@@ -64,13 +64,13 @@ func TestSetLanguage(t *testing.T) {
 
 func TestT(t *testing.T) {
 	m := NewManager()
-	
+
 	// 测试翻译键
 	text := m.T("test.key")
 	if text == "" {
 		t.Error("T() returned empty string")
 	}
-	
+
 	// 测试不存在的键 - 应该返回键名
 	missingKey := m.T("nonexistent.key")
 	if missingKey != "nonexistent.key" {
@@ -81,11 +81,11 @@ func TestT(t *testing.T) {
 func TestGetSupportedLanguages(t *testing.T) {
 	m := NewManager()
 	langs := m.GetSupportedLanguages()
-	
+
 	if len(langs) == 0 {
 		t.Fatal("GetSupportedLanguages() returned empty list")
 	}
-	
+
 	expected := []string{"zh", "en", "ja"}
 	for _, exp := range expected {
 		found := false
@@ -138,10 +138,10 @@ func NewManager() *Manager {
 		currentLang:  LangZH,
 		translations: make(map[string]map[string]string),
 	}
-	
+
 	// 加载翻译
 	m.loadTranslations()
-	
+
 	return m
 }
 
@@ -162,14 +162,14 @@ func (m *Manager) T(key string) string {
 			return text
 		}
 	}
-	
+
 	// 2. 回退到英文
 	if trans, ok := m.translations[LangEN]; ok {
 		if text, ok := trans[key]; ok {
 			return text
 		}
 	}
-	
+
 	// 3. 返回键名
 	return key
 }
@@ -202,22 +202,22 @@ const (
 	MsgCommonError   = "common.error"
 	MsgCommonInfo    = "common.info"
 	MsgCommonWarning = "common.warning"
-	
+
 	// 设置面板
 	MsgSettingsTitle     = "settings.title"
 	MsgSettingsLanguage  = "settings.language"
 	MsgSettingsTheme     = "settings.theme"
 	MsgSettingsHint      = "settings.hint"
-	
+
 	// 命令面板
 	MsgPaletteTitle      = "palette.title"
 	MsgPaletteSearchHint = "palette.search_hint"
-	
+
 	// REPL 界面
 	MsgREPLInputPrompt = "repl.input_prompt"
 	MsgREPLWelcome     = "repl.welcome"
 	MsgREPLHint        = "repl.hint"
-	
+
 	// 命令描述
 	MsgCmdList   = "cmd.list"
 	MsgCmdUse    = "cmd.use"
@@ -237,14 +237,14 @@ const (
 	MsgCmdDefault = "cmd.default"
 	MsgCmdShow   = "cmd.show"
 	MsgCmdCurrent = "cmd.current"
-	
+
 	// 错误消息
 	MsgErrConfigLoad      = "error.config_load"
 	MsgErrConfigSave      = "error.config_save"
 	MsgErrInvalidLanguage = "error.invalid_language"
 	MsgErrInvalidTheme    = "error.invalid_theme"
 	MsgErrProfileNotFound = "error.profile_not_found"
-	
+
 	// 测试键（仅用于测试）
 	"test.key": "test.key",
 )
@@ -280,7 +280,7 @@ git commit -m "feat(i18n): 添加 i18n 基础结构和接口"
 func TestZhTranslations(t *testing.T) {
 	m := NewManager()
 	m.SetLanguage(LangZH)
-	
+
 	tests := []struct {
 		key  string
 		want string
@@ -292,7 +292,7 @@ func TestZhTranslations(t *testing.T) {
 		{MsgSettingsTheme, "主题 / Theme"},
 		{MsgCmdList, "列出所有配置"},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.key, func(t *testing.T) {
 			got := m.T(tt.key)
@@ -325,22 +325,22 @@ func getZhTranslations() map[string]string {
 		MsgCommonError:   "错误",
 		MsgCommonInfo:    "信息",
 		MsgCommonWarning: "警告",
-		
+
 		// 设置面板
 		MsgSettingsTitle:     "⚙ 系统设置",
 		MsgSettingsLanguage:  "语言 / Language",
 		MsgSettingsTheme:     "主题 / Theme",
 		MsgSettingsHint:      "↑↓ 导航  enter 确认  esc 关闭",
-		
+
 		// 命令面板
 		MsgPaletteTitle:      "命令面板",
 		MsgPaletteSearchHint: "输入搜索命令...",
-		
+
 		// REPL 界面
 		MsgREPLInputPrompt: "输入命令...",
 		MsgREPLWelcome:     "欢迎使用 CC-Start",
 		MsgREPLHint:        "输入 /help 查看帮助",
-		
+
 		// 命令描述
 		MsgCmdList:    "列出所有配置",
 		MsgCmdUse:     "切换当前会话配置",
@@ -360,7 +360,7 @@ func getZhTranslations() map[string]string {
 		MsgCmdDefault: "设置默认配置",
 		MsgCmdShow:    "显示配置详情",
 		MsgCmdCurrent: "显示当前配置",
-		
+
 		// 错误消息
 		MsgErrConfigLoad:      "加载配置失败: %s",
 		MsgErrConfigSave:      "保存配置失败: %s",
@@ -401,7 +401,7 @@ git commit -m "feat(i18n): 添加中文翻译"
 func TestEnTranslations(t *testing.T) {
 	m := NewManager()
 	m.SetLanguage(LangEN)
-	
+
 	tests := []struct {
 		key  string
 		want string
@@ -413,7 +413,7 @@ func TestEnTranslations(t *testing.T) {
 		{MsgSettingsTheme, "Theme"},
 		{MsgCmdList, "List all profiles"},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.key, func(t *testing.T) {
 			got := m.T(tt.key)
@@ -446,22 +446,22 @@ func getEnTranslations() map[string]string {
 		MsgCommonError:   "Error",
 		MsgCommonInfo:    "Info",
 		MsgCommonWarning: "Warning",
-		
+
 		// Settings Panel
 		MsgSettingsTitle:     "⚙ Settings",
 		MsgSettingsLanguage:  "Language",
 		MsgSettingsTheme:     "Theme",
 		MsgSettingsHint:      "↑↓ Navigate  enter Confirm  esc Close",
-		
+
 		// Command Palette
 		MsgPaletteTitle:      "Command Palette",
 		MsgPaletteSearchHint: "Type to search commands...",
-		
+
 		// REPL Interface
 		MsgREPLInputPrompt: "Enter command...",
 		MsgREPLWelcome:     "Welcome to CC-Start",
 		MsgREPLHint:        "Type /help for available commands",
-		
+
 		// Command Descriptions
 		MsgCmdList:    "List all profiles",
 		MsgCmdUse:     "Switch current profile",
@@ -481,7 +481,7 @@ func getEnTranslations() map[string]string {
 		MsgCmdDefault: "Set default profile",
 		MsgCmdShow:    "Show profile details",
 		MsgCmdCurrent: "Show current profile",
-		
+
 		// Error Messages
 		MsgErrConfigLoad:      "Failed to load config: %s",
 		MsgErrConfigSave:      "Failed to save config: %s",
@@ -522,7 +522,7 @@ git commit -m "feat(i18n): 添加英文翻译"
 func TestJaTranslations(t *testing.T) {
 	m := NewManager()
 	m.SetLanguage(LangJA)
-	
+
 	tests := []struct {
 		key  string
 		want string
@@ -533,7 +533,7 @@ func TestJaTranslations(t *testing.T) {
 		{MsgSettingsLanguage, "言語"},
 		{MsgSettingsTheme, "テーマ"},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.key, func(t *testing.T) {
 			got := m.T(tt.key)
@@ -566,22 +566,22 @@ func getJaTranslations() map[string]string {
 		MsgCommonError:   "エラー",
 		MsgCommonInfo:    "情報",
 		MsgCommonWarning: "警告",
-		
+
 		// 設定パネル
 		MsgSettingsTitle:     "⚙ 設定",
 		MsgSettingsLanguage:  "言語",
 		MsgSettingsTheme:     "テーマ",
 		MsgSettingsHint:      "↑↓ 移動  enter 確定  esc 閉じる",
-		
+
 		// コマンドパレット
 		MsgPaletteTitle:      "コマンドパレット",
 		MsgPaletteSearchHint: "コマンドを検索...",
-		
+
 		// REPL インターフェース
 		MsgREPLInputPrompt: "コマンドを入力...",
 		MsgREPLWelcome:     "CC-Startへようこそ",
 		MsgREPLHint:        "/help でヘルプを表示",
-		
+
 		// コマンド説明
 		MsgCmdList:    "すべてのプロファイルを一覧表示",
 		MsgCmdUse:     "現在のプロファイルを切り替え",
@@ -601,7 +601,7 @@ func getJaTranslations() map[string]string {
 		MsgCmdDefault: "デフォルトプロファイルを設定",
 		MsgCmdShow:    "プロファイル詳細を表示",
 		MsgCmdCurrent: "現在のプロファイルを表示",
-		
+
 		// エラーメッセージ
 		MsgErrConfigLoad:      "設定の読み込みに失敗: %s",
 		MsgErrConfigSave:      "設定の保存に失敗: %s",
@@ -658,7 +658,7 @@ func TestGetTheme(t *testing.T) {
 		{"light", "light", false},
 		{"invalid", "invalid", true},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			theme, err := GetTheme(tt.theme)
@@ -675,11 +675,11 @@ func TestGetTheme(t *testing.T) {
 
 func TestGetAllThemes(t *testing.T) {
 	themes := GetAllThemes()
-	
+
 	if len(themes) != 5 {
 		t.Errorf("GetAllThemes() returned %d themes, want 5", len(themes))
 	}
-	
+
 	// 验证每个主题都有必要的字段
 	for _, theme := range themes {
 		if theme.Name == "" {
@@ -699,7 +699,7 @@ func TestThemeStructure(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GetTheme(default) error: %v", err)
 	}
-	
+
 	// 验证默认主题的颜色
 	if theme.Colors.Primary == "" {
 		t.Error("Default theme missing Primary color")
@@ -732,17 +732,17 @@ type ColorScheme struct {
 	Background string
 	Foreground string
 	Muted      string
-	
+
 	Primary   string
 	Success   string
 	Error     string
 	Warning   string
 	Info      string
-	
+
 	Border     string
 	Accent     string
 	Highlight  string
-	
+
 	PaletteBg       string
 	PaletteActive   string
 	PaletteInactive string
@@ -797,12 +797,12 @@ git commit -m "feat(theme): 添加 theme 基础结构"
 // 在 internal/theme/theme_test.go 添加
 func TestPresetThemesColors(t *testing.T) {
 	themes := GetAllThemes()
-	
+
 	requiredColors := []string{
 		"Background", "Foreground", "Primary", "Success", "Error",
 		"Warning", "Info", "Border", "Accent", "Highlight",
 	}
-	
+
 	for _, theme := range themes {
 		t.Run(theme.Name, func(t *testing.T) {
 			colors := map[string]string{
@@ -817,12 +817,12 @@ func TestPresetThemesColors(t *testing.T) {
 				"Accent":     theme.Colors.Accent,
 				"Highlight":  theme.Colors.Highlight,
 			}
-			
+
 			for _, colorName := range requiredColors {
 				if colors[colorName] == "" {
 					t.Errorf("Theme %s missing color: %s", theme.Name, colorName)
 				}
-				
+
 				// 验证颜色格式（#RRGGBB 或 #RGB）
 				color := colors[colorName]
 				if len(color) != 7 && len(color) != 4 {
@@ -994,11 +994,11 @@ func TestConfigWithSettings(t *testing.T) {
 			Theme:    "ocean",
 		},
 	}
-	
+
 	if cfg.Settings.Language != "en" {
 		t.Errorf("Settings.Language = %s, want en", cfg.Settings.Language)
 	}
-	
+
 	if cfg.Settings.Theme != "ocean" {
 		t.Errorf("Settings.Theme = %s, want ocean", cfg.Settings.Theme)
 	}
@@ -1008,7 +1008,7 @@ func TestLoadConfigWithEmptySettings(t *testing.T) {
 	// 创建临时配置文件（没有 settings 字段）
 	tmpDir := t.TempDir()
 	configPath := tmpDir + "/profiles.json"
-	
+
 	data := `{
 		"profiles": [{"name": "test", "token": "xxx"}],
 		"default": "test"
@@ -1016,17 +1016,17 @@ func TestLoadConfigWithEmptySettings(t *testing.T) {
 	if err := os.WriteFile(configPath, []byte(data), 0600); err != nil {
 		t.Fatal(err)
 	}
-	
+
 	cfg, err := LoadConfig(configPath)
 	if err != nil {
 		t.Fatalf("LoadConfig() error: %v", err)
 	}
-	
+
 	// 验证默认值
 	if cfg.Settings.Language != "zh" {
 		t.Errorf("Settings.Language = %s, want zh (default)", cfg.Settings.Language)
 	}
-	
+
 	if cfg.Settings.Theme != "default" {
 		t.Errorf("Settings.Theme = %s, want default", cfg.Settings.Theme)
 	}
@@ -1034,12 +1034,12 @@ func TestLoadConfigWithEmptySettings(t *testing.T) {
 
 func TestUpdateSetting(t *testing.T) {
 	cfg := &Config{}
-	
+
 	cfg.UpdateSetting("language", "en")
 	if cfg.Settings.Language != "en" {
 		t.Errorf("UpdateSetting(language, en) failed")
 	}
-	
+
 	cfg.UpdateSetting("theme", "ocean")
 	if cfg.Settings.Theme != "ocean" {
 		t.Errorf("UpdateSetting(theme, ocean) failed")
@@ -1212,7 +1212,7 @@ func NewModel(cfgPath string) (Model, error) {
 	h := help.New()
 	hist := NewHistory()
 	out := NewOutputBuffer(100)
-	
+
 	// 应用主题到样式
 	styles := DefaultStyles()
 	styles = *theme.ApplyTheme(currentTheme, &styles)
@@ -1407,7 +1407,7 @@ func (s *SettingsPanel) Render() string {
 		if i >= 10 {
 			break
 		}
-		
+
 		var line string
 		if i == s.selected {
 			line = s.styles.PaletteActive.Render("● " + item.Label)
@@ -1416,7 +1416,7 @@ func (s *SettingsPanel) Render() string {
 		}
 		listLines = append(listLines, line)
 	}
-	
+
 	if len(listLines) > 0 {
 		sections = append(sections, strings.Join(listLines, "\n"))
 	}
@@ -1442,14 +1442,14 @@ func (m Model) handleSettingAction(action string) (tea.Model, tea.Cmd) {
 		m.settings.selected = 0
 		m.settings.query = ""
 		return m, nil
-		
+
 	case "setting:theme":
 		// 进入主题选择模式
 		m.settings.mode = SettingsModeTheme
 		m.settings.selected = 0
 		m.settings.query = ""
 		return m, nil
-		
+
 	case "lang:zh", "lang:en", "lang:ja":
 		// 应用语言更改
 		lang := strings.TrimPrefix(action, "lang:")
@@ -1468,7 +1468,7 @@ func (m Model) handleSettingAction(action string) (tea.Model, tea.Cmd) {
 		m.settings.selected = 0
 		m.settings.query = ""
 		return m, nil
-		
+
 	case "theme:default", "theme:ocean", "theme:forest", "theme:sunset", "theme:light":
 		// 应用主题更改
 		themeName := strings.TrimPrefix(action, "theme:")
@@ -1490,7 +1490,7 @@ func (m Model) handleSettingAction(action string) (tea.Model, tea.Cmd) {
 		m.settings.selected = 0
 		m.settings.query = ""
 		return m, nil
-		
+
 	default:
 		m.output.Write("● 未知设置项: " + action)
 	}
@@ -1552,15 +1552,15 @@ func NewStylesFromTheme(t *theme.Theme) Styles {
 			Foreground(lipgloss.Color(t.Colors.Primary)).
 			Bold(true).
 			Padding(0, 1),
-		
+
 		PaletteItem: lipgloss.NewStyle().
 			Foreground(lipgloss.Color(t.Colors.Foreground)),
-		
+
 		PaletteActive: lipgloss.NewStyle().
 			Foreground(lipgloss.Color(t.Colors.Highlight)).
 			Background(lipgloss.Color(t.Colors.PaletteActive)).
 			Bold(true),
-		
+
 		// ... 应用其他样式
 	}
 }
@@ -1686,7 +1686,7 @@ package repl
 import (
 	"os"
 	"testing"
-	
+
 	"github.com/wujunwei/cc-start/internal/config"
 	"github.com/wujunwei/cc-start/internal/i18n"
 	"github.com/wujunwei/cc-start/internal/theme"
@@ -1696,7 +1696,7 @@ func TestLanguageSwitch(t *testing.T) {
 	// 创建临时配置
 	tmpDir := t.TempDir()
 	cfgPath := tmpDir + "/profiles.json"
-	
+
 	cfg := &config.Config{
 		Profiles: []config.Profile{
 			{Name: "test", Token: "xxx"},
@@ -1707,18 +1707,18 @@ func TestLanguageSwitch(t *testing.T) {
 		},
 	}
 	cfg.Save(cfgPath)
-	
+
 	// 创建 Model
 	model, err := NewModel(cfgPath)
 	if err != nil {
 		t.Fatalf("NewModel() error: %v", err)
 	}
-	
+
 	// 验证初始语言
 	if model.i18n.T(i18n.MsgCommonSuccess) != "成功" {
 		t.Errorf("Initial language not zh")
 	}
-	
+
 	// 切换语言
 	model.i18n.SetLanguage("en")
 	if model.i18n.T(i18n.MsgCommonSuccess) != "Success" {
@@ -1729,16 +1729,16 @@ func TestLanguageSwitch(t *testing.T) {
 func TestThemeSwitch(t *testing.T) {
 	// 测试主题切换
 	model, _ := NewModel(t.TempDir() + "/profiles.json")
-	
+
 	// 切换主题
 	oceanTheme, err := theme.GetTheme("ocean")
 	if err != nil {
 		t.Fatalf("GetTheme(ocean) error: %v", err)
 	}
-	
+
 	model.theme = oceanTheme
 	model.styles = *applyThemeToStyles(oceanTheme, &model.styles)
-	
+
 	// 验证主题已应用
 	if model.theme.Name != "ocean" {
 		t.Errorf("Theme not switched to ocean")

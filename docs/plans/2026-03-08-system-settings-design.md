@@ -1,7 +1,7 @@
 # 系统设置功能设计文档
 
-**日期**: 2026-03-08  
-**作者**: AI Assistant  
+**日期**: 2026-03-08
+**作者**: AI Assistant
 **状态**: 已批准
 
 ## 概述
@@ -127,21 +127,21 @@ const (
     // 通用
     MsgCommonSuccess = "common.success"
     MsgCommonError   = "common.error"
-    
+
     // 设置面板
     MsgSettingsTitle     = "settings.title"
     MsgSettingsLanguage  = "settings.language"
     MsgSettingsTheme     = "settings.theme"
     MsgSettingsHint      = "settings.hint"
-    
+
     // 命令面板
     MsgPaletteTitle      = "palette.title"
     MsgPaletteSearchHint = "palette.search_hint"
-    
+
     // REPL 界面
     MsgREPLInputPrompt = "repl.input_prompt"
     MsgREPLWelcome     = "repl.welcome"
-    
+
     // 命令描述
     MsgCmdList   = "cmd.list"
     MsgCmdUse    = "cmd.use"
@@ -213,19 +213,19 @@ type ColorScheme struct {
     Background string
     Foreground string
     Muted      string
-    
+
     // 状态颜色
     Primary    string
     Success    string
     Error      string
     Warning    string
     Info       string
-    
+
     // 组件颜色
     Border     string
     Accent     string
     Highlight  string
-    
+
     // 面板专用
     PaletteBg      string
     PaletteActive  string
@@ -317,13 +317,13 @@ func ApplyTheme(theme *Theme, styles *Styles) *Styles {
         Foreground(lipgloss.Color(theme.Colors.Primary)).
         Bold(true).
         Padding(0, 1)
-    
+
     styles.PaletteActive = lipgloss.NewStyle().
         Foreground(lipgloss.Color(theme.Colors.Highlight)).
         Background(lipgloss.Color(theme.Colors.Background))
-    
+
     // ... 应用所有样式
-    
+
     return styles
 }
 ```
@@ -390,26 +390,26 @@ const (
 func (s *SettingsPanel) renderThemeList() string {
     themes := theme.GetAllThemes()
     var lines []string
-    
+
     for i, t := range themes {
         // 使用主题颜色渲染预览文本
-        preview := fmt.Sprintf("● %s  %s", 
+        preview := fmt.Sprintf("● %s  %s",
             t.DisplayName,
             renderColorSample(t.Colors))
-        
+
         if i == s.selected {
-            lines = append(lines, 
+            lines = append(lines,
                 lipgloss.NewStyle().
                     Foreground(lipgloss.Color(t.Colors.Highlight)).
                     Render(preview))
         } else {
-            lines = append(lines, 
+            lines = append(lines,
                 lipgloss.NewStyle().
                     Foreground(lipgloss.Color(t.Colors.Foreground)).
                     Render(preview))
         }
     }
-    
+
     return strings.Join(lines, "\n")
 }
 ```
@@ -460,12 +460,12 @@ func LoadConfig(path string) (*Config, error) {
     if err != nil {
         return nil, err
     }
-    
+
     var cfg Config
     if err := json.Unmarshal(data, &cfg); err != nil {
         return nil, err
     }
-    
+
     // 迁移：如果 settings 为空，设置默认值
     if cfg.Settings.Language == "" {
         cfg.Settings.Language = "zh"
@@ -473,7 +473,7 @@ func LoadConfig(path string) (*Config, error) {
     if cfg.Settings.Theme == "" {
         cfg.Settings.Theme = "default"
     }
-    
+
     return &cfg, nil
 }
 ```
@@ -585,7 +585,7 @@ func LoadConfig(path string) (*Config, error) {
         }
         return nil, fmt.Errorf("读取配置失败: %w", err)
     }
-    
+
     var cfg Config
     if err := json.Unmarshal(data, &cfg); err != nil {
         // 配置文件损坏，备份并创建新的
@@ -598,7 +598,7 @@ func LoadConfig(path string) (*Config, error) {
             },
         }, fmt.Errorf("配置文件已损坏，已备份到 %s", backupPath)
     }
-    
+
     return &cfg, nil
 }
 ```

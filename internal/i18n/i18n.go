@@ -74,5 +74,3 @@ func (m *Manager) loadTranslations() {
 		LangJA: getJaTranslations(),
 	}
 }
-
-
