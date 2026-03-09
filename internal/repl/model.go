@@ -29,6 +29,7 @@ type keyMap struct {
 	CtrlL key.Binding
 	Esc   key.Binding
 	Space key.Binding
+	Tab   key.Binding
 }
 
 // defaultKeyMap 默认快捷键
@@ -66,6 +67,10 @@ func defaultKeyMap() keyMap {
 			key.WithKeys(" "),
 			key.WithHelp("space", "输入"),
 		),
+		Tab: key.NewBinding(
+			key.WithKeys("tab"),
+			key.WithHelp("tab", "补全命令"),
+		),
 	}
 }
 
@@ -92,11 +97,12 @@ type Model struct {
 	quitting       bool
 	keys           keyMap
 
-	input    textinput.Model
-	output   *OutputBuffer
-	palette  *CommandPalette
-	settings *SettingsPanel
-	help     help.Model
+	input        textinput.Model
+	output       *OutputBuffer
+	palette      *CommandPalette
+	autocomplete *Autocomplete
+	settings     *SettingsPanel
+	help         help.Model
 
 	history *History
 	histIdx int
@@ -146,6 +152,9 @@ func NewModel(cfgPath string) (Model, error) {
 	out.Write("输入 '/' 打开命令面板，'/help' 查看帮助，'/exit' 退出。")
 	out.Write("按 ctrl+p 打开系统设置。")
 
+	// 初始化自动补全组件
+	ac := NewAutocomplete(styles, i18nMgr)
+
 	return Model{
 		config:         cfg,
 		configPath:     cfgPath,
@@ -154,6 +163,7 @@ func NewModel(cfgPath string) (Model, error) {
 		keys:           defaultKeyMap(),
 		input:          ti,
 		output:         out,
+		autocomplete:   ac,
 		history:        hist,
 		help:           h,
 		Styles:         styles,

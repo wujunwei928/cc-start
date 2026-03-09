@@ -171,3 +171,14 @@ func (a *Autocomplete) Render(width int) string {
 
 	return rendered
 }
+
+// SetI18n 设置 i18n 管理器
+func (a *Autocomplete) SetI18n(i18nMgr *i18n.Manager) {
+	a.i18n = i18nMgr
+	a.items = getDefaultCommands(i18nMgr)
+}
+
+// SetStyles 设置样式
+func (a *Autocomplete) SetStyles(styles Styles) {
+	a.styles = styles
+}
