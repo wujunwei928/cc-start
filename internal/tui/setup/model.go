@@ -260,18 +260,12 @@ func (m *Model) handleGoBack() (tea.Model, tea.Cmd) {
 }
 
 func (m *Model) handleBackspace(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
-	// 在输入步骤按 Backspace：
-	// 1. 如果输入框为空，返回上一步
-	// 2. 如果输入框有值，传递给 textinput 处理删除操作
+	// Backspace 只删除当前步骤的字符
+	// 输入框为空时，不做任何事情（不返回上一步，返回上一步请用 ESC 键）
 	switch m.step {
 	case stepInputName:
 		if m.nameInput.Value() == "" {
-			// 编辑模式直接退出
-			if m.isEdit {
-				return m, tea.Quit
-			}
-			m.step = stepSelectPreset
-			m.nameInput.Blur()
+			// 输入框为空，不做任何事情
 			return m, nil
 		}
 		// 输入框有值，传递给 textinput 处理
@@ -280,15 +274,7 @@ func (m *Model) handleBackspace(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m, cmd
 	case stepInputToken:
 		if m.tokenInput.Value() == "" {
-			// 编辑模式或自定义模式返回名称输入，否则返回预设选择
-			if m.isEdit || m.isCustom {
-				m.step = stepInputName
-				m.tokenInput.Blur()
-				m.nameInput.Focus()
-			} else {
-				m.step = stepSelectPreset
-				m.tokenInput.Blur()
-			}
+			// 输入框为空，不做任何事情
 			return m, nil
 		}
 		// 输入框有值，传递给 textinput 处理
@@ -297,9 +283,7 @@ func (m *Model) handleBackspace(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m, cmd
 	case stepInputModel:
 		if m.modelInput.Value() == "" {
-			m.step = stepInputToken
-			m.modelInput.Blur()
-			m.tokenInput.Focus()
+			// 输入框为空，不做任何事情
 			return m, nil
 		}
 		// 输入框有值，传递给 textinput 处理

@@ -207,3 +207,74 @@ func TestEscGoBackFromName(t *testing.T) {
 		t.Errorf("ESC 应该返回预设选择步骤，期望 stepSelectPreset，实际 %d", m.step)
 	}
 }
+
+// TestBackspaceNotGoBack 测试 Backspace 不应返回上一步
+func TestBackspaceNotGoBack(t *testing.T) {
+	m := InitialModel()
+
+	// 选择 anthropic 预设
+	result, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m = toModel(result)
+
+	// 输入 token 并进入下一步
+	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("test-token")})
+	m = toModel(result)
+	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m = toModel(result)
+
+	if m.step != stepInputModel {
+		t.Fatalf("期望步骤为 stepInputModel，实际为 %d", m.step)
+	}
+
+	// 清空模型输入框（通过多次按 Backspace）
+	initialValue := m.modelInput.Value()
+	for i := 0; i < len(initialValue)+10; i++ {
+		result, _ = m.Update(tea.KeyMsg{Type: tea.KeyBackspace})
+		m = toModel(result)
+	}
+
+	// 验证：即使输入框为空，按 Backspace 也不应返回上一步
+	// 步骤应该仍然是 stepInputModel，不应变成 stepInputToken
+	if m.step != stepInputModel {
+		t.Errorf("Backspace 不应导致步骤改变。期望 stepInputModel，实际 %d", m.step)
+	}
+
+	// 验证输入框确实为空
+	if m.modelInput.Value() != "" {
+		t.Errorf("输入框应为空，实际为 '%s'", m.modelInput.Value())
+	}
+}
+
+// TestBackspaceNotDeletePreviousStep 测试 Backspace 不应删除上一步的内容
+func TestBackspaceNotDeletePreviousStep(t *testing.T) {
+	m := InitialModel()
+
+	// 选择 anthropic 预设
+	result, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m = toModel(result)
+
+	// 输入 token
+	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("my-secret-token")})
+	m = toModel(result)
+	tokenValue := m.tokenInput.Value()
+
+	// 进入下一步
+	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m = toModel(result)
+
+	if m.step != stepInputModel {
+		t.Fatalf("期望步骤为 stepInputModel，实际为 %d", m.step)
+	}
+
+	// 在模型步骤多次按 Backspace（超过输入内容长度）
+	for i := 0; i < 50; i++ {
+		result, _ = m.Update(tea.KeyMsg{Type: tea.KeyBackspace})
+		m = toModel(result)
+	}
+
+	// 验证：token 值不应被修改
+	if m.tokenInput.Value() != tokenValue {
+		t.Errorf("Backspace 不应删除上一步的 token。期望 '%s'，实际 '%s'",
+			tokenValue, m.tokenInput.Value())
+	}
+}
