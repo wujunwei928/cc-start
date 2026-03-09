@@ -136,3 +136,38 @@ func (a *Autocomplete) SelectedCommand() string {
 	}
 	return a.filtered[a.selected].Cmd
 }
+
+// Render 渲染下拉列表
+func (a *Autocomplete) Render(width int) string {
+	if !a.visible || len(a.filtered) == 0 {
+		return ""
+	}
+
+	// 计算要显示的项
+	start := a.scrollOff
+	end := start + a.maxShow
+	if end > len(a.filtered) {
+		end = len(a.filtered)
+	}
+
+	var lines []string
+	for i := start; i < end; i++ {
+		item := a.filtered[i]
+		text := item.Cmd + "  " + item.Description
+
+		if i == a.selected {
+			lines = append(lines, a.styles.AutocompleteActive.Render("● "+text))
+		} else {
+			lines = append(lines, a.styles.AutocompleteItem.Render("  "+text))
+		}
+	}
+
+	content := strings.Join(lines, "\n")
+
+	// 添加边框
+	rendered := a.styles.AutocompleteBorder.
+		Width(width - 2).
+		Render(content)
+
+	return rendered
+}

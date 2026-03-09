@@ -137,3 +137,47 @@ func TestAutocompleteSelectedCommand(t *testing.T) {
 		t.Errorf("隐藏后 SelectedCommand 应该返回空，实际返回 %s", cmd)
 	}
 }
+
+func TestAutocompleteRender(t *testing.T) {
+	i18nMgr := i18n.NewManager()
+	styles := DefaultStyles()
+
+	ac := NewAutocomplete(styles, i18nMgr)
+
+	// 隐藏时应该返回空
+	rendered := ac.Render(80)
+	if rendered != "" {
+		t.Errorf("隐藏时 Render 应该返回空，实际返回: %s", rendered)
+	}
+
+	// 显示时应该返回内容
+	ac.Show("/")
+	rendered = ac.Render(80)
+	if rendered == "" {
+		t.Error("显示时 Render 应该返回内容")
+	}
+
+	// 应该包含命令
+	if !strings.Contains(rendered, "/list") && !strings.Contains(rendered, "/use") {
+		t.Error("渲染结果应该包含命令")
+	}
+}
+
+func TestAutocompleteRenderWidth(t *testing.T) {
+	i18nMgr := i18n.NewManager()
+	styles := DefaultStyles()
+
+	ac := NewAutocomplete(styles, i18nMgr)
+	ac.Show("/")
+
+	// 测试不同宽度
+	rendered := ac.Render(40)
+	if rendered == "" {
+		t.Error("宽度 40 应该能渲染")
+	}
+
+	rendered = ac.Render(100)
+	if rendered == "" {
+		t.Error("宽度 100 应该能渲染")
+	}
+}

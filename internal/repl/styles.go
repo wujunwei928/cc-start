@@ -48,6 +48,11 @@ type Styles struct {
 	PaletteList   lipgloss.Style
 	PaletteItem   lipgloss.Style
 	PaletteActive lipgloss.Style
+
+	// 内联自动补全
+	AutocompleteItem   lipgloss.Style
+	AutocompleteActive lipgloss.Style
+	AutocompleteBorder lipgloss.Style
 }
 
 // DefaultStyles 返回默认样式
@@ -118,6 +123,19 @@ func DefaultStyles() Styles {
 			Foreground(accentColor).
 			Bold(true).
 			Padding(0, 2),
+
+		AutocompleteItem: lipgloss.NewStyle().
+			Foreground(textColor).
+			Padding(0, 1),
+
+		AutocompleteActive: lipgloss.NewStyle().
+			Foreground(accentColor).
+			Bold(true).
+			Padding(0, 1),
+
+		AutocompleteBorder: lipgloss.NewStyle().
+			Border(lipgloss.NormalBorder()).
+			BorderForeground(mutedColor),
 	}
 }
 
@@ -201,5 +219,19 @@ func NewStylesFromTheme(t *theme.Theme) Styles {
 			Background(lipgloss.Color(t.Colors.PaletteActive)).
 			Bold(true).
 			Padding(0, 2),
+
+		AutocompleteItem: lipgloss.NewStyle().
+			Foreground(fg).
+			Padding(0, 1),
+
+		AutocompleteActive: lipgloss.NewStyle().
+			Foreground(highlight).
+			Background(lipgloss.Color(t.Colors.PaletteActive)).
+			Bold(true).
+			Padding(0, 1),
+
+		AutocompleteBorder: lipgloss.NewStyle().
+			Border(lipgloss.NormalBorder()).
+			BorderForeground(muted),
 	}
 }
