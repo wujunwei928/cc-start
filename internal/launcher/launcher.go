@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/wujunwei/cc-start/internal/config"
+	"github.com/wujunwei928/cc-start/internal/config"
 )
 
 // BuildSettings 构建 Claude Code 设置 JSON

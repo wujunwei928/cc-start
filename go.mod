@@ -1,4 +1,4 @@
-module github.com/wujunwei/cc-start
+module github.com/wujunwei928/cc-start
 
 go 1.24.10
 

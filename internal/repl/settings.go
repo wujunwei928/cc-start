@@ -6,8 +6,8 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/sahilm/fuzzy"
-	"github.com/wujunwei/cc-start/internal/i18n"
-	"github.com/wujunwei/cc-start/internal/theme"
+	"github.com/wujunwei928/cc-start/internal/i18n"
+	"github.com/wujunwei928/cc-start/internal/theme"
 )
 
 // SettingsMode 设置面板模式

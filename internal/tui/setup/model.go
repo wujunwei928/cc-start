@@ -8,7 +8,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/wujunwei/cc-start/internal/config"
+	"github.com/wujunwei928/cc-start/internal/config"
 )
 
 // 步骤状态

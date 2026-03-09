@@ -1,7 +1,7 @@
 // main.go
 package main
 
-import "github.com/wujunwei/cc-start/cmd"
+import "github.com/wujunwei928/cc-start/cmd"
 
 func main() {
 	cmd.Execute()

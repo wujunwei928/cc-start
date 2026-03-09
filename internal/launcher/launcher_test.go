@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wujunwei/cc-start/internal/config"
+	"github.com/wujunwei928/cc-start/internal/config"
 )
 
 func TestBuildSettings(t *testing.T) {

@@ -6,9 +6,9 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/wujunwei/cc-start/internal/config"
-	"github.com/wujunwei/cc-start/internal/i18n"
-	"github.com/wujunwei/cc-start/internal/theme"
+	"github.com/wujunwei928/cc-start/internal/config"
+	"github.com/wujunwei928/cc-start/internal/i18n"
+	"github.com/wujunwei928/cc-start/internal/theme"
 )
 
 // Focus 当前焦点状态

@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/wujunwei/cc-start/internal/config"
+	"github.com/wujunwei928/cc-start/internal/config"
 )
 
 // 测试辅助函数：创建临时配置

@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/wujunwei/cc-start/internal/config"
+	"github.com/wujunwei928/cc-start/internal/config"
 )
 
 var defaultCmd = &cobra.Command{

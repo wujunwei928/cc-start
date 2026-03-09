@@ -3,8 +3,8 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/wujunwei/cc-start/internal/config"
-	"github.com/wujunwei/cc-start/internal/repl"
+	"github.com/wujunwei928/cc-start/internal/config"
+	"github.com/wujunwei928/cc-start/internal/repl"
 )
 
 var (

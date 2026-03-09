@@ -7,7 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/sahilm/fuzzy"
-	"github.com/wujunwei/cc-start/internal/i18n"
+	"github.com/wujunwei928/cc-start/internal/i18n"
 )
 
 // CommandPalette 命令面板

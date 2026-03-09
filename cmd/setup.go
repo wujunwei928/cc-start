@@ -6,7 +6,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
-	"github.com/wujunwei/cc-start/internal/tui/setup"
+	"github.com/wujunwei928/cc-start/internal/tui/setup"
 )
 
 var setupCmd = &cobra.Command{

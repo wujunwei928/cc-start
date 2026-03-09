@@ -6,8 +6,8 @@ import (
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/wujunwei/cc-start/internal/config"
-	"github.com/wujunwei/cc-start/internal/launcher"
+	"github.com/wujunwei928/cc-start/internal/config"
+	"github.com/wujunwei928/cc-start/internal/launcher"
 )
 
 // REPL 交互式 REPL

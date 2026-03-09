@@ -12,9 +12,9 @@ import (
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/wujunwei/cc-start/internal/config"
-	"github.com/wujunwei/cc-start/internal/launcher"
-	"github.com/wujunwei/cc-start/internal/tui/setup"
+	"github.com/wujunwei928/cc-start/internal/config"
+	"github.com/wujunwei928/cc-start/internal/launcher"
+	"github.com/wujunwei928/cc-start/internal/tui/setup"
 )
 
 // maskAPIKey 遮蔽 API Key 显示

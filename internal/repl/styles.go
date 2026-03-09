@@ -3,7 +3,7 @@ package repl
 
 import (
 	"github.com/charmbracelet/lipgloss"
-	"github.com/wujunwei/cc-start/internal/theme"
+	"github.com/wujunwei928/cc-start/internal/theme"
 )
 
 // 配色方案（参考 crush 深色主题）

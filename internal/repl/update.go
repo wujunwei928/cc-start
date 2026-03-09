@@ -11,10 +11,10 @@ import (
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/wujunwei/cc-start/internal/config"
-	"github.com/wujunwei/cc-start/internal/i18n"
-	"github.com/wujunwei/cc-start/internal/theme"
-	"github.com/wujunwei/cc-start/internal/tui/setup"
+	"github.com/wujunwei928/cc-start/internal/config"
+	"github.com/wujunwei928/cc-start/internal/i18n"
+	"github.com/wujunwei928/cc-start/internal/theme"
+	"github.com/wujunwei928/cc-start/internal/tui/setup"
 )
 
 // Update 处理消息更新
