@@ -27,13 +27,6 @@ func (m Model) View() string {
 		return strings.Join(sections, "\n") + "\n"
 	}
 
-	// 命令面板（覆盖层）
-	if m.palette != nil && m.palette.IsVisible() {
-		paletteView := m.palette.Render()
-		sections = append(sections, "\n"+paletteView)
-		return strings.Join(sections, "\n") + "\n"
-	}
-
 	// 输入区 - 直接拼接，不使用 lipgloss 组合
 	prefix := m.Styles.Prefix.Render(m.getPromptPrefix())
 	inputLine := prefix + m.input.View()
@@ -100,8 +93,6 @@ func (m Model) renderHelpBar() string {
 	var hints []string
 
 	if m.settings != nil && m.settings.IsVisible() {
-		hints = []string{"up/down navigate", "enter confirm", "esc close"}
-	} else if m.palette != nil && m.palette.IsVisible() {
 		hints = []string{"up/down navigate", "enter confirm", "esc close"}
 	} else if m.autocomplete != nil && m.autocomplete.IsVisible() {
 		hints = []string{"↑↓ navigate", "tab complete", "esc close", "enter execute"}

@@ -27,11 +27,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.updateSettings(msg)
 		}
 
-		// 命令面板激活时的处理
-		if m.palette != nil && m.palette.IsVisible() {
-			return m.updatePalette(msg)
-		}
-
 		// 自动补全激活时的特殊按键处理
 		if m.autocomplete != nil && m.autocomplete.IsVisible() {
 			switch {
@@ -121,9 +116,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 		m.help.Width = msg.Width
-		if m.palette != nil {
-			m.palette.SetWidth(msg.Width)
-		}
 		if m.settings != nil {
 			m.settings.SetWidth(msg.Width)
 		}
@@ -160,30 +152,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // ConfigReloadMsg 配置重载消息
 type ConfigReloadMsg struct {
 	ProfileSaved string
-}
-
-func (m Model) updatePalette(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
-	switch msg.String() {
-	case "enter":
-		cmd := m.palette.SelectedCommand()
-		m.palette.Toggle()
-		if cmd != "" {
-			return m.executeCommand(cmd, nil)
-		}
-		return m, nil
-	case "esc":
-		m.palette.Toggle()
-		return m, nil
-	case "up", "down", "backspace":
-		m.palette.HandleKey(msg.String())
-		return m, nil
-	default:
-		// 字符输入
-		if len(msg.Runes) > 0 {
-			m.palette.HandleKey(string(msg.Runes))
-		}
-		return m, nil
-	}
 }
 
 func (m Model) updateSettings(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
@@ -263,9 +231,6 @@ func (m *Model) applyLanguageChange(lang string) (tea.Model, tea.Cmd) {
 	}
 
 	m.input.Placeholder = m.I18n.T(i18n.MsgREPLInputPrompt)
-	if m.palette != nil {
-		m.palette.SetI18n(m.I18n)
-	}
 	if m.settings != nil {
 		m.settings.SetI18n(m.I18n)
 	}
@@ -296,9 +261,6 @@ func (m *Model) applyThemeChange(themeName string) (tea.Model, tea.Cmd) {
 
 	if m.settings != nil {
 		m.settings.SetStyles(m.Styles)
-	}
-	if m.palette != nil {
-		m.palette.SetStyles(m.Styles)
 	}
 	if m.autocomplete != nil {
 		m.autocomplete.SetStyles(m.Styles)

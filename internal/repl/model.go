@@ -16,7 +16,6 @@ type Focus int
 
 const (
 	FocusInput Focus = iota
-	FocusPalette
 )
 
 // keyMap 快捷键绑定
@@ -99,7 +98,6 @@ type Model struct {
 
 	input        textinput.Model
 	output       *OutputBuffer
-	palette      *CommandPalette
 	autocomplete *Autocomplete
 	settings     *SettingsPanel
 	help         help.Model
