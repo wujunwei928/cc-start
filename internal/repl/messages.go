@@ -20,9 +20,6 @@ type (
 		Name string
 	}
 
-	// PaletteToggledMsg 切换命令面板显示
-	PaletteToggledMsg struct{}
-
 	// OutputClearedMsg 清空输出
 	OutputClearedMsg struct{}
 )
