@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/wujunwei928/cc-start/internal/i18n"
 )
 
@@ -179,5 +180,80 @@ func TestAutocompleteRenderWidth(t *testing.T) {
 	rendered = ac.Render(100)
 	if rendered == "" {
 		t.Error("宽度 100 应该能渲染")
+	}
+}
+
+// ========== 集成测试：键盘交互 ==========
+
+func TestAutocompleteSlashTrigger(t *testing.T) {
+	model, err := NewModel("")
+	if err != nil {
+		t.Fatalf("创建模型失败: %v", err)
+	}
+
+	// 模拟输入 "/"
+	model.input.SetValue("")
+	updatedModel, _ := model.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'/'}})
+
+	m := updatedModel.(Model)
+	if m.autocomplete == nil || !m.autocomplete.IsVisible() {
+		t.Error("输入 '/' 应该显示自动补全")
+	}
+}
+
+func TestAutocompleteTabComplete(t *testing.T) {
+	model, err := NewModel("")
+	if err != nil {
+		t.Fatalf("创建模型失败: %v", err)
+	}
+
+	// 设置初始状态：输入 "/" 并显示自动补全
+	model.input.SetValue("/")
+	if model.autocomplete == nil {
+		model.autocomplete = NewAutocomplete(model.Styles, model.I18n)
+	}
+	model.autocomplete.Show("/")
+
+	// 模拟 Tab 键
+	updatedModel, _ := model.Update(tea.KeyMsg{Type: tea.KeyTab})
+
+	m := updatedModel.(Model)
+	if m.autocomplete.IsVisible() {
+		t.Error("Tab 补全后应该关闭自动补全")
+	}
+
+	inputValue := m.input.Value()
+	if !strings.HasPrefix(inputValue, "/") {
+		t.Errorf("Tab 补全后输入框应该包含命令，实际是: %s", inputValue)
+	}
+	// 应该以空格结尾，方便输入参数
+	if !strings.HasSuffix(inputValue, " ") {
+		t.Errorf("Tab 补全后应该以空格结尾，实际是: %s", inputValue)
+	}
+}
+
+func TestAutocompleteEscapeClose(t *testing.T) {
+	model, err := NewModel("")
+	if err != nil {
+		t.Fatalf("创建模型失败: %v", err)
+	}
+
+	// 设置初始状态
+	model.input.SetValue("/")
+	if model.autocomplete == nil {
+		model.autocomplete = NewAutocomplete(model.Styles, model.I18n)
+	}
+	model.autocomplete.Show("/")
+
+	// 模拟 Esc 键
+	updatedModel, _ := model.Update(tea.KeyMsg{Type: tea.KeyEscape})
+
+	m := updatedModel.(Model)
+	if m.autocomplete.IsVisible() {
+		t.Error("Esc 应该关闭自动补全")
+	}
+	// 输入框内容应该保留
+	if m.input.Value() != "/" {
+		t.Errorf("Esc 后输入框内容应该保留，实际是: %s", m.input.Value())
 	}
 }

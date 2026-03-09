@@ -32,6 +32,38 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.updatePalette(msg)
 		}
 
+		// 自动补全激活时的特殊按键处理
+		if m.autocomplete != nil && m.autocomplete.IsVisible() {
+			switch {
+			case keyMatches(msg, m.keys.Tab):
+				// Tab 补全选中命令
+				cmd := m.autocomplete.SelectedCommand()
+				if cmd != "" {
+					m.input.SetValue(cmd + " ")
+					m.input.CursorEnd()
+					m.autocomplete.Hide()
+				}
+				return m, nil
+
+			case keyMatches(msg, m.keys.Up):
+				m.autocomplete.SelectUp()
+				return m, nil
+
+			case keyMatches(msg, m.keys.Down):
+				m.autocomplete.SelectDown()
+				return m, nil
+
+			case keyMatches(msg, m.keys.Esc):
+				m.autocomplete.Hide()
+				return m, nil
+
+			case keyMatches(msg, m.keys.Enter):
+				// 回车执行命令，先关闭自动补全
+				m.autocomplete.Hide()
+				return m.executeInput()
+			}
+		}
+
 		// 主界面按键处理
 		switch {
 		case keyMatches(msg, m.keys.CtrlC):
@@ -63,18 +95,25 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 
 		default:
-			// 检测 "/" 字符输入 - 打开命令面板
-			if msg.String() == "/" && m.input.Value() == "" {
-				if m.palette == nil {
-					m.palette = NewCommandPalette(m.Styles, m.I18n)
-				}
-				m.palette.Toggle()
-				return m, nil
-			}
-
 			// 更新输入框
 			var cmd tea.Cmd
 			m.input, cmd = m.input.Update(msg)
+
+			// 检查是否需要触发/更新自动补全
+			currentInput := m.input.Value()
+			if strings.HasPrefix(currentInput, "/") {
+				if m.autocomplete == nil {
+					m.autocomplete = NewAutocomplete(m.Styles, m.I18n)
+				}
+				if !m.autocomplete.IsVisible() {
+					m.autocomplete.Show(currentInput)
+				} else {
+					m.autocomplete.Filter(currentInput)
+				}
+			} else if m.autocomplete != nil && m.autocomplete.IsVisible() {
+				m.autocomplete.Hide()
+			}
+
 			return m, cmd
 		}
 
@@ -230,6 +269,9 @@ func (m *Model) applyLanguageChange(lang string) (tea.Model, tea.Cmd) {
 	if m.settings != nil {
 		m.settings.SetI18n(m.I18n)
 	}
+	if m.autocomplete != nil {
+		m.autocomplete.SetI18n(m.I18n)
+	}
 
 	m.output.WriteSuccess("语言已切换: " + lang)
 	return m, nil
@@ -257,6 +299,9 @@ func (m *Model) applyThemeChange(themeName string) (tea.Model, tea.Cmd) {
 	}
 	if m.palette != nil {
 		m.palette.SetStyles(m.Styles)
+	}
+	if m.autocomplete != nil {
+		m.autocomplete.SetStyles(m.Styles)
 	}
 
 	m.output.WriteSuccess("主题已切换: " + themeName)
