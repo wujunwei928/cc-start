@@ -257,3 +257,83 @@ func TestAutocompleteEscapeClose(t *testing.T) {
 		t.Errorf("Esc 后输入框内容应该保留，实际是: %s", m.input.Value())
 	}
 }
+
+// TestAutocompleteUpDownPassToHistory 测试当自动补全可见但没有可选项时，Up/Down 键应该传递给历史导航
+func TestAutocompleteUpDownPassToHistory(t *testing.T) {
+	model, err := NewModel("")
+	if err != nil {
+		t.Fatalf("创建模型失败: %v", err)
+	}
+
+	// 添加一些历史命令
+	model.history.Add("/list")
+	model.history.Add("/use moonshot")
+
+	// 设置输入为一个不存在的命令前缀，这样自动补全会显示但没有匹配项
+	model.input.SetValue("/xyznotexist")
+	if model.autocomplete == nil {
+		model.autocomplete = NewAutocomplete(model.Styles, model.I18n)
+	}
+	model.autocomplete.Show("/xyznotexist")
+
+	// 验证自动补全可见但没有可选项
+	if !model.autocomplete.IsVisible() {
+		t.Error("自动补全应该可见")
+	}
+	if model.autocomplete.HasItems() {
+		t.Error("自动补全不应该有可选项")
+	}
+
+	// 按 Up 键应该触发历史导航而不是被自动补全拦截
+	updatedModel, _ := model.Update(tea.KeyMsg{Type: tea.KeyUp})
+	m := updatedModel.(Model)
+
+	// 验证历史导航被触发：输入框应该显示最近的历史命令
+	if m.input.Value() != "/use moonshot" {
+		t.Errorf("Up 键应该触发历史导航，输入框应该显示 '/use moonshot'，实际是: %s", m.input.Value())
+	}
+}
+
+// TestAutocompleteUpDownSelectWhenHasItems 测试当自动补全有可选项时，Up/Down 键用于选择
+func TestAutocompleteUpDownSelectWhenHasItems(t *testing.T) {
+	model, err := NewModel("")
+	if err != nil {
+		t.Fatalf("创建模型失败: %v", err)
+	}
+
+	// 添加一些历史命令
+	model.history.Add("/list")
+	model.history.Add("/use moonshot")
+
+	// 设置输入为 "/" 显示所有命令
+	model.input.SetValue("/")
+	if model.autocomplete == nil {
+		model.autocomplete = NewAutocomplete(model.Styles, model.I18n)
+	}
+	model.autocomplete.Show("/")
+
+	// 验证自动补全可见且有可选项
+	if !model.autocomplete.IsVisible() {
+		t.Error("自动补全应该可见")
+	}
+	if !model.autocomplete.HasItems() {
+		t.Error("自动补全应该有可选项")
+	}
+
+	initialSelected := model.autocomplete.SelectedIndex()
+
+	// 按 Down 键应该选择下一个命令
+	updatedModel, _ := model.Update(tea.KeyMsg{Type: tea.KeyDown})
+	m := updatedModel.(Model)
+
+	// 验证选择被更新
+	if m.autocomplete.SelectedIndex() != initialSelected+1 {
+		t.Errorf("Down 键应该选择下一个命令，选中索引应该是 %d，实际是: %d",
+			initialSelected+1, m.autocomplete.SelectedIndex())
+	}
+
+	// 输入框不应该显示历史命令（因为按键被自动补全拦截了）
+	if m.input.Value() == "/use moonshot" || m.input.Value() == "/list" {
+		t.Errorf("Down 键应该被自动补全拦截，输入框不应该显示历史命令，实际是: %s", m.input.Value())
+	}
+}

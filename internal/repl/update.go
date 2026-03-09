@@ -28,6 +28,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		// 自动补全激活时的特殊按键处理
+		// 注意：Up/Down 键只在有可选项时才被拦截，否则传递给历史导航
 		if m.autocomplete != nil && m.autocomplete.IsVisible() {
 			switch {
 			case keyMatches(msg, m.keys.Tab):
@@ -40,14 +41,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 				return m, nil
 
-			case keyMatches(msg, m.keys.Up):
-				m.autocomplete.SelectUp()
-				return m, nil
-
-			case keyMatches(msg, m.keys.Down):
-				m.autocomplete.SelectDown()
-				return m, nil
-
 			case keyMatches(msg, m.keys.Esc):
 				m.autocomplete.Hide()
 				return m, nil
@@ -56,6 +49,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				// 回车执行命令，先关闭自动补全
 				m.autocomplete.Hide()
 				return m.executeInput()
+			}
+
+			// Up/Down 键：只有当有可选项时才用于选择，否则传递给历史导航
+			if m.autocomplete.HasItems() {
+				switch {
+				case keyMatches(msg, m.keys.Up):
+					m.autocomplete.SelectUp()
+					return m, nil
+
+				case keyMatches(msg, m.keys.Down):
+					m.autocomplete.SelectDown()
+					return m, nil
+				}
 			}
 		}
 
@@ -80,10 +86,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.executeInput()
 
 		case keyMatches(msg, m.keys.Up):
-			return m.navigateHistory(-1)
+			return m.navigateHistory(1)
 
 		case keyMatches(msg, m.keys.Down):
-			return m.navigateHistory(1)
+			return m.navigateHistory(-1)
 
 		case keyMatches(msg, m.keys.Esc):
 			// 关闭面板（如果有打开的话）
@@ -802,7 +808,9 @@ func (m Model) navigateHistory(dir int) (tea.Model, tea.Cmd) {
 	if newIdx == 0 {
 		m.input.SetValue("")
 	} else {
-		m.input.SetValue(cmds[newIdx-1])
+		// 从历史列表末尾开始导航（最新的命令在最后）
+		// histIdx=1 显示最新的命令，histIdx=2 显示倒数第二个，依此类推
+		m.input.SetValue(cmds[len(cmds)-newIdx])
 	}
 	m.input.CursorEnd()
 

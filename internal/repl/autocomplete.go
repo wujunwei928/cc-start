@@ -50,6 +50,11 @@ func (a *Autocomplete) IsVisible() bool {
 	return a.visible
 }
 
+// HasItems 返回是否有可选项（用于决定是否拦截上下键）
+func (a *Autocomplete) HasItems() bool {
+	return a.visible && len(a.filtered) > 0
+}
+
 // Filter 根据前缀过滤命令
 func (a *Autocomplete) Filter(prefix string) {
 	if !a.visible {
