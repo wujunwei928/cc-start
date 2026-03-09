@@ -62,7 +62,7 @@ type Model struct {
 // InitialModel 创建初始模型
 func InitialModel() Model {
 	nameInput := textinput.New()
-	nameInput.Placeholder = "配置名称（如 my-api）"
+	nameInput.Placeholder = "Profile name (e.g. my-api)"
 	nameInput.Focus()
 
 	tokenInput := textinput.New()
@@ -71,7 +71,7 @@ func InitialModel() Model {
 	tokenInput.EchoCharacter = '•'
 
 	modelInput := textinput.New()
-	modelInput.Placeholder = "模型名称（可选，按回车跳过）"
+	modelInput.Placeholder = "Model name (optional, press Enter to skip)"
 
 	return Model{
 		step:       stepSelectPreset,
@@ -86,7 +86,7 @@ func InitialModel() Model {
 // InitialModelWithProfile 创建编辑模式的模型
 func InitialModelWithProfile(p config.Profile) Model {
 	nameInput := textinput.New()
-	nameInput.Placeholder = "配置名称"
+	nameInput.Placeholder = "Profile name"
 	nameInput.SetValue(p.Name)
 	nameInput.Focus()
 
@@ -97,7 +97,7 @@ func InitialModelWithProfile(p config.Profile) Model {
 	tokenInput.EchoCharacter = '•'
 
 	modelInput := textinput.New()
-	modelInput.Placeholder = "模型名称（可选）"
+	modelInput.Placeholder = "Model name (optional)"
 	modelInput.SetValue(p.Model)
 
 	// 查找匹配的预设

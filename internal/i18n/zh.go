@@ -20,8 +20,8 @@ func getZhTranslations() map[string]string {
 		MsgPaletteTitle:      "命令面板",
 		MsgPaletteSearchHint: "输入搜索命令...",
 
-		// REPL 界面
-		MsgREPLInputPrompt: "输入命令...",
+		// REPL 界面（placeholder 使用英文，避免 bubbletea 中文渲染 bug）
+		MsgREPLInputPrompt: "Enter command...",
 		MsgREPLWelcome:     "欢迎使用 CC-Start",
 		MsgREPLHint:        "输入 /help 查看帮助",
 
