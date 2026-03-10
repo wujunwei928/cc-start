@@ -423,7 +423,8 @@ func (m Model) View() string {
 	case stepInputAnthropicURL:
 		b.WriteString(fmt.Sprintf("配置: %s\n\n", m.nameInput.Value()))
 		b.WriteString("输入 Anthropic 格式 URL（可留空）:\n")
-		b.WriteString(normalStyle.Render("  用于 Claude CLI\n\n"))
+		b.WriteString(normalStyle.Render("  用于 Claude CLI"))
+		b.WriteString("\n\n")
 		b.WriteString(fmt.Sprintf("  %s\n\n", m.anthropicURLInput.View()))
 		b.WriteString(normalStyle.Render("Enter 继续，ESC 返回"))
 
@@ -431,7 +432,8 @@ func (m Model) View() string {
 		b.WriteString(fmt.Sprintf("配置: %s\n", m.nameInput.Value()))
 		b.WriteString(fmt.Sprintf("Anthropic URL: %s\n\n", m.anthropicURLInput.Value()))
 		b.WriteString("输入 OpenAI 格式 URL（可留空）:\n")
-		b.WriteString(normalStyle.Render("  用于 Codex/OpenCode CLI\n\n"))
+		b.WriteString(normalStyle.Render("  用于 Codex/OpenCode CLI"))
+		b.WriteString("\n\n")
 		b.WriteString(fmt.Sprintf("  %s\n\n", m.openaiURLInput.View()))
 		b.WriteString(normalStyle.Render("Enter 继续，ESC 返回"))
 
