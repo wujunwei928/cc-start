@@ -1,6 +1,6 @@
 # CC-Start
 
-Claude Code 启动器 - 快速切换不同 API 供应商。
+AI 编程助手启动器 - 快速切换不同供应商。
 
 ## 安装
 
@@ -39,21 +39,26 @@ REPL 中可用命令：
 | `test [name]` | 测试 API 连通性 |
 | `export [file]` | 导出配置 |
 | `import <file>` | 导入配置 |
-| `run [profile]` | 启动 Claude Code |
 | `help` | 显示帮助 |
 | `exit` | 退出 REPL |
 
-### 直接启动 Claude Code
+### 启动 AI 编程助手
 
 ```bash
-# 使用默认配置启动
-cc-start run
+# 使用默认配置启动 claude
+cc-start launch claude
 
-# 使用指定配置启动
-cc-start run moonshot
+# 使用指定配置启动 claude
+cc-start launch claude moonshot
 
-# 传递参数给 claude
-cc-start run -- --dangerously-skip-permissions
+# 指定模型和令牌启动 codex
+cc-start launch codex -m gpt-4 -t sk-xxx
+
+# 传递参数给工具
+cc-start launch claude moonshot -- --dangerously-skip-permissions
+
+# 添加环境变量
+cc-start launch claude moonshot -e DEBUG=true
 ```
 
 ### 命令行配置管理
