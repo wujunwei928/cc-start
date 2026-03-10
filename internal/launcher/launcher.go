@@ -8,6 +8,7 @@ import (
 	"os/exec"
 
 	"github.com/wujunwei928/cc-start/internal/config"
+	"github.com/wujunwei928/cc-start/internal/tools"
 )
 
 // BuildSettings 构建 Claude Code 设置 JSON
@@ -107,4 +108,86 @@ func MergeConfig(cfg *LaunchConfig) (model, baseURL, token string) {
 	}
 
 	return
+}
+
+// LaunchWithTool 使用指定工具启动
+func LaunchWithTool(cfg *LaunchConfig) error {
+	// 获取工具预设
+	tool, err := tools.GetTool(cfg.Tool)
+	if err != nil {
+		return err
+	}
+
+	// 合并配置
+	model, baseURL, token := MergeConfig(cfg)
+
+	// 构建环境变量
+	env := os.Environ()
+
+	// 设置 Token 环境变量
+	if token != "" {
+		envName := tool.GetEnvName(tools.ParamToken)
+		env = append(env, fmt.Sprintf("%s=%s", envName, token))
+	}
+
+	// 设置 BaseURL 环境变量
+	if baseURL != "" {
+		envName := tool.GetEnvName(tools.ParamBaseURL)
+		env = append(env, fmt.Sprintf("%s=%s", envName, baseURL))
+	}
+
+	// 添加额外环境变量
+	for k, v := range cfg.Env {
+		env = append(env, fmt.Sprintf("%s=%s", k, v))
+	}
+
+	// 构建命令参数
+	args := []string{}
+
+	// 对于 claude，使用 --settings 传递环境变量
+	if cfg.Tool == "claude" {
+		settingsEnv := make(map[string]string)
+		if token != "" {
+			settingsEnv["ANTHROPIC_AUTH_TOKEN"] = token
+		}
+		if baseURL != "" && baseURL != "https://api.anthropic.com" {
+			settingsEnv["ANTHROPIC_BASE_URL"] = baseURL
+		}
+		if len(settingsEnv) > 0 {
+			settings := map[string]interface{}{"env": settingsEnv}
+			settingsJSON, _ := json.Marshal(settings)
+			args = append(args, "--settings", string(settingsJSON))
+		}
+	}
+
+	// 添加模型参数
+	if model != "" {
+		args = append(args, "--model", model)
+	}
+
+	// 添加工具原生参数
+	args = append(args, cfg.ToolArgs...)
+
+	// 创建命令
+	cmd := exec.Command(tool.Executable, args...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Env = env
+
+	// 打印启动信息
+	fmt.Printf("🚀 使用工具 '%s' 启动...\n", tool.Name)
+	if model != "" {
+		fmt.Printf("   模型: %s\n", model)
+	}
+	if baseURL != "" {
+		fmt.Printf("   Base URL: %s\n", baseURL)
+	}
+	fmt.Println()
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to launch %s: %w", tool.Name, err)
+	}
+
+	return nil
 }
