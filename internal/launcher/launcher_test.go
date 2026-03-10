@@ -199,3 +199,76 @@ func TestBuildSettingsJSON(t *testing.T) {
 		t.Errorf("wrong base URL value")
 	}
 }
+
+func TestMergeConfig(t *testing.T) {
+	profile := &config.Profile{
+		Name:    "test",
+		BaseURL: "https://api.example.com",
+		Model:   "model-v1",
+		Token:   "profile-token",
+	}
+
+	tests := []struct {
+		name      string
+		cfg       *LaunchConfig
+		wantModel string
+		wantURL   string
+		wantToken string
+	}{
+		{
+			name: "only profile",
+			cfg: &LaunchConfig{
+				Profile: profile,
+			},
+			wantModel: "model-v1",
+			wantURL:   "https://api.example.com",
+			wantToken: "profile-token",
+		},
+		{
+			name: "command line overrides profile",
+			cfg: &LaunchConfig{
+				Profile: profile,
+				Model:   "override-model",
+				BaseURL: "https://override.com",
+				Token:   "override-token",
+			},
+			wantModel: "override-model",
+			wantURL:   "https://override.com",
+			wantToken: "override-token",
+		},
+		{
+			name: "partial override - model only",
+			cfg: &LaunchConfig{
+				Profile: profile,
+				Model:   "new-model",
+			},
+			wantModel: "new-model",
+			wantURL:   "https://api.example.com",
+			wantToken: "profile-token",
+		},
+		{
+			name: "no profile no override",
+			cfg: &LaunchConfig{
+				Tool: "claude",
+			},
+			wantModel: "",
+			wantURL:   "",
+			wantToken: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			model, baseURL, token := MergeConfig(tt.cfg)
+			if model != tt.wantModel {
+				t.Errorf("MergeConfig() model = %v, want %v", model, tt.wantModel)
+			}
+			if baseURL != tt.wantURL {
+				t.Errorf("MergeConfig() baseURL = %v, want %v", baseURL, tt.wantURL)
+			}
+			if token != tt.wantToken {
+				t.Errorf("MergeConfig() token = %v, want %v", token, tt.wantToken)
+			}
+		})
+	}
+}
