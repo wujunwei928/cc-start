@@ -6,29 +6,29 @@ import "fmt"
 // presets 内置预设配置
 var presets = []Profile{
 	{
-		Name:    "anthropic",
-		BaseURL: "https://api.anthropic.com",
-		Model:   "claude-sonnet-4-5-20250929",
+		Name:             "anthropic",
+		AnthropicBaseURL: "https://api.anthropic.com",
+		Model:            "claude-sonnet-4-5-20250929",
 	},
 	{
-		Name:    "moonshot",
-		BaseURL: "https://api.kimi.com/coding/",
-		Model:   "kimi-k2.5",
+		Name:             "moonshot",
+		AnthropicBaseURL: "https://api.kimi.com/coding/",
+		Model:            "kimi-k2.5",
 	},
 	{
-		Name:    "bigmodel",
-		BaseURL: "https://open.bigmodel.cn/api/anthropic",
-		Model:   "glm-5",
+		Name:             "bigmodel",
+		AnthropicBaseURL: "https://open.bigmodel.cn/api/anthropic",
+		Model:            "glm-5",
 	},
 	{
-		Name:    "deepseek",
-		BaseURL: "https://api.deepseek.com/anthropic",
-		Model:   "deepseek-chat",
+		Name:             "deepseek",
+		AnthropicBaseURL: "https://api.deepseek.com/anthropic",
+		Model:            "deepseek-chat",
 	},
 	{
-		Name:    "minimax",
-		BaseURL: "https://api.minimaxi.com/anthropic",
-		Model:   "MiniMax-M2.5",
+		Name:             "minimax",
+		AnthropicBaseURL: "https://api.minimaxi.com/anthropic",
+		Model:            "MiniMax-M2.5",
 	},
 }
 

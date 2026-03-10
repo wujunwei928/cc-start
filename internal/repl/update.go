@@ -437,7 +437,10 @@ func (m *Model) cmdShow(args []string) string {
 
 	var buf strings.Builder
 	buf.WriteString(fmt.Sprintf("\n配置名称: %s\n", profile.Name))
-	buf.WriteString(fmt.Sprintf("Base URL: %s\n", profile.BaseURL))
+	buf.WriteString(fmt.Sprintf("Anthropic URL: %s\n", profile.AnthropicBaseURL))
+	if profile.OpenAIBaseURL != "" {
+		buf.WriteString(fmt.Sprintf("OpenAI URL: %s\n", profile.OpenAIBaseURL))
+	}
 	if profile.Model != "" {
 		buf.WriteString(fmt.Sprintf("模型: %s\n", profile.Model))
 	}
@@ -505,10 +508,11 @@ func (m *Model) cmdCopy(args []string) string {
 
 	// 创建新配置
 	newProfile := config.Profile{
-		Name:    dstName,
-		BaseURL: src.BaseURL,
-		Model:   src.Model,
-		Token:   src.Token,
+		Name:             dstName,
+		AnthropicBaseURL: src.AnthropicBaseURL,
+		OpenAIBaseURL:    src.OpenAIBaseURL,
+		Model:            src.Model,
+		Token:            src.Token,
 	}
 
 	if err := m.config.AddProfile(newProfile); err != nil {
@@ -587,9 +591,13 @@ func (m *Model) cmdTest(args []string) string {
 
 	result := fmt.Sprintf("● 测试配置 '%s' 的 API 连通性...\n", name)
 
-	baseURL := profile.BaseURL
+	// 优先测试 Anthropic URL
+	baseURL := profile.AnthropicBaseURL
 	if baseURL == "" {
-		baseURL = "https://api.anthropic.com"
+		baseURL = profile.OpenAIBaseURL
+	}
+	if baseURL == "" {
+		return result + "✗ 未配置任何 Base URL"
 	}
 
 	// 使用 curl 测试连接
@@ -864,7 +872,12 @@ func (m Model) formatProfileList() string {
 			status += " [当前]"
 		}
 		buf.WriteString(fmt.Sprintf("  %s%s\n", p.Name, status))
-		buf.WriteString(fmt.Sprintf("    Base URL: %s\n", p.BaseURL))
+		if p.AnthropicBaseURL != "" {
+			buf.WriteString(fmt.Sprintf("    Anthropic URL: %s\n", p.AnthropicBaseURL))
+		}
+		if p.OpenAIBaseURL != "" {
+			buf.WriteString(fmt.Sprintf("    OpenAI URL: %s\n", p.OpenAIBaseURL))
+		}
 		if p.Model != "" {
 			buf.WriteString(fmt.Sprintf("    模型: %s\n", p.Model))
 		}
@@ -885,7 +898,12 @@ func (m Model) formatCurrentProfile() string {
 
 	var buf strings.Builder
 	buf.WriteString(fmt.Sprintf("\n当前配置: %s\n", profile.Name))
-	buf.WriteString(fmt.Sprintf("  Base URL: %s\n", profile.BaseURL))
+	if profile.AnthropicBaseURL != "" {
+		buf.WriteString(fmt.Sprintf("  Anthropic URL: %s\n", profile.AnthropicBaseURL))
+	}
+	if profile.OpenAIBaseURL != "" {
+		buf.WriteString(fmt.Sprintf("  OpenAI URL: %s\n", profile.OpenAIBaseURL))
+	}
 	if profile.Model != "" {
 		buf.WriteString(fmt.Sprintf("  模型: %s\n", profile.Model))
 	}

@@ -18,8 +18,8 @@ func BuildSettings(profile *config.Profile) map[string]interface{} {
 	}
 
 	// 非官方 API 需要设置 base URL
-	if profile.BaseURL != "" && profile.BaseURL != "https://api.anthropic.com" {
-		env["ANTHROPIC_BASE_URL"] = profile.BaseURL
+	if profile.AnthropicBaseURL != "" && profile.AnthropicBaseURL != "https://api.anthropic.com" {
+		env["ANTHROPIC_BASE_URL"] = profile.AnthropicBaseURL
 	}
 
 	return map[string]interface{}{
@@ -80,7 +80,8 @@ type LaunchConfig struct {
 
 // MergeConfig 合并配置，返回最终参数
 // 优先级: 命令行 > Profile > 默认值
-func MergeConfig(cfg *LaunchConfig) (model, baseURL, token string) {
+// toolFormat 用于选择对应的 base_url (anthropic 或 openai)
+func MergeConfig(cfg *LaunchConfig, toolFormat string) (model, baseURL, token string) {
 	// 默认值（空）
 
 	// Profile 覆盖
@@ -88,8 +89,11 @@ func MergeConfig(cfg *LaunchConfig) (model, baseURL, token string) {
 		if cfg.Profile.Model != "" {
 			model = cfg.Profile.Model
 		}
-		if cfg.Profile.BaseURL != "" {
-			baseURL = cfg.Profile.BaseURL
+		// 根据工具类型选择对应的 base_url
+		if toolFormat == tools.FormatAnthropic {
+			baseURL = cfg.Profile.AnthropicBaseURL
+		} else {
+			baseURL = cfg.Profile.OpenAIBaseURL
 		}
 		if cfg.Profile.Token != "" {
 			token = cfg.Profile.Token
@@ -119,7 +123,12 @@ func LaunchWithTool(cfg *LaunchConfig) error {
 	}
 
 	// 合并配置
-	model, baseURL, token := MergeConfig(cfg)
+	model, baseURL, token := MergeConfig(cfg, tool.URLFormat)
+
+	// 校验：对应 URL 为空则报错
+	if baseURL == "" {
+		return fmt.Errorf("未配置 %s 格式的 base_url，无法启动 %s", tool.URLFormat, tool.Name)
+	}
 
 	// 构建环境变量
 	env := os.Environ()

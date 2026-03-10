@@ -12,11 +12,18 @@ const (
 	ParamBaseURL = "base_url"
 )
 
+// URL 格式类型
+const (
+	FormatAnthropic = "anthropic"
+	FormatOpenAI    = "openai"
+)
+
 // Tool 工具预设
 type Tool struct {
 	Name       string            // 工具名
 	Executable string            // 可执行文件名
 	EnvMap     map[string]string // 参数到环境变量的映射
+	URLFormat  string            // URL 格式类型: anthropic 或 openai
 }
 
 // GetEnvName 获取指定参数对应的环境变量名
@@ -33,6 +40,7 @@ var builtInTools = map[string]Tool{
 			ParamToken:   "ANTHROPIC_AUTH_TOKEN",
 			ParamBaseURL: "ANTHROPIC_BASE_URL",
 		},
+		URLFormat: FormatAnthropic,
 	},
 	"codex": {
 		Name:       "codex",
@@ -41,6 +49,7 @@ var builtInTools = map[string]Tool{
 			ParamToken:   "OPENAI_API_KEY",
 			ParamBaseURL: "OPENAI_BASE_URL",
 		},
+		URLFormat: FormatOpenAI,
 	},
 	"opencode": {
 		Name:       "opencode",
@@ -49,6 +58,7 @@ var builtInTools = map[string]Tool{
 			ParamToken:   "OPENAI_API_KEY",
 			ParamBaseURL: "OPENAI_BASE_URL",
 		},
+		URLFormat: FormatOpenAI,
 	},
 }
 

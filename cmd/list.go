@@ -40,7 +40,12 @@ func runList(cmd *cobra.Command, args []string) error {
 			marker = "*"
 		}
 		fmt.Printf("  %s %s\n", marker, p.Name)
-		fmt.Printf("      URL: %s\n", p.BaseURL)
+		if p.AnthropicBaseURL != "" {
+			fmt.Printf("      Anthropic URL: %s\n", p.AnthropicBaseURL)
+		}
+		if p.OpenAIBaseURL != "" {
+			fmt.Printf("      OpenAI URL: %s\n", p.OpenAIBaseURL)
+		}
 		if p.Model != "" {
 			fmt.Printf("      模型: %s\n", p.Model)
 		}

@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/wujunwei928/cc-start/internal/config"
+	"github.com/wujunwei928/cc-start/internal/tools"
 )
 
 func TestBuildSettings(t *testing.T) {
@@ -19,18 +20,18 @@ func TestBuildSettings(t *testing.T) {
 		{
 			name: "anthropic official",
 			profile: config.Profile{
-				Name:    "anthropic",
-				BaseURL: "https://api.anthropic.com",
-				Token:   "sk-ant-xxx",
+				Name:             "anthropic",
+				AnthropicBaseURL: "https://api.anthropic.com",
+				Token:            "sk-ant-xxx",
 			},
 			wantKeys: []string{"ANTHROPIC_AUTH_TOKEN"},
 		},
 		{
 			name: "custom provider",
 			profile: config.Profile{
-				Name:    "moonshot",
-				BaseURL: "https://api.kimi.com/coding/",
-				Token:   "sk-xxx",
+				Name:             "moonshot",
+				AnthropicBaseURL: "https://api.kimi.com/coding/",
+				Token:            "sk-xxx",
 			},
 			wantKeys: []string{"ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_BASE_URL"},
 		},
@@ -53,7 +54,7 @@ func TestBuildSettings(t *testing.T) {
 			}
 
 			// 官方 API 不应该有 base_url
-			if tt.profile.BaseURL == "https://api.anthropic.com" {
+			if tt.profile.AnthropicBaseURL == "https://api.anthropic.com" {
 				if _, exists := env["ANTHROPIC_BASE_URL"]; exists {
 					t.Error("official API should not have ANTHROPIC_BASE_URL")
 				}
@@ -64,10 +65,10 @@ func TestBuildSettings(t *testing.T) {
 
 func TestBuildCommand(t *testing.T) {
 	profile := &config.Profile{
-		Name:    "test",
-		BaseURL: "https://api.example.com",
-		Token:   "token123",
-		Model:   "test-model",
+		Name:             "test",
+		AnthropicBaseURL: "https://api.example.com",
+		Token:            "token123",
+		Model:            "test-model",
 	}
 
 	args := []string{"--dangerously-skip-permissions"}
@@ -126,10 +127,10 @@ func TestBuildCommand(t *testing.T) {
 func TestBuildCommandWithoutModel(t *testing.T) {
 	// 测试没有指定模型的情况
 	profile := &config.Profile{
-		Name:    "no-model",
-		BaseURL: "https://api.anthropic.com",
-		Token:   "token123",
-		Model:   "", // 空模型
+		Name:             "no-model",
+		AnthropicBaseURL: "https://api.anthropic.com",
+		Token:            "token123",
+		Model:            "", // 空模型
 	}
 
 	cmd := BuildCommand(profile, []string{})
@@ -145,9 +146,9 @@ func TestBuildCommandWithoutModel(t *testing.T) {
 func TestBuildSettingsEmptyBaseURL(t *testing.T) {
 	// 测试空 BaseURL 的情况
 	profile := &config.Profile{
-		Name:    "empty-url",
-		BaseURL: "",
-		Token:   "token123",
+		Name:             "empty-url",
+		AnthropicBaseURL: "",
+		Token:            "token123",
 	}
 
 	settings := BuildSettings(profile)
@@ -167,10 +168,10 @@ func TestBuildSettingsEmptyBaseURL(t *testing.T) {
 
 func TestBuildSettingsJSON(t *testing.T) {
 	profile := &config.Profile{
-		Name:    "moonshot",
-		BaseURL: "https://api.kimi.com/coding/",
-		Token:   "test-token",
-		Model:   "kimi-k2.5",
+		Name:             "moonshot",
+		AnthropicBaseURL: "https://api.kimi.com/coding/",
+		Token:            "test-token",
+		Model:            "kimi-k2.5",
 	}
 
 	settings := BuildSettings(profile)
@@ -202,27 +203,40 @@ func TestBuildSettingsJSON(t *testing.T) {
 
 func TestMergeConfig(t *testing.T) {
 	profile := &config.Profile{
-		Name:    "test",
-		BaseURL: "https://api.example.com",
-		Model:   "model-v1",
-		Token:   "profile-token",
+		Name:             "test",
+		AnthropicBaseURL: "https://anthropic.example.com",
+		OpenAIBaseURL:    "https://openai.example.com",
+		Model:            "model-v1",
+		Token:            "profile-token",
 	}
 
 	tests := []struct {
-		name      string
-		cfg       *LaunchConfig
-		wantModel string
-		wantURL   string
-		wantToken string
+		name       string
+		cfg        *LaunchConfig
+		toolFormat string
+		wantModel  string
+		wantURL    string
+		wantToken  string
 	}{
 		{
-			name: "only profile",
+			name: "anthropic format selects anthropic url",
 			cfg: &LaunchConfig{
 				Profile: profile,
 			},
-			wantModel: "model-v1",
-			wantURL:   "https://api.example.com",
-			wantToken: "profile-token",
+			toolFormat: tools.FormatAnthropic,
+			wantModel:  "model-v1",
+			wantURL:    "https://anthropic.example.com",
+			wantToken:  "profile-token",
+		},
+		{
+			name: "openai format selects openai url",
+			cfg: &LaunchConfig{
+				Profile: profile,
+			},
+			toolFormat: tools.FormatOpenAI,
+			wantModel:  "model-v1",
+			wantURL:    "https://openai.example.com",
+			wantToken:  "profile-token",
 		},
 		{
 			name: "command line overrides profile",
@@ -232,9 +246,10 @@ func TestMergeConfig(t *testing.T) {
 				BaseURL: "https://override.com",
 				Token:   "override-token",
 			},
-			wantModel: "override-model",
-			wantURL:   "https://override.com",
-			wantToken: "override-token",
+			toolFormat: tools.FormatAnthropic,
+			wantModel:  "override-model",
+			wantURL:    "https://override.com",
+			wantToken:  "override-token",
 		},
 		{
 			name: "partial override - model only",
@@ -242,24 +257,26 @@ func TestMergeConfig(t *testing.T) {
 				Profile: profile,
 				Model:   "new-model",
 			},
-			wantModel: "new-model",
-			wantURL:   "https://api.example.com",
-			wantToken: "profile-token",
+			toolFormat: tools.FormatOpenAI,
+			wantModel:  "new-model",
+			wantURL:    "https://openai.example.com",
+			wantToken:  "profile-token",
 		},
 		{
 			name: "no profile no override",
 			cfg: &LaunchConfig{
 				Tool: "claude",
 			},
-			wantModel: "",
-			wantURL:   "",
-			wantToken: "",
+			toolFormat: tools.FormatAnthropic,
+			wantModel:  "",
+			wantURL:    "",
+			wantToken:  "",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			model, baseURL, token := MergeConfig(tt.cfg)
+			model, baseURL, token := MergeConfig(tt.cfg, tt.toolFormat)
 			if model != tt.wantModel {
 				t.Errorf("MergeConfig() model = %v, want %v", model, tt.wantModel)
 			}

@@ -33,41 +33,41 @@ func TestGetPresetByName(t *testing.T) {
 		{
 			name: "anthropic",
 			expected: &Profile{
-				Name:    "anthropic",
-				BaseURL: "https://api.anthropic.com",
-				Model:   "claude-sonnet-4-5-20250929",
+				Name:             "anthropic",
+				AnthropicBaseURL: "https://api.anthropic.com",
+				Model:            "claude-sonnet-4-5-20250929",
 			},
 		},
 		{
 			name: "moonshot",
 			expected: &Profile{
-				Name:    "moonshot",
-				BaseURL: "https://api.kimi.com/coding/",
-				Model:   "kimi-k2.5",
+				Name:             "moonshot",
+				AnthropicBaseURL: "https://api.kimi.com/coding/",
+				Model:            "kimi-k2.5",
 			},
 		},
 		{
 			name: "bigmodel",
 			expected: &Profile{
-				Name:    "bigmodel",
-				BaseURL: "https://open.bigmodel.cn/api/anthropic",
-				Model:   "glm-5",
+				Name:             "bigmodel",
+				AnthropicBaseURL: "https://open.bigmodel.cn/api/anthropic",
+				Model:            "glm-5",
 			},
 		},
 		{
 			name: "deepseek",
 			expected: &Profile{
-				Name:    "deepseek",
-				BaseURL: "https://api.deepseek.com/anthropic",
-				Model:   "deepseek-chat",
+				Name:             "deepseek",
+				AnthropicBaseURL: "https://api.deepseek.com/anthropic",
+				Model:            "deepseek-chat",
 			},
 		},
 		{
 			name: "minimax",
 			expected: &Profile{
-				Name:    "minimax",
-				BaseURL: "https://api.minimaxi.com/anthropic",
-				Model:   "MiniMax-M2.5",
+				Name:             "minimax",
+				AnthropicBaseURL: "https://api.minimaxi.com/anthropic",
+				Model:            "MiniMax-M2.5",
 			},
 		},
 	}
@@ -81,8 +81,8 @@ func TestGetPresetByName(t *testing.T) {
 			if p.Name != tt.expected.Name {
 				t.Errorf("expected name '%s', got '%s'", tt.expected.Name, p.Name)
 			}
-			if p.BaseURL != tt.expected.BaseURL {
-				t.Errorf("expected baseURL '%s', got '%s'", tt.expected.BaseURL, p.BaseURL)
+			if p.AnthropicBaseURL != tt.expected.AnthropicBaseURL {
+				t.Errorf("expected baseURL '%s', got '%s'", tt.expected.AnthropicBaseURL, p.AnthropicBaseURL)
 			}
 			if p.Model != tt.expected.Model {
 				t.Errorf("expected model '%s', got '%s'", tt.expected.Model, p.Model)

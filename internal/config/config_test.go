@@ -16,25 +16,25 @@ func TestProfileValidation(t *testing.T) {
 		{
 			name: "valid profile",
 			profile: Profile{
-				Name:    "anthropic",
-				BaseURL: "https://api.anthropic.com",
-				Token:   "sk-ant-xxx",
+				Name:             "anthropic",
+				AnthropicBaseURL: "https://api.anthropic.com",
+				Token:            "sk-ant-xxx",
 			},
 			wantErr: false,
 		},
 		{
 			name: "missing name",
 			profile: Profile{
-				BaseURL: "https://api.anthropic.com",
-				Token:   "sk-ant-xxx",
+				AnthropicBaseURL: "https://api.anthropic.com",
+				Token:            "sk-ant-xxx",
 			},
 			wantErr: true,
 		},
 		{
 			name: "missing token",
 			profile: Profile{
-				Name:    "anthropic",
-				BaseURL: "https://api.anthropic.com",
+				Name:             "anthropic",
+				AnthropicBaseURL: "https://api.anthropic.com",
 			},
 			wantErr: true,
 		},
@@ -63,7 +63,7 @@ func TestConfigLoadAndSave(t *testing.T) {
 	// 测试保存
 	cfg := &Config{
 		Profiles: []Profile{
-			{Name: "test", BaseURL: "https://example.com", Token: "token123"},
+			{Name: "test", AnthropicBaseURL: "https://example.com", Token: "token123"},
 		},
 		Default: "test",
 	}
@@ -90,8 +90,8 @@ func TestConfigLoadAndSave(t *testing.T) {
 func TestConfigGetProfile(t *testing.T) {
 	cfg := &Config{
 		Profiles: []Profile{
-			{Name: "anthropic", BaseURL: "https://api.anthropic.com", Token: "token1"},
-			{Name: "moonshot", BaseURL: "https://api.kimi.com/coding/", Token: "token2"},
+			{Name: "anthropic", AnthropicBaseURL: "https://api.anthropic.com", Token: "token1"},
+			{Name: "moonshot", AnthropicBaseURL: "https://api.kimi.com/coding/", Token: "token2"},
 		},
 		Default: "anthropic",
 	}
@@ -125,7 +125,7 @@ func TestAddProfile(t *testing.T) {
 	cfg := &Config{Profiles: []Profile{}}
 
 	// 测试添加新配置
-	p := Profile{Name: "test", BaseURL: "https://example.com", Token: "token123"}
+	p := Profile{Name: "test", AnthropicBaseURL: "https://example.com", Token: "token123"}
 	if err := cfg.AddProfile(p); err != nil {
 		t.Errorf("AddProfile failed: %v", err)
 	}

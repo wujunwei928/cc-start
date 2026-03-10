@@ -20,8 +20,8 @@ func setupTestREPL(t *testing.T) (*REPL, string) {
 	// 创建测试配置
 	cfg := &config.Config{
 		Profiles: []config.Profile{
-			{Name: "test1", BaseURL: "https://api.test1.com", Token: "token1", Model: "model1"},
-			{Name: "test2", BaseURL: "https://api.test2.com", Token: "token2", Model: "model2"},
+			{Name: "test1", AnthropicBaseURL: "https://api.test1.com", Token: "token1", Model: "model1"},
+			{Name: "test2", AnthropicBaseURL: "https://api.test2.com", Token: "token2", Model: "model2"},
 		},
 		Default: "test1",
 	}
@@ -232,7 +232,7 @@ func TestCmdImport(t *testing.T) {
 	importPath := filepath.Join(tmpDir, "import.json")
 	importCfg := &config.Config{
 		Profiles: []config.Profile{
-			{Name: "imported", BaseURL: "https://imported.com", Token: "token"},
+			{Name: "imported", AnthropicBaseURL: "https://imported.com", Token: "token"},
 		},
 	}
 	data, err := json.Marshal(importCfg)

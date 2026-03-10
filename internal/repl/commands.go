@@ -33,7 +33,7 @@ func (r *REPL) cmdList(args []string) {
 	}
 
 	table := NewTable()
-	table.Header([]string{"名称", "Base URL", "模型", "Token", "状态"})
+	table.Header([]string{"名称", "Anthropic URL", "OpenAI URL", "模型", "Token", "状态"})
 
 	// 按名称排序输出
 	names := make([]string, 0, len(r.cfg.Profiles))
@@ -57,7 +57,8 @@ func (r *REPL) cmdList(args []string) {
 
 		table.Append([]string{
 			name,
-			p.BaseURL,
+			p.AnthropicBaseURL,
+			p.OpenAIBaseURL,
 			p.Model,
 			maskAPIKey(p.Token),
 			status,
@@ -106,7 +107,8 @@ func (r *REPL) cmdCurrent(args []string) {
 
 	fmt.Println()
 	PrintCurrent("当前配置: %s", profile.Name)
-	fmt.Printf("  Base URL: %s\n", profile.BaseURL)
+	fmt.Printf("  Anthropic URL: %s\n", profile.AnthropicBaseURL)
+	fmt.Printf("  OpenAI URL: %s\n", profile.OpenAIBaseURL)
 	if profile.Model != "" {
 		fmt.Printf("  模型: %s\n", profile.Model)
 	}
@@ -165,7 +167,8 @@ func (r *REPL) cmdShow(args []string) {
 
 	fmt.Println()
 	fmt.Printf("配置名称: %s\n", profile.Name)
-	fmt.Printf("Base URL: %s\n", profile.BaseURL)
+	fmt.Printf("Anthropic URL: %s\n", profile.AnthropicBaseURL)
+	fmt.Printf("OpenAI URL: %s\n", profile.OpenAIBaseURL)
 	if profile.Model != "" {
 		fmt.Printf("模型: %s\n", profile.Model)
 	}
@@ -297,10 +300,11 @@ func (r *REPL) cmdCopy(args []string) {
 
 	// 创建新配置
 	newProfile := config.Profile{
-		Name:    dstName,
-		BaseURL: src.BaseURL,
-		Model:   src.Model,
-		Token:   src.Token,
+		Name:             dstName,
+		AnthropicBaseURL: src.AnthropicBaseURL,
+		OpenAIBaseURL:    src.OpenAIBaseURL,
+		Model:            src.Model,
+		Token:            src.Token,
 	}
 
 	if err := r.cfg.AddProfile(newProfile); err != nil {
@@ -387,9 +391,14 @@ func (r *REPL) cmdTest(args []string) {
 
 	PrintInfo("测试配置 '%s' 的 API 连通性...", name)
 
-	baseURL := profile.BaseURL
+	// 优先测试 Anthropic URL，如果没有则测试 OpenAI URL
+	baseURL := profile.AnthropicBaseURL
 	if baseURL == "" {
-		baseURL = "https://api.anthropic.com"
+		baseURL = profile.OpenAIBaseURL
+	}
+	if baseURL == "" {
+		PrintWarning("未配置任何 Base URL")
+		return
 	}
 
 	// 使用 curl 测试连接

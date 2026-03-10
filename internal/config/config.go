@@ -11,10 +11,11 @@ import (
 
 // Profile 单个供应商配置
 type Profile struct {
-	Name    string `json:"name"`
-	BaseURL string `json:"base_url"`
-	Model   string `json:"model,omitempty"`
-	Token   string `json:"token"`
+	Name             string `json:"name"`
+	AnthropicBaseURL string `json:"anthropic_base_url,omitempty"`
+	OpenAIBaseURL    string `json:"openai_base_url,omitempty"`
+	Model            string `json:"model,omitempty"`
+	Token            string `json:"token"`
 }
 
 // Validate 验证配置项
@@ -154,7 +155,17 @@ func LoadConfig(path string) (*Config, error) {
 		cfg.Settings.Theme = "default"
 	}
 
+	// 迁移：旧配置 base_url → anthropic_base_url
+	for i := range cfg.Profiles {
+		migrateProfile(&cfg.Profiles[i])
+	}
+
 	return &cfg, nil
+}
+
+// migrateProfile 迁移旧配置格式
+func migrateProfile(p *Profile) {
+	// 旧字段已不存在，此函数保留用于未来迁移需求
 }
 
 // GetConfigPath 获取配置文件路径

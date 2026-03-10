@@ -17,6 +17,8 @@ type step int
 const (
 	stepSelectPreset step = iota
 	stepInputName
+	stepInputAnthropicURL
+	stepInputOpenAIURL
 	stepInputToken
 	stepInputModel
 	stepConfirm
@@ -49,11 +51,13 @@ type Model struct {
 	nameInput  textinput.Model
 	tokenInput textinput.Model
 	modelInput textinput.Model
-	isCustom   bool
-	presetName string
-	baseURL    string
-	err        error
-	profile    *config.Profile
+	// URL 输入
+	anthropicURLInput textinput.Model
+	openaiURLInput    textinput.Model
+	isCustom          bool
+	presetName        string
+	err               error
+	profile           *config.Profile
 	// 编辑模式
 	isEdit       bool
 	originalName string // 原始配置名，用于重命名时更新引用
@@ -73,13 +77,21 @@ func InitialModel() Model {
 	modelInput := textinput.New()
 	modelInput.Placeholder = "Model name (optional, press Enter to skip)"
 
+	anthropicURLInput := textinput.New()
+	anthropicURLInput.Placeholder = "Anthropic format URL (e.g. https://api.anthropic.com)"
+
+	openaiURLInput := textinput.New()
+	openaiURLInput.Placeholder = "OpenAI format URL (e.g. https://api.openai.com/v1)"
+
 	return Model{
-		step:       stepSelectPreset,
-		presets:    []string{"anthropic", "moonshot", "bigmodel", "deepseek", "minimax", "自定义"},
-		selected:   0,
-		nameInput:  nameInput,
-		tokenInput: tokenInput,
-		modelInput: modelInput,
+		step:              stepSelectPreset,
+		presets:           []string{"anthropic", "moonshot", "bigmodel", "deepseek", "minimax", "自定义"},
+		selected:          0,
+		nameInput:         nameInput,
+		tokenInput:        tokenInput,
+		modelInput:        modelInput,
+		anthropicURLInput: anthropicURLInput,
+		openaiURLInput:    openaiURLInput,
 	}
 }
 
@@ -100,12 +112,20 @@ func InitialModelWithProfile(p config.Profile) Model {
 	modelInput.Placeholder = "Model name (optional)"
 	modelInput.SetValue(p.Model)
 
+	anthropicURLInput := textinput.New()
+	anthropicURLInput.Placeholder = "Anthropic format URL"
+	anthropicURLInput.SetValue(p.AnthropicBaseURL)
+
+	openaiURLInput := textinput.New()
+	openaiURLInput.Placeholder = "OpenAI format URL"
+	openaiURLInput.SetValue(p.OpenAIBaseURL)
+
 	// 查找匹配的预设
 	presets := []string{"anthropic", "moonshot", "bigmodel", "deepseek", "minimax", "自定义"}
 	selected := len(presets) - 1 // 默认选择"自定义"
 	for i, preset := range presets[:len(presets)-1] {
 		if presetConf, err := config.GetPresetByName(preset); err == nil {
-			if presetConf.BaseURL == p.BaseURL {
+			if presetConf.AnthropicBaseURL == p.AnthropicBaseURL {
 				selected = i
 				break
 			}
@@ -113,15 +133,16 @@ func InitialModelWithProfile(p config.Profile) Model {
 	}
 
 	return Model{
-		step:         stepInputName, // 编辑模式直接从名称输入开始
-		presets:      presets,
-		selected:     selected,
-		nameInput:    nameInput,
-		tokenInput:   tokenInput,
-		modelInput:   modelInput,
-		baseURL:      p.BaseURL,
-		isEdit:       true,
-		originalName: p.Name,
+		step:              stepInputName, // 编辑模式直接从名称输入开始
+		presets:           presets,
+		selected:          selected,
+		nameInput:         nameInput,
+		tokenInput:        tokenInput,
+		modelInput:        modelInput,
+		anthropicURLInput: anthropicURLInput,
+		openaiURLInput:    openaiURLInput,
+		isEdit:            true,
+		originalName:      p.Name,
 	}
 }
 
@@ -167,6 +188,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		var cmd tea.Cmd
 		m.nameInput, cmd = m.nameInput.Update(msg)
 		return m, cmd
+	case stepInputAnthropicURL:
+		var cmd tea.Cmd
+		m.anthropicURLInput, cmd = m.anthropicURLInput.Update(msg)
+		return m, cmd
+	case stepInputOpenAIURL:
+		var cmd tea.Cmd
+		m.openaiURLInput, cmd = m.openaiURLInput.Update(msg)
+		return m, cmd
 	case stepInputToken:
 		var cmd tea.Cmd
 		m.tokenInput, cmd = m.tokenInput.Update(msg)
@@ -195,7 +224,8 @@ func (m *Model) handleEnter() (tea.Model, tea.Cmd) {
 				m.err = err
 				return m, nil
 			}
-			m.baseURL = preset.BaseURL
+			m.anthropicURLInput.SetValue(preset.AnthropicBaseURL)
+			m.openaiURLInput.SetValue(preset.OpenAIBaseURL)
 			m.modelInput.SetValue(preset.Model)
 			m.nameInput.SetValue(preset.Name)
 			m.step = stepInputToken
@@ -207,8 +237,27 @@ func (m *Model) handleEnter() (tea.Model, tea.Cmd) {
 			m.err = fmt.Errorf("配置名称不能为空")
 			return m, nil
 		}
+		// 编辑模式或自定义模式需要输入 URL
+		if m.isEdit || m.isCustom {
+			m.step = stepInputAnthropicURL
+			m.nameInput.Blur()
+			m.anthropicURLInput.Focus()
+		} else {
+			m.step = stepInputToken
+			m.nameInput.Blur()
+			m.tokenInput.Focus()
+		}
+
+	case stepInputAnthropicURL:
+		// Anthropic URL 可以为空，继续下一步
+		m.step = stepInputOpenAIURL
+		m.anthropicURLInput.Blur()
+		m.openaiURLInput.Focus()
+
+	case stepInputOpenAIURL:
+		// OpenAI URL 可以为空，继续下一步
 		m.step = stepInputToken
-		m.nameInput.Blur()
+		m.openaiURLInput.Blur()
 		m.tokenInput.Focus()
 
 	case stepInputToken:
@@ -239,16 +288,23 @@ func (m *Model) handleGoBack() (tea.Model, tea.Cmd) {
 		m.modelInput.Blur()
 		m.tokenInput.Focus()
 	case stepInputToken:
-		// 编辑模式或自定义模式返回名称输入，否则返回预设选择
 		if m.isEdit || m.isCustom {
-			m.step = stepInputName
-			m.nameInput.Focus()
+			m.step = stepInputOpenAIURL
+			m.tokenInput.Blur()
+			m.openaiURLInput.Focus()
 		} else {
 			m.step = stepSelectPreset
+			m.tokenInput.Blur()
 		}
-		m.tokenInput.Blur()
+	case stepInputOpenAIURL:
+		m.step = stepInputAnthropicURL
+		m.openaiURLInput.Blur()
+		m.anthropicURLInput.Focus()
+	case stepInputAnthropicURL:
+		m.step = stepInputName
+		m.anthropicURLInput.Blur()
+		m.nameInput.Focus()
 	case stepInputName:
-		// 编辑模式直接退出，新建模式回到预设选择
 		if m.isEdit {
 			return m, tea.Quit
 		}
@@ -261,32 +317,39 @@ func (m *Model) handleGoBack() (tea.Model, tea.Cmd) {
 
 func (m *Model) handleBackspace(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	// Backspace 只删除当前步骤的字符
-	// 输入框为空时，不做任何事情（不返回上一步，返回上一步请用 ESC 键）
 	switch m.step {
 	case stepInputName:
 		if m.nameInput.Value() == "" {
-			// 输入框为空，不做任何事情
 			return m, nil
 		}
-		// 输入框有值，传递给 textinput 处理
 		var cmd tea.Cmd
 		m.nameInput, cmd = m.nameInput.Update(msg)
 		return m, cmd
-	case stepInputToken:
-		if m.tokenInput.Value() == "" {
-			// 输入框为空，不做任何事情
+	case stepInputAnthropicURL:
+		if m.anthropicURLInput.Value() == "" {
 			return m, nil
 		}
-		// 输入框有值，传递给 textinput 处理
+		var cmd tea.Cmd
+		m.anthropicURLInput, cmd = m.anthropicURLInput.Update(msg)
+		return m, cmd
+	case stepInputOpenAIURL:
+		if m.openaiURLInput.Value() == "" {
+			return m, nil
+		}
+		var cmd tea.Cmd
+		m.openaiURLInput, cmd = m.openaiURLInput.Update(msg)
+		return m, cmd
+	case stepInputToken:
+		if m.tokenInput.Value() == "" {
+			return m, nil
+		}
 		var cmd tea.Cmd
 		m.tokenInput, cmd = m.tokenInput.Update(msg)
 		return m, cmd
 	case stepInputModel:
 		if m.modelInput.Value() == "" {
-			// 输入框为空，不做任何事情
 			return m, nil
 		}
-		// 输入框有值，传递给 textinput 处理
 		var cmd tea.Cmd
 		m.modelInput, cmd = m.modelInput.Update(msg)
 		return m, cmd
@@ -296,10 +359,11 @@ func (m *Model) handleBackspace(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 func (m *Model) saveProfile() {
 	m.profile = &config.Profile{
-		Name:    m.nameInput.Value(),
-		BaseURL: m.baseURL,
-		Token:   m.tokenInput.Value(),
-		Model:   m.modelInput.Value(),
+		Name:             m.nameInput.Value(),
+		AnthropicBaseURL: m.anthropicURLInput.Value(),
+		OpenAIBaseURL:    m.openaiURLInput.Value(),
+		Token:            m.tokenInput.Value(),
+		Model:            m.modelInput.Value(),
 	}
 
 	// 保存到文件
@@ -352,24 +416,46 @@ func (m Model) View() string {
 		b.WriteString(normalStyle.Render("↑/↓ 选择，Enter 确认"))
 
 	case stepInputName:
-		if m.isEdit {
-			b.WriteString(fmt.Sprintf("URL: %s\n\n", m.baseURL))
-		}
 		b.WriteString("输入配置名称:\n\n")
 		b.WriteString(fmt.Sprintf("  %s\n\n", m.nameInput.View()))
 		b.WriteString(normalStyle.Render("Enter 确认，ESC 返回"))
 
+	case stepInputAnthropicURL:
+		b.WriteString(fmt.Sprintf("配置: %s\n\n", m.nameInput.Value()))
+		b.WriteString("输入 Anthropic 格式 URL（可留空）:\n")
+		b.WriteString(normalStyle.Render("  用于 Claude CLI\n\n"))
+		b.WriteString(fmt.Sprintf("  %s\n\n", m.anthropicURLInput.View()))
+		b.WriteString(normalStyle.Render("Enter 继续，ESC 返回"))
+
+	case stepInputOpenAIURL:
+		b.WriteString(fmt.Sprintf("配置: %s\n", m.nameInput.Value()))
+		b.WriteString(fmt.Sprintf("Anthropic URL: %s\n\n", m.anthropicURLInput.Value()))
+		b.WriteString("输入 OpenAI 格式 URL（可留空）:\n")
+		b.WriteString(normalStyle.Render("  用于 Codex/OpenCode CLI\n\n"))
+		b.WriteString(fmt.Sprintf("  %s\n\n", m.openaiURLInput.View()))
+		b.WriteString(normalStyle.Render("Enter 继续，ESC 返回"))
+
 	case stepInputToken:
 		b.WriteString(fmt.Sprintf("配置: %s\n", m.nameInput.Value()))
-		b.WriteString(fmt.Sprintf("URL: %s\n\n", m.baseURL))
-		b.WriteString("输入 API Token:\n\n")
+		if m.anthropicURLInput.Value() != "" {
+			b.WriteString(fmt.Sprintf("Anthropic URL: %s\n", m.anthropicURLInput.Value()))
+		}
+		if m.openaiURLInput.Value() != "" {
+			b.WriteString(fmt.Sprintf("OpenAI URL: %s\n", m.openaiURLInput.Value()))
+		}
+		b.WriteString("\n输入 API Token:\n\n")
 		b.WriteString(fmt.Sprintf("  %s\n\n", m.tokenInput.View()))
 		b.WriteString(normalStyle.Render("Enter 确认，ESC 返回"))
 
 	case stepInputModel:
 		b.WriteString(fmt.Sprintf("配置: %s\n", m.nameInput.Value()))
-		b.WriteString(fmt.Sprintf("URL: %s\n\n", m.baseURL))
-		b.WriteString("输入模型名称（可选）:\n\n")
+		if m.anthropicURLInput.Value() != "" {
+			b.WriteString(fmt.Sprintf("Anthropic URL: %s\n", m.anthropicURLInput.Value()))
+		}
+		if m.openaiURLInput.Value() != "" {
+			b.WriteString(fmt.Sprintf("OpenAI URL: %s\n", m.openaiURLInput.Value()))
+		}
+		b.WriteString("\n输入模型名称（可选）:\n\n")
 		b.WriteString(fmt.Sprintf("  %s\n\n", m.modelInput.View()))
 		b.WriteString(normalStyle.Render("Enter 保存，ESC 返回"))
 	}
