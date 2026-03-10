@@ -15,14 +15,14 @@ var (
 // rootCmd 根命令
 var rootCmd = &cobra.Command{
 	Use:   "cc-start",
-	Short: "Claude Code 启动器 - 快速切换不同供应商",
-	Long: `CC-Start 是一个 Claude Code 启动器，帮助你管理多个 API 供应商配置。
+	Short: "AI 编程助手启动器 - 快速切换不同供应商",
+	Long: `CC-Start 是一个 AI 编程助手启动器，帮助你管理多个 API 供应商配置。
 
 使用方法:
-  cc-start           进入交互式 REPL
-  cc-start run       启动 Claude Code
-  cc-start setup     配置向导
-  cc-start list      列出所有配置`,
+  cc-start              进入交互式 REPL
+  cc-start launch       启动 AI 编程助手
+  cc-start setup        配置向导
+  cc-start list         列出所有配置`,
 	Version: Version,
 	RunE:    runRoot,
 }
