@@ -18,16 +18,19 @@ var presets = []Profile{
 	{
 		Name:             "bigmodel",
 		AnthropicBaseURL: "https://open.bigmodel.cn/api/anthropic",
+		OpenAIBaseURL:    "https://open.bigmodel.cn/api/coding/paas/v4",
 		Model:            "glm-5",
 	},
 	{
 		Name:             "deepseek",
 		AnthropicBaseURL: "https://api.deepseek.com/anthropic",
+		OpenAIBaseURL:    "https://api.deepseek.com/v1",
 		Model:            "deepseek-chat",
 	},
 	{
 		Name:             "minimax",
 		AnthropicBaseURL: "https://api.minimaxi.com/anthropic",
+		OpenAIBaseURL:    "https://api.minimaxi.com/v1",
 		Model:            "MiniMax-M2.5",
 	},
 }
