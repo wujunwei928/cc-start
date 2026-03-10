@@ -15,16 +15,16 @@ func TestRootCommand(t *testing.T) {
 	}
 }
 
-func TestRunCommandExists(t *testing.T) {
-	runCmdFound := false
+func TestLaunchCommandExists(t *testing.T) {
+	launchCmdFound := false
 	for _, cmd := range rootCmd.Commands() {
-		if cmd.Name() == "run" {
-			runCmdFound = true
+		if cmd.Name() == "launch" {
+			launchCmdFound = true
 			break
 		}
 	}
-	if !runCmdFound {
-		t.Error("run command should exist")
+	if !launchCmdFound {
+		t.Error("launch command should exist")
 	}
 }
 

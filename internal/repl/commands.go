@@ -13,7 +13,6 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/wujunwei928/cc-start/internal/config"
-	"github.com/wujunwei928/cc-start/internal/launcher"
 	"github.com/wujunwei928/cc-start/internal/tui/setup"
 )
 
@@ -575,9 +574,8 @@ func (r *REPL) cmdHelp(args []string) {
 	fmt.Println("  /exit, /quit, /q    退出")
 	fmt.Println()
 
-	// 启动
-	fmt.Println("启动 Claude Code:")
-	fmt.Println("  /run [profile] [-- args...]  使用当前或指定配置启动")
+	// 配置
+	fmt.Println("配置:")
 	fmt.Println("  /setup              运行配置向导")
 	fmt.Println()
 }
@@ -697,17 +695,6 @@ func (r *REPL) showCommandHelp(cmd string) {
 用法: /history
 
 显示最近 20 条执行的命令。`,
-		"/run": `/run - 启动 Claude Code
-
-用法: /run [profile] [-- args...]
-
-使用指定或当前配置启动 Claude Code。
-
-示例:
-  /run                    使用当前配置启动
-  /run moonshot           使用 moonshot 配置启动
-  /run -- --help          使用当前配置启动，传递 --help 给 claude
-  /run moonshot -- --help 使用 moonshot 配置启动，传递 --help`,
 		"/setup": `/setup - 运行配置向导
 
 用法: /setup
@@ -769,58 +756,6 @@ func (r *REPL) cmdClear(args []string) {
 func (r *REPL) cmdExit(args []string) {
 	fmt.Println("再见!")
 	os.Exit(0)
-}
-
-// cmdRun 启动 Claude Code
-// 用法: run [profile] [-- args...]
-// - 无参数：使用当前配置启动
-// - run <profile>：使用指定配置启动
-// - run -- <args>：使用当前配置启动，传递参数给 claude
-// - run <profile> -- <args>：使用指定配置启动，传递参数给 claude
-func (r *REPL) cmdRun(args []string) {
-	profileName := r.currentName
-	launchArgs := args
-
-	// 解析参数
-	for i, arg := range args {
-		if arg == "--" {
-			// -- 后的参数传递给 claude
-			launchArgs = args[i+1:]
-			if i > 0 {
-				// -- 前有参数，作为 profile 名称
-				profileName = args[0]
-			}
-			break
-		}
-	}
-
-	// 如果没有 -- 分隔符，检查第一个参数是否为 profile 名称
-	if len(args) > 0 && len(launchArgs) == len(args) {
-		// 尝试将第一个参数作为 profile 名称
-		if _, err := r.cfg.GetProfile(args[0]); err == nil {
-			profileName = args[0]
-			launchArgs = args[1:]
-		}
-	}
-
-	if profileName == "" {
-		PrintError("请先选择配置: /use <name>")
-		PrintInfo("或指定配置名: /run <profile>")
-		return
-	}
-
-	profile, err := r.cfg.GetProfile(profileName)
-	if err != nil {
-		PrintError("配置无效: %v", err)
-		return
-	}
-
-	// 保存历史，确保退出后历史不丢失
-	r.history.Add("run " + strings.Join(args, " "))
-
-	if err := launcher.Launch(profile, launchArgs); err != nil {
-		PrintError("启动失败: %v", err)
-	}
 }
 
 // cmdSetup 运行配置向导
@@ -892,9 +827,7 @@ func (r *REPL) ExecuteCommand(cmd string, args []string) {
 	case "/exit", "/quit", "/q":
 		r.cmdExit(args)
 
-	// 启动
-	case "/run":
-		r.cmdRun(args)
+	// 配置
 	case "/setup":
 		r.cmdSetup(args)
 
