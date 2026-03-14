@@ -57,19 +57,24 @@ func runLaunch(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	return runLaunchWithTool(toolName, args[1:], "launch")
+}
+
+// runLaunchWithTool 使用指定工具名执行启动逻辑
+// cmdName 用于在 os.Args 中定位参数位置
+func runLaunchWithTool(toolName string, args []string, cmdName string) error {
 	// 解析 profile 和工具参数
 	var profileName string
 	var toolArgs []string
 
-	remainingArgs := args[1:]
 	dashPos := findDashSeparator(os.Args)
 
 	if dashPos != -1 {
 		// 有 -- 分隔符
 		toolArgs = os.Args[dashPos+1:]
-		// 找 launch 之后、-- 之前的非 flag 参数作为 profile
+		// 找命令之后、-- 之前的非 flag 参数作为 profile
 		for i := dashPos - 1; i >= 0; i-- {
-			if os.Args[i] == "launch" {
+			if os.Args[i] == cmdName {
 				for j := i + 1; j < dashPos; j++ {
 					arg := os.Args[j]
 					if !isFlag(arg) && arg != toolName && !isFlagValue(os.Args, j) {
@@ -80,9 +85,9 @@ func runLaunch(cmd *cobra.Command, args []string) error {
 				break
 			}
 		}
-	} else if len(remainingArgs) > 0 {
+	} else if len(args) > 0 {
 		// 无 -- 分隔符，第一个非 flag 参数是 profile
-		for _, arg := range remainingArgs {
+		for _, arg := range args {
 			if !isFlag(arg) && !isFlagValue(os.Args, findArgIndex(os.Args, arg)) {
 				profileName = arg
 				break

@@ -19,10 +19,13 @@ var rootCmd = &cobra.Command{
 	Long: `CC-Start 是一个 AI 编程助手启动器，帮助你管理多个 API 供应商配置。
 
 使用方法:
-  cc-start              进入交互式 REPL
-  cc-start launch       启动 AI 编程助手
-  cc-start setup        配置向导
-  cc-start list         列出所有配置`,
+  cc-start               进入交互式 REPL
+  cc-start claude        启动 Claude Code CLI
+  cc-start codex         启动 OpenAI Codex CLI
+  cc-start opencode      启动 OpenCode AI 编程助手
+  cc-start launch        启动任意 AI 编程助手
+  cc-start setup         配置向导
+  cc-start list          列出所有配置`,
 	Version: Version,
 	RunE:    runRoot,
 }
