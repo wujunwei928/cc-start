@@ -1,4 +1,4 @@
-// cmd/launch.go
+// cmd/launcher.go
 package cmd
 
 import (
@@ -6,10 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/spf13/cobra"
 	"github.com/wujunwei928/cc-start/internal/config"
 	"github.com/wujunwei928/cc-start/internal/launcher"
-	"github.com/wujunwei928/cc-start/internal/tools"
 )
 
 var (
@@ -18,47 +16,6 @@ var (
 	launchToken   string
 	launchEnv     []string
 )
-
-// launchCmd 启动 AI 工具命令
-var launchCmd = &cobra.Command{
-	Use:   "launch <tool> [profile] [flags] [-- tool-args]",
-	Short: "启动 AI 编程助手",
-	Long: `使用指定的 AI 工具和配置启动编程助手。
-
-工具:
-  claude    Anthropic Claude Code CLI
-  codex     OpenAI Codex CLI
-  opencode  OpenCode AI 编程助手
-
-示例:
-  cc-start launch claude                      使用默认配置启动 claude
-  cc-start launch claude moonshot             使用 moonshot 配置
-  cc-start launch codex -m gpt-4 -t sk-xxx    指定模型和令牌
-  cc-start launch claude moonshot -e DEBUG=true -- --help`,
-	Args: cobra.MinimumNArgs(1),
-	RunE: runLaunch,
-}
-
-func init() {
-	rootCmd.AddCommand(launchCmd)
-
-	launchCmd.Flags().StringVarP(&launchModel, "model", "m", "", "模型名称")
-	launchCmd.Flags().StringVarP(&launchBaseURL, "base-url", "b", "", "API 基础地址")
-	launchCmd.Flags().StringVarP(&launchToken, "token", "t", "", "认证令牌")
-	launchCmd.Flags().StringArrayVarP(&launchEnv, "env", "e", nil, "环境变量 (格式: KEY=VALUE)")
-}
-
-func runLaunch(cmd *cobra.Command, args []string) error {
-	// 第一个参数是工具名
-	toolName := args[0]
-
-	// 验证工具名
-	if _, err := tools.GetTool(toolName); err != nil {
-		return err
-	}
-
-	return runLaunchWithTool(toolName, args[1:], "launch")
-}
 
 // runLaunchWithTool 使用指定工具名执行启动逻辑
 // cmdName 用于在 os.Args 中定位参数位置

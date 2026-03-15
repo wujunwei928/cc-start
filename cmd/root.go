@@ -23,7 +23,6 @@ var rootCmd = &cobra.Command{
   cc-start claude        启动 Claude Code CLI
   cc-start codex         启动 OpenAI Codex CLI
   cc-start opencode      启动 OpenCode AI 编程助手
-  cc-start launch        启动任意 AI 编程助手
   cc-start setup         配置向导
   cc-start list          列出所有配置`,
 	Version: Version,

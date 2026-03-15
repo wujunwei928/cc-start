@@ -15,19 +15,6 @@ func TestRootCommand(t *testing.T) {
 	}
 }
 
-func TestLaunchCommandExists(t *testing.T) {
-	launchCmdFound := false
-	for _, cmd := range rootCmd.Commands() {
-		if cmd.Name() == "launch" {
-			launchCmdFound = true
-			break
-		}
-	}
-	if !launchCmdFound {
-		t.Error("launch command should exist")
-	}
-}
-
 func TestFindDashSeparator(t *testing.T) {
 	tests := []struct {
 		name     string

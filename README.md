@@ -45,20 +45,20 @@ REPL 中可用命令：
 ### 启动 AI 编程助手
 
 ```bash
-# 使用默认配置启动 claude
-cc-start launch claude
+# 启动 Claude Code CLI
+cc-start claude
 
-# 使用指定配置启动 claude
-cc-start launch claude moonshot
+# 使用指定配置启动
+cc-start claude moonshot
 
-# 指定模型和令牌启动 codex
-cc-start launch codex -m gpt-4 -t sk-xxx
+# 启动 OpenAI Codex CLI（指定模型）
+cc-start codex -m gpt-4
 
 # 传递参数给工具
-cc-start launch claude moonshot -- --dangerously-skip-permissions
+cc-start claude moonshot -- --dangerously-skip-permissions
 
-# 添加环境变量
-cc-start launch claude moonshot -e DEBUG=true
+# 启动 OpenCode
+cc-start opencode deepseek
 ```
 
 ### 命令行配置管理
