@@ -53,6 +53,9 @@ type Styles struct {
 	AutocompleteItem   lipgloss.Style
 	AutocompleteActive lipgloss.Style
 	AutocompleteBorder lipgloss.Style
+
+	// 基础颜色（用于动态样式）
+	MutedColor lipgloss.TerminalColor
 }
 
 // DefaultStyles 返回默认样式
@@ -136,6 +139,8 @@ func DefaultStyles() Styles {
 		AutocompleteBorder: lipgloss.NewStyle().
 			Border(lipgloss.NormalBorder()).
 			BorderForeground(mutedColor),
+
+		MutedColor: mutedColor,
 	}
 }
 
@@ -233,5 +238,7 @@ func NewStylesFromTheme(t *theme.Theme) Styles {
 		AutocompleteBorder: lipgloss.NewStyle().
 			Border(lipgloss.NormalBorder()).
 			BorderForeground(muted),
+
+		MutedColor: muted,
 	}
 }

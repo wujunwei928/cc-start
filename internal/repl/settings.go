@@ -184,7 +184,7 @@ func (s *SettingsPanel) Render() string {
 
 	inputStyle := lipgloss.NewStyle().
 		Border(lipgloss.NormalBorder()).
-		BorderForeground(mutedColor).
+		BorderForeground(s.styles.MutedColor).
 		Padding(0, 1).
 		Width(46)
 	input := inputStyle.Render("> " + s.query)
@@ -215,7 +215,7 @@ func (s *SettingsPanel) Render() string {
 	// 添加空行间距
 	sections = append(sections, "")
 
-	hint := lipgloss.NewStyle().Foreground(mutedColor).Render(s.i18n.T(i18n.MsgSettingsHint))
+	hint := lipgloss.NewStyle().Foreground(s.styles.MutedColor).Render(s.i18n.T(i18n.MsgSettingsHint))
 	sections = append(sections, hint)
 
 	return s.styles.Palette.Render(strings.Join(sections, "\n"))
