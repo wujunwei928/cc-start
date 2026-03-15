@@ -90,7 +90,7 @@ func runLaunchWithTool(toolName string, args []string, cmdName string) error {
 
 	// 验证必要的配置
 	if profile == nil && launchToken == "" {
-		return fmt.Errorf("请通过 -t 指定令牌或指定 profile")
+		return fmt.Errorf("请指定 profile，运行 'cc-start list' 查看可用配置")
 	}
 
 	return launcher.LaunchWithTool(launchCfg)
