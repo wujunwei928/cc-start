@@ -59,13 +59,10 @@ func runLaunchWithTool(toolName string, args []string, cmdName string) error {
 		return fmt.Errorf("加载配置失败: %w", err)
 	}
 
-	// 获取 profile（如果指定）
-	var profile *config.Profile
-	if profileName != "" {
-		profile, err = cfg.GetProfile(profileName)
-		if err != nil {
-			return fmt.Errorf("获取配置失败: %w\n\n运行 'cc-start list' 查看可用配置", err)
-		}
+	// 获取 profile（未指定时使用默认配置）
+	profile, err := cfg.GetProfile(profileName)
+	if err != nil {
+		return fmt.Errorf("获取配置失败: %w\n\n运行 'cc-start list' 查看可用配置", err)
 	}
 
 	// 解析环境变量
