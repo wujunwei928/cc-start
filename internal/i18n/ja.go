@@ -15,6 +15,7 @@ func getJaTranslations() map[string]string {
 		MsgSettingsLanguage: "言語",
 		MsgSettingsTheme:    "テーマ",
 		MsgSettingsHint:     "↑↓ 移動  enter 確定  esc 閉じる",
+		MsgSettingsCurrent:  "現在",
 
 		// コマンドパレット
 		MsgPaletteTitle:      "コマンドパレット",

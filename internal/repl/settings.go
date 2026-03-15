@@ -21,16 +21,18 @@ const (
 
 // SettingsPanel 系统设置面板
 type SettingsPanel struct {
-	visible   bool
-	query     string
-	items     []SettingsItem
-	selected  int
-	styles    Styles
-	width     int
-	mode      SettingsMode
-	subItems  []SettingsItem
-	i18n      *i18n.Manager
-	prevItems []SettingsItem
+	visible      bool
+	query        string
+	items        []SettingsItem
+	selected     int
+	styles       Styles
+	width        int
+	mode         SettingsMode
+	subItems     []SettingsItem
+	i18n         *i18n.Manager
+	prevItems    []SettingsItem
+	currentLang  string
+	currentTheme string
 }
 
 // SettingsItem 设置项
@@ -59,15 +61,17 @@ func getMainSettings(i18nMgr *i18n.Manager) []SettingsItem {
 	}
 }
 
-func getLanguageOptions(i18nMgr *i18n.Manager) []SettingsItem {
+// getLanguageOptions 获取语言选项
+func (s *SettingsPanel) getLanguageOptions() []SettingsItem {
 	return []SettingsItem{
-		{Key: "zh", Label: "中文", Description: "Chinese", Action: "lang:zh"},
-		{Key: "en", Label: "English", Description: "English", Action: "lang:en"},
-		{Key: "ja", Label: "日本語", Description: "Japanese", Action: "lang:ja"},
+		{Key: "zh", Label: "中文", Description: "Chinese", Action: "lang:zh", Value: s.getCurrentMark("zh", s.currentLang)},
+		{Key: "en", Label: "English", Description: "English", Action: "lang:en", Value: s.getCurrentMark("en", s.currentLang)},
+		{Key: "ja", Label: "日本語", Description: "Japanese", Action: "lang:ja", Value: s.getCurrentMark("ja", s.currentLang)},
 	}
 }
 
-func getThemeOptions(i18nMgr *i18n.Manager) []SettingsItem {
+// getThemeOptions 获取主题选项
+func (s *SettingsPanel) getThemeOptions() []SettingsItem {
 	themes := theme.GetAllThemes()
 	items := make([]SettingsItem, len(themes))
 	for i, t := range themes {
@@ -76,6 +80,7 @@ func getThemeOptions(i18nMgr *i18n.Manager) []SettingsItem {
 			Label:       t.DisplayName,
 			Description: "",
 			Action:      "theme:" + t.Name,
+			Value:       s.getCurrentMark(t.Name, s.currentTheme),
 		}
 	}
 	return items
@@ -100,6 +105,20 @@ func (s *SettingsPanel) SetI18n(i18nMgr *i18n.Manager) {
 // SetStyles 设置样式
 func (s *SettingsPanel) SetStyles(styles Styles) {
 	s.styles = styles
+}
+
+// SetCurrentConfig 设置当前配置值
+func (s *SettingsPanel) SetCurrentConfig(lang, theme string) {
+	s.currentLang = lang
+	s.currentTheme = theme
+}
+
+// getCurrentMark 获取当前配置标记
+func (s *SettingsPanel) getCurrentMark(key, current string) string {
+	if key == current {
+		return "✓ (" + s.i18n.T(i18n.MsgSettingsCurrent) + ")"
+	}
+	return ""
 }
 
 // IsVisible 返回是否可见
@@ -198,13 +217,14 @@ func (s *SettingsPanel) Render() string {
 		}
 		valueStr := ""
 		if item.Value != "" {
-			valueStr = " [" + item.Value + "]"
+			// 绿色高亮当前配置标记
+			valueStr = " " + s.styles.Success.Render(item.Value)
 		}
 		if i == s.selected {
-			line := s.styles.PaletteActive.Render("● " + item.Label + valueStr + "  " + item.Description)
+			line := s.styles.PaletteActive.Render("● " + item.Label + "  " + item.Description + valueStr)
 			listLines = append(listLines, line)
 		} else {
-			line := s.styles.PaletteItem.Render("  " + item.Label + valueStr + "  " + item.Description)
+			line := s.styles.PaletteItem.Render("  " + item.Label + "  " + item.Description + valueStr)
 			listLines = append(listLines, line)
 		}
 	}
@@ -245,9 +265,9 @@ func (s *SettingsPanel) EnterSubMenu(mode SettingsMode) {
 	s.mode = mode
 	switch mode {
 	case SettingsModeLanguage:
-		s.items = getLanguageOptions(s.i18n)
+		s.items = s.getLanguageOptions()
 	case SettingsModeTheme:
-		s.items = getThemeOptions(s.i18n)
+		s.items = s.getThemeOptions()
 	}
 	s.selected = 0
 	s.query = ""

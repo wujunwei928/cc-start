@@ -75,6 +75,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.settings == nil {
 				m.settings = NewSettingsPanel(m.Styles, m.I18n)
 			}
+			// 设置当前配置值，用于标识当前选项
+			m.settings.SetCurrentConfig(m.config.Settings.Language, m.config.Settings.Theme)
 			m.settings.Toggle()
 			return m, nil
 

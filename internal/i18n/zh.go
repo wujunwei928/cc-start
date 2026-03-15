@@ -15,6 +15,7 @@ func getZhTranslations() map[string]string {
 		MsgSettingsLanguage: "语言 / Language",
 		MsgSettingsTheme:    "主题 / Theme",
 		MsgSettingsHint:     "↑↓ 导航  enter 确认  esc 关闭",
+		MsgSettingsCurrent:  "当前",
 
 		// 命令面板
 		MsgPaletteTitle:      "命令面板",

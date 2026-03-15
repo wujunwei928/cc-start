@@ -13,6 +13,7 @@ const (
 	MsgSettingsLanguage = "settings.language"
 	MsgSettingsTheme    = "settings.theme"
 	MsgSettingsHint     = "settings.hint"
+	MsgSettingsCurrent  = "settings.current"
 )
 
 const (

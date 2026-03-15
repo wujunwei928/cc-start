@@ -15,6 +15,7 @@ func getEnTranslations() map[string]string {
 		MsgSettingsLanguage: "Language",
 		MsgSettingsTheme:    "Theme",
 		MsgSettingsHint:     "↑↓ Navigate  enter Confirm  esc Close",
+		MsgSettingsCurrent:  "Current",
 
 		// Command Palette
 		MsgPaletteTitle:      "Command Palette",
