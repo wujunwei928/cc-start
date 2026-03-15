@@ -24,9 +24,6 @@ func init() {
 	rootCmd.AddCommand(claudeCmd)
 
 	claudeCmd.Flags().StringVarP(&launchModel, "model", "m", "", "模型名称")
-	claudeCmd.Flags().StringVarP(&launchBaseURL, "base-url", "b", "", "API 基础地址")
-	claudeCmd.Flags().StringVarP(&launchToken, "token", "t", "", "认证令牌")
-	claudeCmd.Flags().StringArrayVarP(&launchEnv, "env", "e", nil, "环境变量 (格式: KEY=VALUE)")
 }
 
 func runClaude(cmd *cobra.Command, args []string) error {

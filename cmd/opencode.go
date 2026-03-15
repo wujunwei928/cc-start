@@ -24,9 +24,6 @@ func init() {
 	rootCmd.AddCommand(opencodeCmd)
 
 	opencodeCmd.Flags().StringVarP(&launchModel, "model", "m", "", "模型名称")
-	opencodeCmd.Flags().StringVarP(&launchBaseURL, "base-url", "b", "", "API 基础地址")
-	opencodeCmd.Flags().StringVarP(&launchToken, "token", "t", "", "认证令牌")
-	opencodeCmd.Flags().StringArrayVarP(&launchEnv, "env", "e", nil, "环境变量 (格式: KEY=VALUE)")
 }
 
 func runOpencode(cmd *cobra.Command, args []string) error {
