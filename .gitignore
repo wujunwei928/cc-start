@@ -30,7 +30,7 @@ Thumbs.db
 *credential*
 
 # 用户配置（包含 Token）
-profiles.json
+settings.json
 
 # Worktrees
 .worktrees/

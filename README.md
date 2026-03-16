@@ -85,7 +85,7 @@ cc-start delete moonshot
 
 ## 配置文件
 
-配置存储在 `~/.cc-start/profiles.json`
+配置存储在 `~/.cc-start/settings.json`
 
 ## 系统设置
 
@@ -107,7 +107,7 @@ cc-start delete moonshot
 4. 选择新的值并按 Enter 确认
 5. 按 Esc 关闭设置面板
 
-设置会自动保存到 `~/.cc-start/profiles.json`，下次启动时自动应用。
+设置会自动保存到 `~/.cc-start/settings.json`，下次启动时自动应用。
 
 ### 示例
 

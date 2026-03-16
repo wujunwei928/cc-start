@@ -24,7 +24,7 @@
    - 立即应用到整个界面
 
 3. **配置持久化**
-   - 合并到现有 `~/.cc-start/profiles.json`
+   - 合并到现有 `~/.cc-start/settings.json`
    - 添加 `settings` 字段存储用户偏好
    - 自动迁移旧配置
 
@@ -67,7 +67,7 @@ repl 包 → 依赖 → i18n 包（翻译）
 
 ### 配置文件结构
 
-扩展后的 `~/.cc-start/profiles.json`：
+扩展后的 `~/.cc-start/settings.json`：
 
 ```json
 {
@@ -486,7 +486,7 @@ func LoadConfig(path string) (*Config, error) {
 程序启动
     ↓
 1. 加载配置文件
-   - 读取 ~/.cc-start/profiles.json
+   - 读取 ~/.cc-start/settings.json
    - 如果没有 settings，使用默认值
     ↓
 2. 初始化 i18n Manager

@@ -174,5 +174,5 @@ func GetConfigPath() string {
 	if err != nil {
 		home = "."
 	}
-	return filepath.Join(home, ".cc-start", "profiles.json")
+	return filepath.Join(home, ".cc-start", "settings.json")
 }

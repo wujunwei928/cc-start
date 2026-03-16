@@ -11,7 +11,7 @@ import (
 
 func TestLanguageSwitch(t *testing.T) {
 	tmpDir := t.TempDir()
-	cfgPath := tmpDir + "/profiles.json"
+	cfgPath := tmpDir + "/settings.json"
 
 	cfg := &config.Config{
 		Profiles: []config.Profile{
@@ -46,7 +46,7 @@ func TestLanguageSwitch(t *testing.T) {
 
 func TestThemeSwitch(t *testing.T) {
 	tmpDir := t.TempDir()
-	cfgPath := tmpDir + "/profiles.json"
+	cfgPath := tmpDir + "/settings.json"
 
 	cfg := &config.Config{
 		Profiles: []config.Profile{
@@ -87,7 +87,7 @@ func TestThemeSwitch(t *testing.T) {
 
 func TestConfigPersistence(t *testing.T) {
 	tmpDir := t.TempDir()
-	cfgPath := tmpDir + "/profiles.json"
+	cfgPath := tmpDir + "/settings.json"
 
 	cfg := &config.Config{
 		Profiles: []config.Profile{

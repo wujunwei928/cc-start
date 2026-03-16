@@ -36,7 +36,7 @@ cc-start/
 ├── main.go              # 程序入口
 ├── cmd/                 # CLI 命令 (Cobra)
 └── internal/
-    ├── config/          # 配置管理 (profiles.json)
+    ├── config/          # 配置管理 (settings.json)
     ├── launcher/        # Claude Code 启动逻辑
     ├── repl/            # 交互式 REPL (Bubble Tea)
     ├── tui/setup/       # 配置向导 TUI
@@ -153,7 +153,7 @@ msg := i18nMgr.T(i18n.MsgSettingsTheme)
 
 ## 配置文件
 
-配置存储在 `~/.cc-start/profiles.json`：
+配置存储在 `~/.cc-start/settings.json`：
 
 ```json
 {

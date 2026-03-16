@@ -15,7 +15,7 @@ func setupTestREPL(t *testing.T) (*REPL, string) {
 	t.Helper()
 
 	tmpDir := t.TempDir()
-	cfgPath := filepath.Join(tmpDir, "profiles.json")
+	cfgPath := filepath.Join(tmpDir, "settings.json")
 
 	// 创建测试配置
 	cfg := &config.Config{

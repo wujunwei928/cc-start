@@ -1007,7 +1007,7 @@ func TestConfigWithSettings(t *testing.T) {
 func TestLoadConfigWithEmptySettings(t *testing.T) {
 	// 创建临时配置文件（没有 settings 字段）
 	tmpDir := t.TempDir()
-	configPath := tmpDir + "/profiles.json"
+	configPath := tmpDir + "/settings.json"
 
 	data := `{
 		"profiles": [{"name": "test", "token": "xxx"}],
@@ -1695,7 +1695,7 @@ import (
 func TestLanguageSwitch(t *testing.T) {
 	// 创建临时配置
 	tmpDir := t.TempDir()
-	cfgPath := tmpDir + "/profiles.json"
+	cfgPath := tmpDir + "/settings.json"
 
 	cfg := &config.Config{
 		Profiles: []config.Profile{
@@ -1728,7 +1728,7 @@ func TestLanguageSwitch(t *testing.T) {
 
 func TestThemeSwitch(t *testing.T) {
 	// 测试主题切换
-	model, _ := NewModel(t.TempDir() + "/profiles.json")
+	model, _ := NewModel(t.TempDir() + "/settings.json")
 
 	// 切换主题
 	oceanTheme, err := theme.GetTheme("ocean")
@@ -1778,7 +1778,7 @@ Expected: PASS
 4. 选择新的值并按 Enter 确认
 5. 按 Esc 关闭设置面板
 
-设置会自动保存到 `~/.cc-start/profiles.json`，下次启动时自动应用。
+设置会自动保存到 `~/.cc-start/settings.json`，下次启动时自动应用。
 ```
 
 **Step 4: 提交**
@@ -1833,7 +1833,7 @@ git commit -m "feat: 完成系统设置功能实现
 
 - 实现多语言支持（中文、英文、日文）
 - 实现 5 个预设主题
-- 配置持久化到 profiles.json
+- 配置持久化到 settings.json
 - 设置面板支持二级选择
 - 完整的测试覆盖"
 ```

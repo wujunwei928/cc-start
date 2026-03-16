@@ -58,7 +58,7 @@ func TestConfigLoadAndSave(t *testing.T) {
 	}
 	defer os.RemoveAll(tmpDir)
 
-	configPath := filepath.Join(tmpDir, "profiles.json")
+	configPath := filepath.Join(tmpDir, "settings.json")
 
 	// 测试保存
 	cfg := &Config{
@@ -258,7 +258,7 @@ func TestConfigWithSettings(t *testing.T) {
 func TestLoadConfigWithEmptySettings(t *testing.T) {
 	// 创建临时配置文件（没有 settings 字段）
 	tmpDir := t.TempDir()
-	configPath := tmpDir + "/profiles.json"
+	configPath := tmpDir + "/settings.json"
 
 	data := `{
 		"profiles": [{"name": "test", "token": "xxx"}],
