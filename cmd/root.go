@@ -21,8 +21,6 @@ var rootCmd = &cobra.Command{
 使用方法:
   cc-start               进入交互式 REPL
   cc-start claude        启动 Claude Code CLI
-  cc-start codex         启动 OpenAI Codex CLI
-  cc-start opencode      启动 OpenCode AI 编程助手
   cc-start setup         配置向导
   cc-start list          列出所有配置`,
 	Version: Version,

@@ -21,8 +21,6 @@ var codexCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(codexCmd)
-
 	codexCmd.Flags().StringVarP(&launchModel, "model", "m", "", "模型名称")
 }
 

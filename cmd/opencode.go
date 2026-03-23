@@ -21,8 +21,6 @@ var opencodeCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(opencodeCmd)
-
 	opencodeCmd.Flags().StringVarP(&launchModel, "model", "m", "", "模型名称")
 }
 
