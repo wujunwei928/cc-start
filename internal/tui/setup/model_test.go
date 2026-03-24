@@ -27,6 +27,13 @@ func TestTokenInputBackspace(t *testing.T) {
 	result, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	m = toModel(result)
 
+	// 确认名称步骤（预设名已自动填充）
+	if m.step != stepInputName {
+		t.Fatalf("期望步骤为 stepInputName，实际为 %d", m.step)
+	}
+	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m = toModel(result)
+
 	// 输入 token
 	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("abcdef")})
 	m = toModel(result)
@@ -52,6 +59,10 @@ func TestModelInputBackspace(t *testing.T) {
 
 	// 选择 anthropic 预设
 	result, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m = toModel(result)
+
+	// 确认名称步骤
+	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	m = toModel(result)
 
 	// 验证预设的模型值已设置
@@ -119,6 +130,10 @@ func TestModelInputCanType(t *testing.T) {
 	result, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	m = toModel(result)
 
+	// 确认名称步骤
+	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m = toModel(result)
+
 	// 输入 token 并进入下一步
 	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("test-token")})
 	m = toModel(result)
@@ -144,8 +159,10 @@ func TestModelInputCanType(t *testing.T) {
 func TestEscGoBackFromModel(t *testing.T) {
 	m := InitialModel()
 
-	// 选择预设，输入 token，到达模型步骤
+	// 选择预设，确认名称，输入 token，到达模型步骤
 	result, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m = toModel(result)
+	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	m = toModel(result)
 	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("test-token")})
 	m = toModel(result)
@@ -169,20 +186,22 @@ func TestEscGoBackFromModel(t *testing.T) {
 func TestEscGoBackFromToken(t *testing.T) {
 	m := InitialModel()
 
-	// 选择预设，到达 token 步骤
+	// 选择预设，确认名称，到达 token 步骤
 	result, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m = toModel(result)
+	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	m = toModel(result)
 
 	if m.step != stepInputToken {
 		t.Fatalf("期望步骤为 stepInputToken，实际为 %d", m.step)
 	}
 
-	// 按 ESC 返回预设选择步骤
+	// 按 ESC 返回名称步骤
 	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyEsc})
 	m = toModel(result)
 
-	if m.step != stepSelectPreset {
-		t.Errorf("ESC 应该返回预设选择步骤，期望 stepSelectPreset，实际 %d", m.step)
+	if m.step != stepInputName {
+		t.Errorf("ESC 应该返回名称步骤，期望 stepInputName，实际 %d", m.step)
 	}
 }
 
@@ -214,6 +233,10 @@ func TestBackspaceNotGoBack(t *testing.T) {
 
 	// 选择 anthropic 预设
 	result, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m = toModel(result)
+
+	// 确认名称步骤
+	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	m = toModel(result)
 
 	// 输入 token 并进入下一步
@@ -253,6 +276,10 @@ func TestBackspaceNotDeletePreviousStep(t *testing.T) {
 	result, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	m = toModel(result)
 
+	// 确认名称步骤
+	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m = toModel(result)
+
 	// 输入 token
 	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("my-secret-token")})
 	m = toModel(result)
@@ -276,5 +303,55 @@ func TestBackspaceNotDeletePreviousStep(t *testing.T) {
 	if m.tokenInput.Value() != tokenValue {
 		t.Errorf("Backspace 不应删除上一步的 token。期望 '%s'，实际 '%s'",
 			tokenValue, m.tokenInput.Value())
+	}
+}
+
+// TestPresetGoesToNameStep 测试选择预设后进入名称步骤（可编辑预设名）
+func TestPresetGoesToNameStep(t *testing.T) {
+	m := InitialModel()
+
+	// 选择 anthropic 预设
+	result, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m = toModel(result)
+
+	if m.step != stepInputName {
+		t.Fatalf("期望步骤为 stepInputName，实际为 %d", m.step)
+	}
+
+	// 验证名称已预填为预设名
+	if m.nameInput.Value() != "anthropic" {
+		t.Fatalf("期望名称预填为 'anthropic'，实际为 '%s'", m.nameInput.Value())
+	}
+
+	// 验证 presetLabel 已设置
+	if m.presetLabel != "anthropic" {
+		t.Fatalf("期望 presetLabel 为 'anthropic'，实际为 '%s'", m.presetLabel)
+	}
+}
+
+// TestPresetCustomName 测试预设模式下可以修改名称
+func TestPresetCustomName(t *testing.T) {
+	m := InitialModel()
+
+	// 选择 anthropic 预设
+	result, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m = toModel(result)
+
+	// 清空默认名称并输入自定义名称
+	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyCtrlU}) // 清空
+	m = toModel(result)
+	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("anthropic-2")})
+	m = toModel(result)
+
+	if m.nameInput.Value() != "anthropic-2" {
+		t.Fatalf("期望名称为 'anthropic-2'，实际为 '%s'", m.nameInput.Value())
+	}
+
+	// 确认名称，进入 token 步骤
+	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m = toModel(result)
+
+	if m.step != stepInputToken {
+		t.Fatalf("期望步骤为 stepInputToken，实际为 %d", m.step)
 	}
 }

@@ -67,7 +67,7 @@ func TestGetPresetByName(t *testing.T) {
 			expected: &Profile{
 				Name:             "minimax",
 				AnthropicBaseURL: "https://api.minimaxi.com/anthropic",
-				Model:            "MiniMax-M2.5",
+				Model:            "MiniMax-M2.7",
 			},
 		},
 	}

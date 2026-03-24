@@ -56,6 +56,7 @@ type Model struct {
 	openaiURLInput    textinput.Model
 	isCustom          bool
 	presetName        string
+	presetLabel       string // 预设模式下在名称步骤展示的预设来源信息
 	err               error
 	profile           *config.Profile
 	// 编辑模式
@@ -218,7 +219,7 @@ func (m *Model) handleEnter() (tea.Model, tea.Cmd) {
 			m.step = stepInputName
 			m.nameInput.Focus()
 		} else {
-			// 使用预设
+			// 使用预设，自动填充 URL 和 Model，名称预填预设名（可编辑）
 			preset, err := config.GetPresetByName(m.presetName)
 			if err != nil {
 				m.err = err
@@ -228,8 +229,9 @@ func (m *Model) handleEnter() (tea.Model, tea.Cmd) {
 			m.openaiURLInput.SetValue(preset.OpenAIBaseURL)
 			m.modelInput.SetValue(preset.Model)
 			m.nameInput.SetValue(preset.Name)
-			m.step = stepInputToken
-			m.tokenInput.Focus()
+			m.presetLabel = preset.Name
+			m.step = stepInputName
+			m.nameInput.Focus()
 		}
 
 	case stepInputName:
@@ -243,6 +245,7 @@ func (m *Model) handleEnter() (tea.Model, tea.Cmd) {
 			m.nameInput.Blur()
 			m.anthropicURLInput.Focus()
 		} else {
+			// 预设模式：URL 和 Model 已自动填充，直接进入 Token 输入
 			m.step = stepInputToken
 			m.nameInput.Blur()
 			m.tokenInput.Focus()
@@ -293,8 +296,10 @@ func (m *Model) handleGoBack() (tea.Model, tea.Cmd) {
 			m.tokenInput.Blur()
 			m.openaiURLInput.Focus()
 		} else {
-			m.step = stepSelectPreset
+			// 预设模式：返回名称步骤
+			m.step = stepInputName
 			m.tokenInput.Blur()
+			m.nameInput.Focus()
 		}
 	case stepInputOpenAIURL:
 		m.step = stepInputAnthropicURL
@@ -416,7 +421,11 @@ func (m Model) View() string {
 		b.WriteString(normalStyle.Render("↑/↓ 选择，Enter 确认"))
 
 	case stepInputName:
-		b.WriteString("输入配置名称:\n\n")
+		if m.presetLabel != "" {
+			b.WriteString(fmt.Sprintf("输入配置名称（预设: %s）:\n\n", m.presetLabel))
+		} else {
+			b.WriteString("输入配置名称:\n\n")
+		}
 		b.WriteString(fmt.Sprintf("  %s\n\n", m.nameInput.View()))
 		b.WriteString(normalStyle.Render("Enter 确认，ESC 返回"))
 

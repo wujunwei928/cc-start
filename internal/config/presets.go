@@ -31,7 +31,7 @@ var presets = []Profile{
 		Name:             "minimax",
 		AnthropicBaseURL: "https://api.minimaxi.com/anthropic",
 		OpenAIBaseURL:    "https://api.minimaxi.com/v1",
-		Model:            "MiniMax-M2.5",
+		Model:            "MiniMax-M2.7",
 	},
 }
 
