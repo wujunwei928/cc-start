@@ -323,9 +323,9 @@ func TestPresetGoesToNameStep(t *testing.T) {
 		t.Fatalf("期望名称预填为 'anthropic'，实际为 '%s'", m.nameInput.Value())
 	}
 
-	// 验证 presetLabel 已设置
-	if m.presetLabel != "anthropic" {
-		t.Fatalf("期望 presetLabel 为 'anthropic'，实际为 '%s'", m.presetLabel)
+	// 验证 presetName 已设置
+	if m.presetName != "anthropic" {
+		t.Fatalf("期望 presetName 为 'anthropic'，实际为 '%s'", m.presetName)
 	}
 }
 

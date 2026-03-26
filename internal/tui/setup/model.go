@@ -56,7 +56,6 @@ type Model struct {
 	openaiURLInput    textinput.Model
 	isCustom          bool
 	presetName        string
-	presetLabel       string // 预设模式下在名称步骤展示的预设来源信息
 	err               error
 	profile           *config.Profile
 	// 编辑模式
@@ -229,7 +228,6 @@ func (m *Model) handleEnter() (tea.Model, tea.Cmd) {
 			m.openaiURLInput.SetValue(preset.OpenAIBaseURL)
 			m.modelInput.SetValue(preset.Model)
 			m.nameInput.SetValue(preset.Name)
-			m.presetLabel = preset.Name
 			m.step = stepInputName
 			m.nameInput.Focus()
 		}
@@ -421,8 +419,8 @@ func (m Model) View() string {
 		b.WriteString(normalStyle.Render("↑/↓ 选择，Enter 确认"))
 
 	case stepInputName:
-		if m.presetLabel != "" {
-			b.WriteString(fmt.Sprintf("输入配置名称（预设: %s）:\n\n", m.presetLabel))
+		if !m.isCustom && m.presetName != "" {
+			b.WriteString(fmt.Sprintf("输入配置名称（预设: %s）:\n\n", m.presetName))
 		} else {
 			b.WriteString("输入配置名称:\n\n")
 		}
