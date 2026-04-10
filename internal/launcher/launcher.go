@@ -76,6 +76,7 @@ type LaunchConfig struct {
 	Token    string            // 命令行指定的 Token
 	Env      map[string]string // 额外环境变量
 	ToolArgs []string          // 传递给工具的额外参数
+	Yolo     bool              // 自动接受所有操作（YOLO 模式）
 }
 
 // MergeConfig 合并配置，返回最终参数
@@ -172,6 +173,11 @@ func LaunchWithTool(cfg *LaunchConfig) error {
 	// 添加模型参数
 	if model != "" {
 		args = append(args, "--model", model)
+	}
+
+	// YOLO 模式：自动接受所有操作
+	if cfg.Yolo && cfg.Tool == "claude" {
+		args = append(args, "--dangerously-skip-permissions")
 	}
 
 	// 添加工具原生参数

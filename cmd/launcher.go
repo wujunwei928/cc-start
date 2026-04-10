@@ -15,6 +15,7 @@ var (
 	launchBaseURL string
 	launchToken   string
 	launchEnv     []string
+	launchYolo    bool
 )
 
 // runLaunchWithTool 使用指定工具名执行启动逻辑
@@ -83,6 +84,7 @@ func runLaunchWithTool(toolName string, args []string, cmdName string) error {
 		Token:    launchToken,
 		Env:      envMap,
 		ToolArgs: toolArgs,
+		Yolo:     launchYolo,
 	}
 
 	// 验证必要的配置

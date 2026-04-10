@@ -24,6 +24,7 @@ func init() {
 	rootCmd.AddCommand(claudeCmd)
 
 	claudeCmd.Flags().StringVarP(&launchModel, "model", "m", "", "模型名称")
+	claudeCmd.Flags().BoolVarP(&launchYolo, "yolo", "y", false, "自动接受所有操作（YOLO 模式）")
 }
 
 func runClaude(cmd *cobra.Command, args []string) error {
