@@ -411,27 +411,29 @@ if cfg.Profile.SonnetModel != "" {
 
 在 `internal/launcher/launcher.go` 的 `Launch` 函数中：
 
-1. 将 `effectiveProfile` 构建中的 `Model: model` 替换为 `SonnetModel: model`
+1. 将 `effectiveProfile` 构建中的 `Model: model` 替换为 `SonnetModel: model`（同时继承 `HaikuModel` 和 `OpusModel`，见下方代码块）
 2. 移除 `--model` 参数相关代码（第 90-93 行的 `if model != ""` 块）
 3. 更新启动信息打印（第 118-125 行）替换为：
 
 ```go
-// 打印启动信息
+// 打印启动信息（使用 effectiveProfile，反映 CLI 覆盖后的实际生效值）
 fmt.Printf("🚀 使用配置启动 Claude Code...\n")
-if profile.HaikuModel != "" {
-    fmt.Printf("   快速模型 (Haiku): %s\n", profile.HaikuModel)
+if effectiveProfile.HaikuModel != "" {
+    fmt.Printf("   快速模型 (Haiku): %s\n", effectiveProfile.HaikuModel)
 }
-if profile.SonnetModel != "" {
-    fmt.Printf("   主模型 (Sonnet):  %s\n", profile.SonnetModel)
+if effectiveProfile.SonnetModel != "" {
+    fmt.Printf("   主模型 (Sonnet):  %s\n", effectiveProfile.SonnetModel)
 }
-if profile.OpusModel != "" {
-    fmt.Printf("   经济模型 (Opus):   %s\n", profile.OpusModel)
+if effectiveProfile.OpusModel != "" {
+    fmt.Printf("   经济模型 (Opus):   %s\n", effectiveProfile.OpusModel)
 }
 if baseURL != "" {
     fmt.Printf("   Base URL:         %s\n", baseURL)
 }
 fmt.Println()
 ```
+
+注意：banner 使用 `effectiveProfile`（而非原始 `cfg.Profile`），这样当 CLI `-m` 覆盖了 SonnetModel 时，banner 显示的是实际生效值而非原始值。
 
 注意：Launch 函数中仍然需要构建 merged `effectiveProfile`，因为 CLI `-t`、`--base-url`、`-m` 参数需要覆盖 Profile 中的值。不能直接传递原始 `profile`，否则 CLI 覆盖失效。将：
 
