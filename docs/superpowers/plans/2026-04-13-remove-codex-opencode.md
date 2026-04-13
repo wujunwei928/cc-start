@@ -232,6 +232,14 @@ func Launch(cfg *LaunchConfig) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
+	// 注入额外环境变量
+	if len(cfg.Env) > 0 {
+		cmd.Env = os.Environ()
+		for k, v := range cfg.Env {
+			cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", k, v))
+		}
+	}
+
 	// 打印启动信息
 	profileName := effectiveProfile.Name
 	fmt.Printf("🚀 使用配置 '%s' 启动 Claude Code...\n", profileName)
@@ -770,7 +778,7 @@ fmt.Printf("  OpenAI URL: %s\n", profile.OpenAIBaseURL)
 
 第 170 行，将 `Anthropic URL` 改为 `Base URL`：
 ```go
-fmt.Printf("Anthropic URL: %s\n", profile.AnthropicBaseURL)
+fmt.Printf("Base URL: %s\n", profile.AnthropicBaseURL)
 ```
 
 第 171 行，删除：
@@ -796,7 +804,7 @@ newProfile := config.Profile{
 ```go
 baseURL := profile.AnthropicBaseURL
 if baseURL == "" {
-    PrintWarning("未配置 Base URL")
+    PrintWarning("未配置任何 Base URL")
     return
 }
 ```
