@@ -348,9 +348,9 @@ func TestMaskAPIKey(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		result := maskAPIKey(tc.input)
+		result := config.MaskToken(tc.input)
 		if result != tc.expected {
-			t.Errorf("maskAPIKey(%q) = %q, 期望 %q", tc.input, result, tc.expected)
+			t.Errorf("config.MaskToken(%q) = %q, 期望 %q", tc.input, result, tc.expected)
 		}
 	}
 }

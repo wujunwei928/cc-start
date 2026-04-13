@@ -3,8 +3,6 @@ package launcher
 
 import (
 	"encoding/json"
-	"os"
-	"strings"
 	"testing"
 
 	"github.com/wujunwei928/cc-start/internal/config"
@@ -59,86 +57,6 @@ func TestBuildSettings(t *testing.T) {
 				}
 			}
 		})
-	}
-}
-
-func TestBuildCommand(t *testing.T) {
-	profile := &config.Profile{
-		Name:             "test",
-		AnthropicBaseURL: "https://api.example.com",
-		Token:            "token123",
-		Model:            "test-model",
-	}
-
-	args := []string{"--dangerously-skip-permissions"}
-	cmd := BuildCommand(profile, args)
-
-	// 验证命令路径包含 claude
-	if !strings.Contains(cmd.Path, "claude") {
-		t.Errorf("expected path to contain 'claude', got '%s'", cmd.Path)
-	}
-
-	// 检查模型参数
-	foundModel := false
-	for _, arg := range cmd.Args {
-		if arg == "--model" {
-			foundModel = true
-		}
-	}
-	if !foundModel {
-		t.Error("command should include --model flag")
-	}
-
-	// 检查 --settings 参数存在
-	foundSettings := false
-	for _, arg := range cmd.Args {
-		if arg == "--settings" {
-			foundSettings = true
-		}
-	}
-	if !foundSettings {
-		t.Error("command should include --settings flag")
-	}
-
-	// 检查额外参数被包含
-	foundDangerously := false
-	for _, arg := range cmd.Args {
-		if arg == "--dangerously-skip-permissions" {
-			foundDangerously = true
-		}
-	}
-	if !foundDangerously {
-		t.Error("command should include extra args")
-	}
-
-	// 验证标准输入输出已设置
-	if cmd.Stdin != os.Stdin {
-		t.Error("command should have Stdin set to os.Stdin")
-	}
-	if cmd.Stdout != os.Stdout {
-		t.Error("command should have Stdout set to os.Stdout")
-	}
-	if cmd.Stderr != os.Stderr {
-		t.Error("command should have Stderr set to os.Stderr")
-	}
-}
-
-func TestBuildCommandWithoutModel(t *testing.T) {
-	// 测试没有指定模型的情况
-	profile := &config.Profile{
-		Name:             "no-model",
-		AnthropicBaseURL: "https://api.anthropic.com",
-		Token:            "token123",
-		Model:            "", // 空模型
-	}
-
-	cmd := BuildCommand(profile, []string{})
-
-	// 不应该有 --model 参数
-	for i, arg := range cmd.Args {
-		if arg == "--model" && i+1 < len(cmd.Args) && cmd.Args[i+1] != "" {
-			t.Error("command should not include --model flag when model is empty")
-		}
 	}
 }
 

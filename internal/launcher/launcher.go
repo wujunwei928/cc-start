@@ -26,29 +26,6 @@ func BuildSettings(profile *config.Profile) map[string]interface{} {
 	}
 }
 
-// BuildCommand 构建启动命令
-func BuildCommand(profile *config.Profile, extraArgs []string) *exec.Cmd {
-	settings := BuildSettings(profile)
-	settingsJSON, _ := json.Marshal(settings)
-
-	args := []string{"--settings", string(settingsJSON)}
-
-	// 添加模型参数（如果指定）
-	if profile.Model != "" {
-		args = append(args, "--model", profile.Model)
-	}
-
-	// 添加额外参数
-	args = append(args, extraArgs...)
-
-	cmd := exec.Command("claude", args...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	return cmd
-}
-
 // LaunchConfig 启动配置
 type LaunchConfig struct {
 	Profile  *config.Profile   // Profile 配置（可选）
@@ -99,7 +76,6 @@ func Launch(cfg *LaunchConfig) error {
 
 	// 构建合并后的 effectiveProfile 用于 BuildSettings
 	effectiveProfile := &config.Profile{
-		Name:             "claude",
 		AnthropicBaseURL: baseURL,
 		Model:            model,
 		Token:            token,

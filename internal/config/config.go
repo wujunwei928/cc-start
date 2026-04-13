@@ -154,17 +154,15 @@ func LoadConfig(path string) (*Config, error) {
 		cfg.Settings.Theme = "default"
 	}
 
-	// 迁移：旧配置 base_url → anthropic_base_url
-	for i := range cfg.Profiles {
-		migrateProfile(&cfg.Profiles[i])
-	}
-
 	return &cfg, nil
 }
 
-// migrateProfile 迁移旧配置格式
-func migrateProfile(p *Profile) {
-	// 旧字段已不存在，此函数保留用于未来迁移需求
+// MaskToken 遮蔽 Token 大部分内容
+func MaskToken(token string) string {
+	if len(token) <= 8 {
+		return "****"
+	}
+	return token[:4] + "****" + token[len(token)-4:]
 }
 
 // GetConfigPath 获取配置文件路径

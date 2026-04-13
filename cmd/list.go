@@ -41,21 +41,13 @@ func runList(cmd *cobra.Command, args []string) error {
 		}
 		fmt.Printf("  %s %s\n", marker, p.Name)
 		if p.AnthropicBaseURL != "" {
-			fmt.Printf("      Anthropic URL: %s\n", p.AnthropicBaseURL)
+			fmt.Printf("      Base URL: %s\n", p.AnthropicBaseURL)
 		}
 		if p.Model != "" {
 			fmt.Printf("      模型: %s\n", p.Model)
 		}
-		fmt.Printf("      Token: %s...\n\n", maskToken(p.Token))
+		fmt.Printf("      Token: %s...\n\n", config.MaskToken(p.Token))
 	}
 
 	return nil
-}
-
-// maskToken 隐藏 Token 大部分内容
-func maskToken(token string) string {
-	if len(token) <= 8 {
-		return "****"
-	}
-	return token[:4] + "****" + token[len(token)-4:]
 }

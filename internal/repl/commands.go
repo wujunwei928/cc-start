@@ -16,14 +16,6 @@ import (
 	"github.com/wujunwei928/cc-start/internal/tui/setup"
 )
 
-// maskAPIKey 遮蔽 API Key 显示
-func maskAPIKey(key string) string {
-	if len(key) <= 8 {
-		return "****"
-	}
-	return key[:4] + "****" + key[len(key)-4:]
-}
-
 // cmdList 列出所有配置
 func (r *REPL) cmdList(args []string) {
 	if len(r.cfg.Profiles) == 0 {
@@ -59,7 +51,7 @@ func (r *REPL) cmdList(args []string) {
 			name,
 			p.AnthropicBaseURL,
 			p.Model,
-			maskAPIKey(p.Token),
+			config.MaskToken(p.Token),
 			status,
 		})
 	}
@@ -106,11 +98,11 @@ func (r *REPL) cmdCurrent(args []string) {
 
 	fmt.Println()
 	PrintCurrent("当前配置: %s", profile.Name)
-	fmt.Printf("  Anthropic URL: %s\n", profile.AnthropicBaseURL)
+	fmt.Printf("  Base URL: %s\n", profile.AnthropicBaseURL)
 	if profile.Model != "" {
 		fmt.Printf("  模型: %s\n", profile.Model)
 	}
-	fmt.Printf("  Token: %s\n", maskAPIKey(profile.Token))
+	fmt.Printf("  Token: %s\n", config.MaskToken(profile.Token))
 	if profile.Name == r.cfg.Default {
 		PrintInfo("这是默认配置")
 	}
@@ -165,11 +157,11 @@ func (r *REPL) cmdShow(args []string) {
 
 	fmt.Println()
 	fmt.Printf("配置名称: %s\n", profile.Name)
-	fmt.Printf("Anthropic URL: %s\n", profile.AnthropicBaseURL)
+	fmt.Printf("Base URL: %s\n", profile.AnthropicBaseURL)
 	if profile.Model != "" {
 		fmt.Printf("模型: %s\n", profile.Model)
 	}
-	fmt.Printf("Token: %s\n", maskAPIKey(profile.Token))
+	fmt.Printf("Token: %s\n", config.MaskToken(profile.Token))
 	fmt.Println()
 }
 

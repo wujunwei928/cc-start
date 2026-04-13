@@ -439,11 +439,11 @@ func (m *Model) cmdShow(args []string) string {
 
 	var buf strings.Builder
 	buf.WriteString(fmt.Sprintf("\n配置名称: %s\n", profile.Name))
-	buf.WriteString(fmt.Sprintf("Anthropic URL: %s\n", profile.AnthropicBaseURL))
+	buf.WriteString(fmt.Sprintf("Base URL: %s\n", profile.AnthropicBaseURL))
 	if profile.Model != "" {
 		buf.WriteString(fmt.Sprintf("模型: %s\n", profile.Model))
 	}
-	buf.WriteString(fmt.Sprintf("Token: %s\n", maskAPIKey(profile.Token)))
+	buf.WriteString(fmt.Sprintf("Token: %s\n", config.MaskToken(profile.Token)))
 	return buf.String()
 }
 
@@ -589,7 +589,7 @@ func (m *Model) cmdTest(args []string) string {
 
 	result := fmt.Sprintf("● 测试配置 '%s' 的 API 连通性...\n", name)
 
-	// 优先测试 Anthropic URL
+	// 优先测试 Base URL
 	baseURL := profile.AnthropicBaseURL
 	if baseURL == "" {
 		return result + "✗ 未配置任何 Base URL"
@@ -868,7 +868,7 @@ func (m Model) formatProfileList() string {
 		}
 		buf.WriteString(fmt.Sprintf("  %s%s\n", p.Name, status))
 		if p.AnthropicBaseURL != "" {
-			buf.WriteString(fmt.Sprintf("    Anthropic URL: %s\n", p.AnthropicBaseURL))
+			buf.WriteString(fmt.Sprintf("    Base URL: %s\n", p.AnthropicBaseURL))
 		}
 		if p.Model != "" {
 			buf.WriteString(fmt.Sprintf("    模型: %s\n", p.Model))
@@ -891,12 +891,12 @@ func (m Model) formatCurrentProfile() string {
 	var buf strings.Builder
 	buf.WriteString(fmt.Sprintf("\n当前配置: %s\n", profile.Name))
 	if profile.AnthropicBaseURL != "" {
-		buf.WriteString(fmt.Sprintf("  Anthropic URL: %s\n", profile.AnthropicBaseURL))
+		buf.WriteString(fmt.Sprintf("  Base URL: %s\n", profile.AnthropicBaseURL))
 	}
 	if profile.Model != "" {
 		buf.WriteString(fmt.Sprintf("  模型: %s\n", profile.Model))
 	}
-	buf.WriteString(fmt.Sprintf("  Token: %s\n", maskAPIKey(profile.Token)))
+	buf.WriteString(fmt.Sprintf("  Token: %s\n", config.MaskToken(profile.Token)))
 	if profile.Name == m.config.Default {
 		buf.WriteString("● 这是默认配置\n")
 	}
