@@ -83,16 +83,17 @@ type Profile struct {
 - 移除 `MergeConfig` 函数中的 `toolFormat` 参数和 OpenAI 格式分支（第 85-98 行）
 - 移除整个 `LaunchWithTool` 函数（第 118-208 行），该函数通过 `tools.GetTool` 做工具查找并设置通用环境变量，不再需要
 - 简化为：`MergeConfig` 只接受 `*LaunchConfig`，直接使用 `profile.AnthropicBaseURL`
-- Claude 的可执行文件名和环境变量映射直接硬编码在 `Launch` 函数中
+- **迁移现有 `Launch` 函数**：当前 `func Launch(profile *config.Profile, extraArgs []string) error`（第 54 行）是一个简单的 claude 启动函数。移除 `LaunchWithTool` 后，将其逻辑合并到现有 `Launch` 中，使 `Launch` 同时支持 `LaunchConfig` 参数（包含 profile、model override、yolo 等完整配置），并删除旧的 `(profile, extraArgs)` 签名版本
 
 ```go
 // Before
+func Launch(profile *config.Profile, extraArgs []string) error   // 第 54 行，现有简单版
 func MergeConfig(cfg *LaunchConfig, toolFormat string) (model, baseURL, token string)
-func LaunchWithTool(cfg *LaunchConfig) error
+func LaunchWithTool(cfg *LaunchConfig) error                     // 第 118 行，通用工具版
 
 // After
 func MergeConfig(cfg *LaunchConfig) (model, baseURL, token string)
-func Launch(cfg *LaunchConfig) error
+func Launch(cfg *LaunchConfig) error                             // 合并两者，统一入口
 ```
 
 #### `internal/launcher/launcher_test.go`
@@ -111,8 +112,6 @@ func Launch(cfg *LaunchConfig) error
 - `cmdList`（第 36 行）：移除表格 "OpenAI URL" 列头和对应数据填充（第 61 行）
 - `cmdCurrent`（第 111 行）：移除 OpenAI URL 展示
 - `cmdShow`（第 171 行）：移除 OpenAI URL 展示
-- `cmdCopy`（第 305 行）：移除 `OpenAIBaseURL` 字段的复制
-- `cmdTest`（第 394-397 行）：移除回退到 OpenAI URL 的逻辑，只使用 `AnthropicBaseURL`
 
 #### `internal/repl/update.go`
 
