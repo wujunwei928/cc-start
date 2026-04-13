@@ -41,28 +41,44 @@ cc-start 最初设计为支持三种 AI CLI 工具（claude、codex、opencode�
 // Before
 type Profile struct {
     Name             string `json:"name"`
-    AnthropicBaseURL string `json:"anthropicBaseUrl"`
-    OpenAIBaseURL    string `json:"openaiBaseUrl"`    // 删除
+    AnthropicBaseURL string `json:"anthropic_base_url,omitempty"`
+    OpenAIBaseURL    string `json:"openai_base_url,omitempty"`    // 删除
+    Model            string `json:"model,omitempty"`
+    Token            string `json:"token"`
 }
 
 // After
 type Profile struct {
     Name             string `json:"name"`
-    AnthropicBaseURL string `json:"anthropicBaseUrl"`
+    AnthropicBaseURL string `json:"anthropic_base_url,omitempty"`
+    Model            string `json:"model,omitempty"`
+    Token            string `json:"token"`
 }
 ```
 
-旧配置兼容：Go JSON 反序列化自动忽略未知字段，无需迁移逻辑。
+旧配置兼容：Go JSON 反序列化自动忽略未知字段，已有 `settings.json` 中的 `openai_base_url` 字段会被静默忽略，无需迁移逻辑。
 
 #### `internal/config/presets.go`
 
 移除所有预设中的 `OpenAIBaseURL` 赋值。
 
+#### `cmd/claude.go`
+
+- 移除 `internal/tools` 包导入
+- 移除 `tools.GetTool(toolName)` 调用和验证逻辑
+- 直接调用 `runLaunchWithTool`，不再需要工具名称参数
+
+#### `cmd/launcher.go`
+
+- 移除 `internal/tools` 包导入
+- 移除 `tools.GetTool()` 调用
+- 直接调用简化的 `launcher.MergeConfig(profile)`，不再传递 `tools.Tool`
+
 #### `internal/launcher/launcher.go`
 
 - 移除 `tools` 包依赖
-- `MergeConfig` 不再接受 `tools.Tool` 参数，直接使用 `AnthropicBaseURL`
-- 移除 OpenAI 格式分支
+- `MergeConfig` 不再接受 `tools.Tool` 参数，直接使用 `profile.AnthropicBaseURL`
+- 移除 OpenAI 格式分支（`tool.URLFormat` 判断）
 - Claude 的可执行文件名和环境变量映射直接硬编码
 
 ```go
@@ -73,25 +89,39 @@ func MergeConfig(profile config.Profile, tool tools.Tool) LaunchConfig
 func MergeConfig(profile config.Profile) LaunchConfig
 ```
 
+#### `cmd/list.go`
+
+- 移除 `p.OpenAIBaseURL` 的展示逻辑（第 46-48 行）
+
+#### `internal/repl/commands.go`
+
+- `cmdList`（第 36 行）：移除表格 "OpenAI URL" 列头和对应数据填充（第 61 行）
+- `cmdCurrent`（第 111 行）：移除 OpenAI URL 展示
+- `cmdShow`（第 171 行）：移除 OpenAI URL 展示
+- `cmdCopy`（第 305 行）：移除 `OpenAIBaseURL` 字段的复制
+- `cmdTest`（第 394-397 行）：移除回退到 OpenAI URL 的逻辑，只使用 `AnthropicBaseURL`
+
+#### `internal/repl/update.go`
+
+- TUI `/show` 命令（第 443-444 行）：移除 OpenAI URL 展示
+
 #### `internal/tui/setup/model.go`
 
-- 移除 OpenAI URL 输入字段
-- 修改提示文本，移除 "用于 Codex/OpenCode CLI" 引用
+- 移除 `stepInputOpenAIURL` 步骤定义（第 21 行）
+- 移除 OpenAI URL 输入相关的视图渲染和更新逻辑
+- 修改提示文本，移除 "用于 Codex/OpenCode CLI" 引用（第 442 行）
+- 调整步骤流程，从 `stepInputAnthropicURL` 直接跳到 `stepInputToken`
 
 #### `README.md`
 
 - 移除 `cc-start codex` 和 `cc-start opencode` 使用示例
 
-#### `cmd/launcher.go`
-
-- 移除 `tools.GetTool()` 调用
-- 直接调用简化的 `launcher.MergeConfig()`
-
 ## 边界处理
 
-1. **旧配置兼容**：已有 `settings.json` 包含 `openaiBaseUrl` → 自动忽略
-2. **JSON 序列化**：移除字段后输出不再包含 `openaiBaseUrl`，符合预期
+1. **旧配置兼容**：已有 `settings.json` 包含 `openai_base_url` → Go JSON 反序列化自动忽略
+2. **JSON 序列化**：移除字段后输出不再包含 `openai_base_url`，符合预期
 3. **测试**：删除 `tools_test.go`，更新其他受影响的测试文件
+4. **TUI 步骤编号**：移除 OpenAI URL 步骤后，后续步骤编号需要调整
 
 ## 风险评估
 
