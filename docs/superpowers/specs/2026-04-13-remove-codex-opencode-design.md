@@ -16,6 +16,7 @@ cc-start 最初设计为支持三种 AI CLI 工具（claude、codex、opencode�
 |--------|------|------|
 | OpenAIBaseURL 字段 | 移除 | 只支持 claude，不需要 OpenAI 格式 URL |
 | tools 抽象层 | 完全移除 | 单工具场景下抽象层是过度设计 |
+| LaunchConfig.Tool 和 LaunchWithTool | 移除 | 工具轴不再有意义，简化为直接的 claude 启动 API |
 | 历史设计文档 | 删除 | 保持文档与代码一致 |
 | TUI Setup OpenAI URL 输入 | 移除 | 单格式不需要区分 URL 类型 |
 
@@ -66,28 +67,40 @@ type Profile struct {
 
 - 移除 `internal/tools` 包导入
 - 移除 `tools.GetTool(toolName)` 调用和验证逻辑
-- 直接调用 `runLaunchWithTool`，不再需要工具名称参数
+- 直接调用 `runLaunch`，不再需要工具名称参数
 
 #### `cmd/launcher.go`
 
 - 移除 `internal/tools` 包导入
-- 移除 `tools.GetTool()` 调用
-- 直接调用简化的 `launcher.MergeConfig(profile)`，不再传递 `tools.Tool`
+- 移除 `toolName` 参数和 `Tool` 字段设置
+- 移除 `launcher.LaunchWithTool` 调用，改为调用简化后的 `launcher.Launch`
+- `LaunchConfig` 中移除 `Tool` 字段
 
 #### `internal/launcher/launcher.go`
 
 - 移除 `tools` 包依赖
-- `MergeConfig` 不再接受 `tools.Tool` 参数，直接使用 `profile.AnthropicBaseURL`
-- 移除 OpenAI 格式分支（`tool.URLFormat` 判断）
-- Claude 的可执行文件名和环境变量映射直接硬编码
+- 移除 `LaunchConfig.Tool` 字段（第 72 行）
+- 移除 `MergeConfig` 函数中的 `toolFormat` 参数和 OpenAI 格式分支（第 85-98 行）
+- 移除整个 `LaunchWithTool` 函数（第 118-208 行），该函数通过 `tools.GetTool` 做工具查找并设置通用环境变量，不再需要
+- 简化为：`MergeConfig` 只接受 `*LaunchConfig`，直接使用 `profile.AnthropicBaseURL`
+- Claude 的可执行文件名和环境变量映射直接硬编码在 `Launch` 函数中
 
 ```go
 // Before
-func MergeConfig(profile config.Profile, tool tools.Tool) LaunchConfig
+func MergeConfig(cfg *LaunchConfig, toolFormat string) (model, baseURL, token string)
+func LaunchWithTool(cfg *LaunchConfig) error
 
 // After
-func MergeConfig(profile config.Profile) LaunchConfig
+func MergeConfig(cfg *LaunchConfig) (model, baseURL, token string)
+func Launch(cfg *LaunchConfig) error
 ```
+
+#### `internal/launcher/launcher_test.go`
+
+- 移除 `internal/tools` 包导入（第 11 行）
+- `TestMergeConfig`（第 204-279 行）：移除 `tools.FormatAnthropic`/`tools.FormatOpenAI` 引用，移除 `OpenAIBaseURL` 测试数据，移除 openai 格式测试用例，更新 `MergeConfig` 调用签名（不再传递 `toolFormat`）
+- 移除 "openai format selects openai url" 和 "partial override - model only (openai)" 测试用例
+- 更新 "no profile no override" 用例，移除 `Tool` 字段
 
 #### `cmd/list.go`
 
@@ -103,7 +116,11 @@ func MergeConfig(profile config.Profile) LaunchConfig
 
 #### `internal/repl/update.go`
 
-- TUI `/show` 命令（第 443-444 行）：移除 OpenAI URL 展示
+- `cmdShow`（第 443-444 行）：移除 OpenAI URL 展示
+- `cmdCopy`（第 515 行）：移除 `OpenAIBaseURL` 字段的复制
+- `cmdTest`（第 598-599 行）：移除回退到 OpenAI URL 的逻辑，只使用 `AnthropicBaseURL`
+- `formatProfileList`（第 880-881 行）：移除 OpenAI URL 展示
+- `formatCurrentProfile`（第 906-907 行）：移除 OpenAI URL 展示
 
 #### `internal/tui/setup/model.go`
 
@@ -120,8 +137,9 @@ func MergeConfig(profile config.Profile) LaunchConfig
 
 1. **旧配置兼容**：已有 `settings.json` 包含 `openai_base_url` → Go JSON 反序列化自动忽略
 2. **JSON 序列化**：移除字段后输出不再包含 `openai_base_url`，符合预期
-3. **测试**：删除 `tools_test.go`，更新其他受影响的测试文件
+3. **测试**：删除 `tools_test.go`，重写 `launcher_test.go` 中的 `TestMergeConfig`（移除 tools 依赖和 OpenAI 格式用例），更新其他受影响的测试文件
 4. **TUI 步骤编号**：移除 OpenAI URL 步骤后，后续步骤编号需要调整
+5. **Launcher API 简化**：移除 `LaunchWithTool` → 统一使用 `Launch`，`cmd/launcher.go` 不再传递工具名称
 
 ## 风险评估
 
