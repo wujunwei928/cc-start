@@ -20,18 +20,21 @@ cc-start 当前每个 Profile 只绑定一个 `Model` 字段，启动时通过 `
 
 ### Profile 结构体
 
-将原有的 `Model string` 字段替换为三个独立字段：
+将原有的 `Model string` 字段替换为三个独立字段，同时保留一个临时 `legacyModel` 字段用于旧配置迁移：
 
 ```go
 type Profile struct {
     Name             string `json:"name"`
     AnthropicBaseURL string `json:"anthropic_base_url,omitempty"`
-    HaikuModel       string `json:"haiku_model,omitempty"`   // 快速模型
-    SonnetModel      string `json:"sonnet_model,omitempty"`  // 主模型
-    OpusModel        string `json:"opus_model,omitempty"`    // 经济模型
+    HaikuModel       string `json:"haiku_model,omitempty"`       // 快速模型
+    SonnetModel      string `json:"sonnet_model,omitempty"`      // 主模型
+    OpusModel        string `json:"opus_model,omitempty"`        // 经济模型
     Token            string `json:"token"`
+    legacyModel      string `json:"model,omitempty"`             // 旧字段，仅用于迁移，不对外暴露
 }
 ```
+
+`legacyModel` 使用 `json:"model"` tag 接收旧 JSON 中的 `model` 字段。它不导出（小写开头），不会被外部代码直接使用。迁移完成后该字段值为空，序列化时因 `omitempty` 不会写入 JSON。
 
 ### 预设更新
 
@@ -47,12 +50,22 @@ type Profile struct {
 
 ### 旧配置迁移
 
-加载配置时，如果 Profile 存在旧的 `model` 字段（JSON 反序列化时 `Model` 不为空而三个新字段为空）：
-- `model` 值 → 迁移到 `SonnetModel`
-- `HaikuModel` / `OpusModel` 留空
-- 下次保存时自动写入新格式，旧 `model` 字段不再写入
+通过 `legacyModel` 字段（`json:"model"` tag）接收旧 JSON 中的 `model` 值。`Migrate()` 方法将 `legacyModel` 迁移到 `SonnetModel`：
 
-实现方式：在 `Profile` 上添加一个 `Migrate()` 方法，在 `LoadConfig` 后调用。
+```go
+func (p *Profile) Migrate() {
+    if p.legacyModel != "" && p.SonnetModel == "" {
+        p.SonnetModel = p.legacyModel
+    }
+    p.legacyModel = "" // 迁移后清空，下次序列化不再写入
+}
+```
+
+**迁移触发点**（所有加载配置的路径都必须调用）：
+
+1. `LoadConfig()` — 正常启动加载配置文件后，遍历 `cfg.Profiles` 调用 `Migrate()`
+2. `cmdImport()` — `/import` 命令导入外部配置文件后，对导入的每个 Profile 调用 `Migrate()`（`internal/repl/commands.go:462`）
+3. 或者：将迁移逻辑封装为 `Config.MigrateAll()` 方法，在 `LoadConfig` 和 `cmdImport` 两处统一调用
 
 ## BuildSettings 注入逻辑
 
@@ -112,6 +125,26 @@ func BuildSettings(profile *config.Profile) map[string]interface{} {
 - 显示层级名称：每个输入框前标注用途（快速模型 Haiku / 主模型 Sonnet / 经济模型 Opus）
 - 原来的 `stepInputModel` 拆为三个独立步骤：`stepInputHaikuModel`、`stepInputSonnetModel`、`stepInputOpusModel`
 
+### 空输入合并规则
+
+用户在向导中留空某个模型输入时，不能将空字符串持久化到 Profile（否则会覆盖预设默认值）。合并规则：
+
+```go
+func mergeWithPreset(input, presetDefault string) string {
+    if input == "" {
+        return presetDefault // 留空则使用预设默认值
+    }
+    return input // 用户输入则使用输入值
+}
+```
+
+组装最终 Profile 时：
+- `HaikuModel` = `mergeWithPreset(用户输入, 预设.HaikuModel)`
+- `SonnetModel` = `mergeWithPreset(用户输入, 预设.SonnetModel)`
+- `OpusModel` = `mergeWithPreset(用户输入, 预设.OpusModel)`
+
+这确保留空时 Profile 中保存的是预设默认值，而非空字符串。
+
 ## 显示适配
 
 ### /list 命令
@@ -139,13 +172,15 @@ func BuildSettings(profile *config.Profile) map[string]interface{} {
 
 | 文件 | 变更类型 |
 |------|----------|
-| `internal/config/config.go` | Profile 结构体替换、添加 Migrate() 方法 |
+| `internal/config/config.go` | Profile 结构体替换（含 legacyModel）、添加 Migrate()/MigrateAll() 方法 |
 | `internal/config/presets.go` | 预设增加 HaikuModel/SonnetModel/OpusModel |
 | `internal/launcher/launcher.go` | BuildSettings 注入三个模型、Launch 显示更新、移除 --model 参数 |
-| `internal/tui/setup/model.go` | 向导增加三个模型输入步骤 |
-| `internal/repl/update.go` | /list、/show、/current 显示三个模型 |
-| `internal/repl/view.go` | 显示渲染适配 |
-| `cmd/launcher.go` | CLI -m 参数适配（覆盖 SonnetModel） |
+| `internal/tui/setup/model.go` | 向导增加三个模型输入步骤、空输入合并逻辑 |
+| `internal/repl/update.go` | /use、/show、/current 显示三个模型（:395、:443） |
+| `internal/repl/commands.go` | /copy 复制三模型字段（:294、:512）、/import 调用迁移（:462） |
+| `internal/repl/view.go` | formatProfileList/formatCurrentProfile 显示三模型（:873、:896） |
+| `cmd/list.go` | 列表显示三个模型（:46） |
+| `cmd/claude.go` | CLI -m 参数适配（:25，覆盖 SonnetModel） |
 | `internal/config/config_test.go` | Profile 序列化、迁移测试 |
 | `internal/config/presets_test.go` | 预设默认值测试 |
 | `internal/launcher/launcher_test.go` | BuildSettings 注入测试 |
@@ -154,9 +189,12 @@ func BuildSettings(profile *config.Profile) map[string]interface{} {
 ## 测试要点
 
 1. Profile 序列化/反序列化：新格式正确读写
-2. 旧配置迁移：`model` 字段正确迁移到 `SonnetModel`
-3. BuildSettings：三个模型环境变量正确注入到 env map
-4. BuildSettings 空值：模型为空时不注入对应环境变量
-5. 预设默认值：五个预设的三个模型字段正确填充
-6. Setup 向导：三个模型步骤正确显示和编辑
-7. 向后兼容：只有 `model` 字段的旧 JSON 文件能正确加载
+2. 旧配置迁移：`model` 字段通过 `legacyModel` 正确迁移到 `SonnetModel`
+3. 迁移后序列化：迁移完成后 `model` 字段不再出现在 JSON 中
+4. /import 迁移：导入旧格式配置文件后正确触发迁移
+5. BuildSettings：三个模型环境变量正确注入到 env map
+6. BuildSettings 空值：模型为空时不注入对应环境变量
+7. 预设默认值：五个预设的三个模型字段正确填充
+8. Setup 向导空输入：留空时使用预设默认值，不持久化空字符串
+9. Setup 向导：三个模型步骤正确显示和编辑
+10. 向后兼容：只有 `model` 字段的旧 JSON 文件能正确加载
