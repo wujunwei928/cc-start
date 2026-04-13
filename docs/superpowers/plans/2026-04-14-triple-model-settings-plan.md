@@ -448,10 +448,14 @@ effectiveProfile := &config.Profile{
 ```go
 effectiveProfile := &config.Profile{
     AnthropicBaseURL: baseURL,
-    SonnetModel:      model, // CLI -m 覆盖 SonnetModel
+    HaikuModel:       profile.HaikuModel,   // 继承原始值
+    SonnetModel:      model,                  // CLI -m 覆盖 SonnetModel
+    OpusModel:        profile.OpusModel,     // 继承原始值
     Token:            token,
 }
 ```
+
+关键：`HaikuModel` 和 `OpusModel` 必须从原始 `profile` 继承，CLI 没有对应的覆盖参数。只有 `SonnetModel` 被 CLI `-m` 覆盖。
 
 - [ ] **Step 6: 修复现有测试**
 
