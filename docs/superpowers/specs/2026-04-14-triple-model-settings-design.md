@@ -20,7 +20,7 @@ cc-start 当前每个 Profile 只绑定一个 `Model` 字段，启动时通过 `
 
 ### Profile 结构体
 
-将原有的 `Model string` 字段替换为三个独立字段，同时保留一个临时 `legacyModel` 字段用于旧配置迁移：
+将原有的 `Model string` 字段替换为三个独立字段，同时保留一个导出的临时 `LegacyModel` 字段用于旧配置迁移：
 
 ```go
 type Profile struct {
@@ -30,11 +30,11 @@ type Profile struct {
     SonnetModel      string `json:"sonnet_model,omitempty"`      // 主模型
     OpusModel        string `json:"opus_model,omitempty"`        // 经济模型
     Token            string `json:"token"`
-    legacyModel      string `json:"model,omitempty"`             // 旧字段，仅用于迁移，不对外暴露
+    LegacyModel      string `json:"model,omitempty"`             // 旧字段，仅用于迁移
 }
 ```
 
-`legacyModel` 使用 `json:"model"` tag 接收旧 JSON 中的 `model` 字段。它不导出（小写开头），不会被外部代码直接使用。迁移完成后该字段值为空，序列化时因 `omitempty` 不会写入 JSON。
+**注意**：`LegacyModel` 必须是导出字段（大写开头），因为 `encoding/json` 不会给未导出字段赋值。`LegacyModel` 不应在任何业务逻辑中读取或写入，仅在 `Migrate()` 中使用。迁移完成后该字段清空，序列化时因 `omitempty` 不会写入 JSON。
 
 ### 预设更新
 
@@ -50,14 +50,14 @@ type Profile struct {
 
 ### 旧配置迁移
 
-通过 `legacyModel` 字段（`json:"model"` tag）接收旧 JSON 中的 `model` 值。`Migrate()` 方法将 `legacyModel` 迁移到 `SonnetModel`：
+通过 `LegacyModel` 字段（`json:"model"` tag）接收旧 JSON 中的 `model` 值。`Migrate()` 方法将 `LegacyModel` 迁移到 `SonnetModel`：
 
 ```go
 func (p *Profile) Migrate() {
-    if p.legacyModel != "" && p.SonnetModel == "" {
-        p.SonnetModel = p.legacyModel
+    if p.LegacyModel != "" && p.SonnetModel == "" {
+        p.SonnetModel = p.LegacyModel
     }
-    p.legacyModel = "" // 迁移后清空，下次序列化不再写入
+    p.LegacyModel = "" // 迁移后清空，下次序列化不再写入
 }
 ```
 
@@ -127,23 +127,43 @@ func BuildSettings(profile *config.Profile) map[string]interface{} {
 
 ### 空输入合并规则
 
-用户在向导中留空某个模型输入时，不能将空字符串持久化到 Profile（否则会覆盖预设默认值）。合并规则：
+向导存在两种模式（通过 `PendingSetup.IsEdit` 区分），合并规则不同：
+
+**创建模式**（`IsEdit == false`）— 从预设生成新 Profile：
+- 留空 → 使用预设默认值
+- 有输入 → 使用用户输入值
+
+```go
+// 创建模式：留空回退到预设默认值
+HaikuModel  = mergeWithPreset(input, preset.HaikuModel)
+SonnetModel = mergeWithPreset(input, preset.SonnetModel)
+OpusModel   = mergeWithPreset(input, preset.OpusModel)
+```
+
+**编辑模式**（`IsEdit == true`）— 修改已有 Profile：
+- 留空 → **保留当前已保存值**（不回退到预设）
+- 有输入 → 使用用户输入值
+
+```go
+// 编辑模式：留空保留已有值
+HaikuModel  = mergeWithExisting(input, existing.HaikuModel)
+SonnetModel = mergeWithExisting(input, existing.SonnetModel)
+OpusModel   = mergeWithExisting(input, existing.OpusModel)
+```
 
 ```go
 func mergeWithPreset(input, presetDefault string) string {
-    if input == "" {
-        return presetDefault // 留空则使用预设默认值
-    }
-    return input // 用户输入则使用输入值
+    if input == "" { return presetDefault }
+    return input
+}
+
+func mergeWithExisting(input, currentValue string) string {
+    if input == "" { return currentValue }
+    return input
 }
 ```
 
-组装最终 Profile 时：
-- `HaikuModel` = `mergeWithPreset(用户输入, 预设.HaikuModel)`
-- `SonnetModel` = `mergeWithPreset(用户输入, 预设.SonnetModel)`
-- `OpusModel` = `mergeWithPreset(用户输入, 预设.OpusModel)`
-
-这确保留空时 Profile 中保存的是预设默认值，而非空字符串。
+向导的模型输入框在编辑模式下应预填充当前 Profile 的已保存值，而非预设默认值。
 
 ## 显示适配
 
@@ -176,9 +196,8 @@ func mergeWithPreset(input, presetDefault string) string {
 | `internal/config/presets.go` | 预设增加 HaikuModel/SonnetModel/OpusModel |
 | `internal/launcher/launcher.go` | BuildSettings 注入三个模型、Launch 显示更新、移除 --model 参数 |
 | `internal/tui/setup/model.go` | 向导增加三个模型输入步骤、空输入合并逻辑 |
-| `internal/repl/update.go` | /use、/show、/current 显示三个模型（:395、:443） |
+| `internal/repl/update.go` | /use、/show、/current 显示三模型（:395、:443）、formatProfileList/formatCurrentProfile（:843、:881） |
 | `internal/repl/commands.go` | /copy 复制三模型字段（:294、:512）、/import 调用迁移（:462） |
-| `internal/repl/view.go` | formatProfileList/formatCurrentProfile 显示三模型（:873、:896） |
 | `cmd/list.go` | 列表显示三个模型（:46） |
 | `cmd/claude.go` | CLI -m 参数适配（:25，覆盖 SonnetModel） |
 | `internal/config/config_test.go` | Profile 序列化、迁移测试 |
@@ -195,6 +214,7 @@ func mergeWithPreset(input, presetDefault string) string {
 5. BuildSettings：三个模型环境变量正确注入到 env map
 6. BuildSettings 空值：模型为空时不注入对应环境变量
 7. 预设默认值：五个预设的三个模型字段正确填充
-8. Setup 向导空输入：留空时使用预设默认值，不持久化空字符串
-9. Setup 向导：三个模型步骤正确显示和编辑
-10. 向后兼容：只有 `model` 字段的旧 JSON 文件能正确加载
+8. Setup 向导空输入（创建）：留空时使用预设默认值，不持久化空字符串
+9. Setup 向导空输入（编辑）：留空时保留当前已保存值，不回退到预设
+10. Setup 向导：三个模型步骤正确显示和编辑
+11. 向后兼容：只有 `model` 字段的旧 JSON 文件能正确加载
