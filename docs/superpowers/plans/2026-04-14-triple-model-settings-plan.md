@@ -433,7 +433,7 @@ if baseURL != "" {
 fmt.Println()
 ```
 
-注意：Launch 函数中 `effectiveProfile` 改用 `profile` 直接传递（因为 `BuildSettings` 已经接收的是完整 profile）。将：
+注意：Launch 函数中仍然需要构建 merged `effectiveProfile`，因为 CLI `-t`、`--base-url`、`-m` 参数需要覆盖 Profile 中的值。不能直接传递原始 `profile`，否则 CLI 覆盖失效。将：
 
 ```go
 effectiveProfile := &config.Profile{
@@ -751,11 +751,16 @@ git commit -m "feat(setup): 向导支持三模型输入步骤 (Haiku/Sonnet/Opus
 
 **Files:**
 - Modify: `internal/repl/commands.go` (cmdList、cmdUse、cmdCurrent、cmdShow、cmdCopy、cmdImport)
+- Modify: `internal/repl/commands_test.go` (测试中的 `Model:` 字段)
 - Modify: `internal/repl/update.go` (cmdUse、cmdShow、cmdCopy、cmdImport、formatProfileList、formatCurrentProfile)
 - Modify: `cmd/list.go`
 - Modify: `cmd/launcher.go`
 
-- [ ] **Step 1: 修改旧 REPL commands.go**
+- [ ] **Step 1: 修改旧 REPL commands_test.go**
+
+在 `internal/repl/commands_test.go` 第 23-24 行，将 `Model: "model1"` 和 `Model: "model2"` 替换为 `SonnetModel: "model1"` 和 `SonnetModel: "model2"`。
+
+- [ ] **Step 2: 修改旧 REPL commands.go**
 
 在 `internal/repl/commands.go` 中：
 
@@ -771,7 +776,7 @@ git commit -m "feat(setup): 向导支持三模型输入步骤 (Haiku/Sonnet/Opus
 
 **cmdImport**（第 462 行后）：在 `json.Unmarshal` 之后添加 `importCfg.MigrateAll()`。
 
-- [ ] **Step 2: 修改 TUI REPL update.go**
+- [ ] **Step 3: 修改 TUI REPL update.go**
 
 在 `internal/repl/update.go` 中：
 
@@ -787,16 +792,16 @@ git commit -m "feat(setup): 向导支持三模型输入步骤 (Haiku/Sonnet/Opus
 
 **formatCurrentProfile**（第 896 行）：将 `profile.Model` 替换为三个模型的显示。
 
-- [ ] **Step 3: 修改 cmd/list.go**
+- [ ] **Step 4: 修改 cmd/list.go**
 
 在 `cmd/list.go` 第 46 行，将 `p.Model` 替换为三模型显示。
 
-- [ ] **Step 4: 运行所有测试**
+- [ ] **Step 5: 运行所有测试**
 
 Run: `cd /code/ai/cc-start && go test ./... -count=1`
 Expected: ALL PASS
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
 git add internal/repl/commands.go internal/repl/update.go cmd/list.go
