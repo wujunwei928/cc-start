@@ -13,7 +13,6 @@ import (
 type Profile struct {
 	Name             string `json:"name"`
 	AnthropicBaseURL string `json:"anthropic_base_url,omitempty"`
-	OpenAIBaseURL    string `json:"openai_base_url,omitempty"`
 	Model            string `json:"model,omitempty"`
 	Token            string `json:"token"`
 }
