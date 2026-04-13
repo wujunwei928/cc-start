@@ -64,8 +64,10 @@ func (p *Profile) Migrate() {
 **迁移触发点**（所有加载配置的路径都必须调用）：
 
 1. `LoadConfig()` — 正常启动加载配置文件后，遍历 `cfg.Profiles` 调用 `Migrate()`
-2. `cmdImport()` — `/import` 命令导入外部配置文件后，对导入的每个 Profile 调用 `Migrate()`（`internal/repl/commands.go:462`）
-3. 或者：将迁移逻辑封装为 `Config.MigrateAll()` 方法，在 `LoadConfig` 和 `cmdImport` 两处统一调用
+2. `internal/repl/commands.go` 的 `cmdImport()` — 旧 REPL 的 `/import`（:462）
+3. `internal/repl/update.go` 的 `cmdImport()` — TUI REPL 的 `/import`（:652）
+
+推荐方案：将迁移逻辑封装为 `Config.MigrateAll()` 方法，在三处统一调用。或者更进一步，在 `Config.AddProfile()` 内部自动对新 Profile 调用 `Migrate()`，这样所有入口天然覆盖。
 
 ## BuildSettings 注入逻辑
 
@@ -141,29 +143,22 @@ OpusModel   = mergeWithPreset(input, preset.OpusModel)
 ```
 
 **编辑模式**（`IsEdit == true`）— 修改已有 Profile：
-- 留空 → **保留当前已保存值**（不回退到预设）
 - 有输入 → 使用用户输入值
+- 留空 → **清空该模型层**（允许用户移除某个层级的映射）
+
+> 设计决策：编辑模式下留空等于清空，而非保留原值。原因：
+> 1. 如果需要保留原值，用户直接跳过该步骤即可（当前 setup 向导的 step 阻塞机制是空值不允许下一步，所以留空是一个显式的"清空"操作）
+> 2. "留空=保留原值"会让用户无法清空某个已配置的模型层
+> 3. 创建和编辑使用一致的语义：空值 = 不设置
 
 ```go
-// 编辑模式：留空保留已有值
-HaikuModel  = mergeWithExisting(input, existing.HaikuModel)
-SonnetModel = mergeWithExisting(input, existing.SonnetModel)
-OpusModel   = mergeWithExisting(input, existing.OpusModel)
+// 编辑模式：直接使用输入值（包括空字符串）
+HaikuModel  = input
+SonnetModel = input
+OpusModel   = input
 ```
 
-```go
-func mergeWithPreset(input, presetDefault string) string {
-    if input == "" { return presetDefault }
-    return input
-}
-
-func mergeWithExisting(input, currentValue string) string {
-    if input == "" { return currentValue }
-    return input
-}
-```
-
-向导的模型输入框在编辑模式下应预填充当前 Profile 的已保存值，而非预设默认值。
+向导的模型输入框在编辑模式下应预填充当前 Profile 的已保存值。用户可以清空输入框来移除某个层级的模型映射（清空后 `BuildSettings` 不会注入对应的环境变量，Claude Code 将使用其内置默认模型）。
 
 ## 显示适配
 
@@ -214,7 +209,7 @@ func mergeWithExisting(input, currentValue string) string {
 5. BuildSettings：三个模型环境变量正确注入到 env map
 6. BuildSettings 空值：模型为空时不注入对应环境变量
 7. 预设默认值：五个预设的三个模型字段正确填充
-8. Setup 向导空输入（创建）：留空时使用预设默认值，不持久化空字符串
-9. Setup 向导空输入（编辑）：留空时保留当前已保存值，不回退到预设
+8. Setup 向导空输入（创建）：留空时使用预设默认值
+9. Setup 向导空输入（编辑）：留空时清空该模型层，不注入对应环境变量
 10. Setup 向导：三个模型步骤正确显示和编辑
 11. 向后兼容：只有 `model` 字段的旧 JSON 文件能正确加载
