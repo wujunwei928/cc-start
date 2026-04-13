@@ -116,9 +116,8 @@ func InitialModelWithProfile(p config.Profile) Model {
 	anthropicURLInput.Placeholder = "Anthropic format URL"
 	anthropicURLInput.SetValue(p.AnthropicBaseURL)
 
+	// openaiURLInput 已废弃，保留字段以兼容 View 渲染
 	openaiURLInput := textinput.New()
-	openaiURLInput.Placeholder = "OpenAI format URL"
-	openaiURLInput.SetValue(p.OpenAIBaseURL)
 
 	// 查找匹配的预设
 	presets := []string{"anthropic", "moonshot", "bigmodel", "deepseek", "minimax", "自定义"}
@@ -225,7 +224,7 @@ func (m *Model) handleEnter() (tea.Model, tea.Cmd) {
 				return m, nil
 			}
 			m.anthropicURLInput.SetValue(preset.AnthropicBaseURL)
-			m.openaiURLInput.SetValue(preset.OpenAIBaseURL)
+			// preset.OpenAIBaseURL 已移除，不再设置
 			m.modelInput.SetValue(preset.Model)
 			m.nameInput.SetValue(preset.Name)
 			m.step = stepInputName
@@ -364,9 +363,9 @@ func (m *Model) saveProfile() {
 	m.profile = &config.Profile{
 		Name:             m.nameInput.Value(),
 		AnthropicBaseURL: m.anthropicURLInput.Value(),
-		OpenAIBaseURL:    m.openaiURLInput.Value(),
-		Token:            m.tokenInput.Value(),
-		Model:            m.modelInput.Value(),
+		// OpenAIBaseURL 已移除
+		Token: m.tokenInput.Value(),
+		Model: m.modelInput.Value(),
 	}
 
 	// 保存到文件

@@ -440,9 +440,6 @@ func (m *Model) cmdShow(args []string) string {
 	var buf strings.Builder
 	buf.WriteString(fmt.Sprintf("\n配置名称: %s\n", profile.Name))
 	buf.WriteString(fmt.Sprintf("Anthropic URL: %s\n", profile.AnthropicBaseURL))
-	if profile.OpenAIBaseURL != "" {
-		buf.WriteString(fmt.Sprintf("OpenAI URL: %s\n", profile.OpenAIBaseURL))
-	}
 	if profile.Model != "" {
 		buf.WriteString(fmt.Sprintf("模型: %s\n", profile.Model))
 	}
@@ -512,7 +509,6 @@ func (m *Model) cmdCopy(args []string) string {
 	newProfile := config.Profile{
 		Name:             dstName,
 		AnthropicBaseURL: src.AnthropicBaseURL,
-		OpenAIBaseURL:    src.OpenAIBaseURL,
 		Model:            src.Model,
 		Token:            src.Token,
 	}
@@ -595,9 +591,6 @@ func (m *Model) cmdTest(args []string) string {
 
 	// 优先测试 Anthropic URL
 	baseURL := profile.AnthropicBaseURL
-	if baseURL == "" {
-		baseURL = profile.OpenAIBaseURL
-	}
 	if baseURL == "" {
 		return result + "✗ 未配置任何 Base URL"
 	}
@@ -877,9 +870,6 @@ func (m Model) formatProfileList() string {
 		if p.AnthropicBaseURL != "" {
 			buf.WriteString(fmt.Sprintf("    Anthropic URL: %s\n", p.AnthropicBaseURL))
 		}
-		if p.OpenAIBaseURL != "" {
-			buf.WriteString(fmt.Sprintf("    OpenAI URL: %s\n", p.OpenAIBaseURL))
-		}
 		if p.Model != "" {
 			buf.WriteString(fmt.Sprintf("    模型: %s\n", p.Model))
 		}
@@ -902,9 +892,6 @@ func (m Model) formatCurrentProfile() string {
 	buf.WriteString(fmt.Sprintf("\n当前配置: %s\n", profile.Name))
 	if profile.AnthropicBaseURL != "" {
 		buf.WriteString(fmt.Sprintf("  Anthropic URL: %s\n", profile.AnthropicBaseURL))
-	}
-	if profile.OpenAIBaseURL != "" {
-		buf.WriteString(fmt.Sprintf("  OpenAI URL: %s\n", profile.OpenAIBaseURL))
 	}
 	if profile.Model != "" {
 		buf.WriteString(fmt.Sprintf("  模型: %s\n", profile.Model))

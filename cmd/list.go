@@ -43,9 +43,6 @@ func runList(cmd *cobra.Command, args []string) error {
 		if p.AnthropicBaseURL != "" {
 			fmt.Printf("      Anthropic URL: %s\n", p.AnthropicBaseURL)
 		}
-		if p.OpenAIBaseURL != "" {
-			fmt.Printf("      OpenAI URL: %s\n", p.OpenAIBaseURL)
-		}
 		if p.Model != "" {
 			fmt.Printf("      模型: %s\n", p.Model)
 		}

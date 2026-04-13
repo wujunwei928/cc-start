@@ -33,7 +33,7 @@ func (r *REPL) cmdList(args []string) {
 	}
 
 	table := NewTable()
-	table.Header([]string{"名称", "Anthropic URL", "OpenAI URL", "模型", "Token", "状态"})
+	table.Header([]string{"名称", "Base URL", "模型", "Token", "状态"})
 
 	// 按名称排序输出
 	names := make([]string, 0, len(r.cfg.Profiles))
@@ -58,7 +58,6 @@ func (r *REPL) cmdList(args []string) {
 		table.Append([]string{
 			name,
 			p.AnthropicBaseURL,
-			p.OpenAIBaseURL,
 			p.Model,
 			maskAPIKey(p.Token),
 			status,
@@ -108,7 +107,6 @@ func (r *REPL) cmdCurrent(args []string) {
 	fmt.Println()
 	PrintCurrent("当前配置: %s", profile.Name)
 	fmt.Printf("  Anthropic URL: %s\n", profile.AnthropicBaseURL)
-	fmt.Printf("  OpenAI URL: %s\n", profile.OpenAIBaseURL)
 	if profile.Model != "" {
 		fmt.Printf("  模型: %s\n", profile.Model)
 	}
@@ -168,7 +166,6 @@ func (r *REPL) cmdShow(args []string) {
 	fmt.Println()
 	fmt.Printf("配置名称: %s\n", profile.Name)
 	fmt.Printf("Anthropic URL: %s\n", profile.AnthropicBaseURL)
-	fmt.Printf("OpenAI URL: %s\n", profile.OpenAIBaseURL)
 	if profile.Model != "" {
 		fmt.Printf("模型: %s\n", profile.Model)
 	}
@@ -302,7 +299,6 @@ func (r *REPL) cmdCopy(args []string) {
 	newProfile := config.Profile{
 		Name:             dstName,
 		AnthropicBaseURL: src.AnthropicBaseURL,
-		OpenAIBaseURL:    src.OpenAIBaseURL,
 		Model:            src.Model,
 		Token:            src.Token,
 	}
@@ -391,13 +387,9 @@ func (r *REPL) cmdTest(args []string) {
 
 	PrintInfo("测试配置 '%s' 的 API 连通性...", name)
 
-	// 优先测试 Anthropic URL，如果没有则测试 OpenAI URL
 	baseURL := profile.AnthropicBaseURL
 	if baseURL == "" {
-		baseURL = profile.OpenAIBaseURL
-	}
-	if baseURL == "" {
-		PrintWarning("未配置任何 Base URL")
+		PrintWarning("未配置 Base URL")
 		return
 	}
 

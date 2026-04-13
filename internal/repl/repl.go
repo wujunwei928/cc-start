@@ -73,7 +73,11 @@ func (r *REPL) Run() {
 
 		// 检查是否有待执行的启动命令
 		if m, ok := finalModel.(Model); ok && m.PendingLaunch != nil {
-			if err := launcher.Launch(&m.PendingLaunch.Profile, m.PendingLaunch.Args); err != nil {
+			launchCfg := &launcher.LaunchConfig{
+				Profile:  &m.PendingLaunch.Profile,
+				ToolArgs: m.PendingLaunch.Args,
+			}
+			if err := launcher.Launch(launchCfg); err != nil {
 				fmt.Fprintf(os.Stderr, "启动失败: %v\n", err)
 				os.Exit(1)
 			}

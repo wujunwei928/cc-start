@@ -18,9 +18,9 @@ var (
 	launchYolo    bool
 )
 
-// runLaunchWithTool 使用指定工具名执行启动逻辑
+// runLaunch 执行启动逻辑
 // cmdName 用于在 os.Args 中定位参数位置
-func runLaunchWithTool(toolName string, args []string, cmdName string) error {
+func runLaunch(args []string, cmdName string) error {
 	// 解析 profile 和工具参数
 	var profileName string
 	var toolArgs []string
@@ -35,7 +35,7 @@ func runLaunchWithTool(toolName string, args []string, cmdName string) error {
 			if os.Args[i] == cmdName {
 				for j := i + 1; j < dashPos; j++ {
 					arg := os.Args[j]
-					if !isFlag(arg) && arg != toolName && !isFlagValue(os.Args, j) {
+					if !isFlag(arg) && arg != cmdName && !isFlagValue(os.Args, j) {
 						profileName = arg
 						break
 					}
@@ -77,7 +77,6 @@ func runLaunchWithTool(toolName string, args []string, cmdName string) error {
 
 	// 构建启动配置
 	launchCfg := &launcher.LaunchConfig{
-		Tool:     toolName,
 		Profile:  profile,
 		Model:    launchModel,
 		BaseURL:  launchBaseURL,
@@ -92,7 +91,7 @@ func runLaunchWithTool(toolName string, args []string, cmdName string) error {
 		return fmt.Errorf("请指定 profile，运行 'cc-start list' 查看可用配置")
 	}
 
-	return launcher.LaunchWithTool(launchCfg)
+	return launcher.Launch(launchCfg)
 }
 
 // findArgIndex 查找参数在数组中的索引

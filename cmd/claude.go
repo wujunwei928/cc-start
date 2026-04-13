@@ -3,7 +3,6 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/wujunwei928/cc-start/internal/tools"
 )
 
 // claudeCmd 启动 Claude Code CLI
@@ -28,12 +27,5 @@ func init() {
 }
 
 func runClaude(cmd *cobra.Command, args []string) error {
-	toolName := "claude"
-
-	// 验证工具存在
-	if _, err := tools.GetTool(toolName); err != nil {
-		return err
-	}
-
-	return runLaunchWithTool(toolName, args, "claude")
+	return runLaunch(args, "claude")
 }

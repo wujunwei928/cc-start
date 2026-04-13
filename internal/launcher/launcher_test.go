@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/wujunwei928/cc-start/internal/config"
-	"github.com/wujunwei928/cc-start/internal/tools"
 )
 
 func TestBuildSettings(t *testing.T) {
@@ -205,38 +204,25 @@ func TestMergeConfig(t *testing.T) {
 	profile := &config.Profile{
 		Name:             "test",
 		AnthropicBaseURL: "https://anthropic.example.com",
-		OpenAIBaseURL:    "https://openai.example.com",
 		Model:            "model-v1",
 		Token:            "profile-token",
 	}
 
 	tests := []struct {
-		name       string
-		cfg        *LaunchConfig
-		toolFormat string
-		wantModel  string
-		wantURL    string
-		wantToken  string
+		name      string
+		cfg       *LaunchConfig
+		wantModel string
+		wantURL   string
+		wantToken string
 	}{
 		{
-			name: "anthropic format selects anthropic url",
+			name: "profile provides defaults",
 			cfg: &LaunchConfig{
 				Profile: profile,
 			},
-			toolFormat: tools.FormatAnthropic,
-			wantModel:  "model-v1",
-			wantURL:    "https://anthropic.example.com",
-			wantToken:  "profile-token",
-		},
-		{
-			name: "openai format selects openai url",
-			cfg: &LaunchConfig{
-				Profile: profile,
-			},
-			toolFormat: tools.FormatOpenAI,
-			wantModel:  "model-v1",
-			wantURL:    "https://openai.example.com",
-			wantToken:  "profile-token",
+			wantModel: "model-v1",
+			wantURL:   "https://anthropic.example.com",
+			wantToken: "profile-token",
 		},
 		{
 			name: "command line overrides profile",
@@ -246,10 +232,9 @@ func TestMergeConfig(t *testing.T) {
 				BaseURL: "https://override.com",
 				Token:   "override-token",
 			},
-			toolFormat: tools.FormatAnthropic,
-			wantModel:  "override-model",
-			wantURL:    "https://override.com",
-			wantToken:  "override-token",
+			wantModel: "override-model",
+			wantURL:   "https://override.com",
+			wantToken: "override-token",
 		},
 		{
 			name: "partial override - model only",
@@ -257,26 +242,33 @@ func TestMergeConfig(t *testing.T) {
 				Profile: profile,
 				Model:   "new-model",
 			},
-			toolFormat: tools.FormatOpenAI,
-			wantModel:  "new-model",
-			wantURL:    "https://openai.example.com",
-			wantToken:  "profile-token",
+			wantModel: "new-model",
+			wantURL:   "https://anthropic.example.com",
+			wantToken: "profile-token",
 		},
 		{
-			name: "no profile no override",
+			name:      "no profile no override",
+			cfg:       &LaunchConfig{},
+			wantModel: "",
+			wantURL:   "",
+			wantToken: "",
+		},
+		{
+			name: "no profile with command line values",
 			cfg: &LaunchConfig{
-				Tool: "claude",
+				Model:   "cmd-model",
+				BaseURL: "https://cmd.example.com",
+				Token:   "cmd-token",
 			},
-			toolFormat: tools.FormatAnthropic,
-			wantModel:  "",
-			wantURL:    "",
-			wantToken:  "",
+			wantModel: "cmd-model",
+			wantURL:   "https://cmd.example.com",
+			wantToken: "cmd-token",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			model, baseURL, token := MergeConfig(tt.cfg, tt.toolFormat)
+			model, baseURL, token := MergeConfig(tt.cfg)
 			if model != tt.wantModel {
 				t.Errorf("MergeConfig() model = %v, want %v", model, tt.wantModel)
 			}
