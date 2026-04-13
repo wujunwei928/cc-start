@@ -61,13 +61,23 @@ func (p *Profile) Migrate() {
 }
 ```
 
-**迁移触发点**（所有加载配置的路径都必须调用）：
+**迁移机制**：采用 `Config.MigrateAll()` 作为唯一迁移入口，在所有加载配置的路径末尾调用。
 
-1. `LoadConfig()` — 正常启动加载配置文件后，遍历 `cfg.Profiles` 调用 `Migrate()`
-2. `internal/repl/commands.go` 的 `cmdImport()` — 旧 REPL 的 `/import`（:462）
-3. `internal/repl/update.go` 的 `cmdImport()` — TUI REPL 的 `/import`（:652）
+```go
+func (c *Config) MigrateAll() {
+    for i := range c.Profiles {
+        c.Profiles[i].Migrate()
+    }
+}
+```
 
-推荐方案：将迁移逻辑封装为 `Config.MigrateAll()` 方法，在三处统一调用。或者更进一步，在 `Config.AddProfile()` 内部自动对新 Profile 调用 `Migrate()`，这样所有入口天然覆盖。
+`MigrateAll()` 必须在以下三处调用：
+
+1. `LoadConfig()` 返回前 — 覆盖启动时从磁盘加载的旧 Profile
+2. `internal/repl/commands.go` 的 `cmdImport()` 中 `json.Unmarshal` 之后 — 旧 REPL `/import`
+3. `internal/repl/update.go` 的 `cmdImport()` 中 `json.Unmarshal` 之后 — TUI REPL `/import`
+
+> 注意：`Config.AddProfile()` 不做迁移。`AddProfile` 既用于新增 Profile 也用于更新已有 Profile，在其中自动迁移语义不清晰。迁移统一由 `MigrateAll()` 在配置加载/导入后显式调用。
 
 ## BuildSettings 注入逻辑
 
@@ -146,10 +156,10 @@ OpusModel   = mergeWithPreset(input, preset.OpusModel)
 - 有输入 → 使用用户输入值
 - 留空 → **清空该模型层**（允许用户移除某个层级的映射）
 
-> 设计决策：编辑模式下留空等于清空，而非保留原值。原因：
-> 1. 如果需要保留原值，用户直接跳过该步骤即可（当前 setup 向导的 step 阻塞机制是空值不允许下一步，所以留空是一个显式的"清空"操作）
-> 2. "留空=保留原值"会让用户无法清空某个已配置的模型层
-> 3. 创建和编辑使用一致的语义：空值 = 不设置
+> 设计决策：编辑模式下留空等于清空。原因：
+> 1. 向导的每个模型步骤按 Enter 即保存（`saveProfile()` + `tea.Quit`，见 `internal/tui/setup/model.go:247`），没有"跳过"分支，用户必须按 Enter 才能继续
+> 2. 如果"留空=保留原值"，用户就没有办法清空某个已配置的模型层
+> 3. 输入框预填充当前已保存值，用户不想改直接按 Enter 即可保留；想清空则删除内容后按 Enter
 
 ```go
 // 编辑模式：直接使用输入值（包括空字符串）
@@ -158,7 +168,15 @@ SonnetModel = input
 OpusModel   = input
 ```
 
-向导的模型输入框在编辑模式下应预填充当前 Profile 的已保存值。用户可以清空输入框来移除某个层级的模型映射（清空后 `BuildSettings` 不会注入对应的环境变量，Claude Code 将使用其内置默认模型）。
+**具体交互流程**（以编辑模式为例）：
+
+```
+┌ 快速模型 (Haiku) ─────────────────────────────┐
+│ glm-5-turbo                  ← 预填充当前值     │
+└────────────────────────────────────────────────┘
+     用户按 Enter → 保留 glm-5-turbo
+     用户清空后按 Enter → 清空 HaikuModel
+```
 
 ## 显示适配
 
