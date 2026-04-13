@@ -43,8 +43,14 @@ func runList(cmd *cobra.Command, args []string) error {
 		if p.AnthropicBaseURL != "" {
 			fmt.Printf("      Base URL: %s\n", p.AnthropicBaseURL)
 		}
-		if p.Model != "" {
-			fmt.Printf("      模型: %s\n", p.Model)
+		if p.SonnetModel != "" {
+			fmt.Printf("      主模型 (Sonnet): %s\n", p.SonnetModel)
+		}
+		if p.HaikuModel != "" {
+			fmt.Printf("      快速模型 (Haiku): %s\n", p.HaikuModel)
+		}
+		if p.OpusModel != "" {
+			fmt.Printf("      经济模型 (Opus): %s\n", p.OpusModel)
 		}
 		fmt.Printf("      Token: %s...\n\n", config.MaskToken(p.Token))
 	}

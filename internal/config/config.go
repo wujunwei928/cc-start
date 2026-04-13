@@ -13,8 +13,11 @@ import (
 type Profile struct {
 	Name             string `json:"name"`
 	AnthropicBaseURL string `json:"anthropic_base_url,omitempty"`
-	Model            string `json:"model,omitempty"`
+	HaikuModel       string `json:"haiku_model,omitempty"`  // 快速模型
+	SonnetModel      string `json:"sonnet_model,omitempty"` // 主模型
+	OpusModel        string `json:"opus_model,omitempty"`   // 经济模型
 	Token            string `json:"token"`
+	LegacyModel      string `json:"model,omitempty"` // 旧字段，仅用于迁移
 }
 
 // Validate 验证配置项
@@ -26,6 +29,21 @@ func (p *Profile) Validate() error {
 		return errors.New("token is required")
 	}
 	return nil
+}
+
+// Migrate 将旧 model 字段迁移到 SonnetModel
+func (p *Profile) Migrate() {
+	if p.LegacyModel != "" && p.SonnetModel == "" {
+		p.SonnetModel = p.LegacyModel
+	}
+	p.LegacyModel = ""
+}
+
+// MigrateAll 对所有 Profile 执行迁移
+func (c *Config) MigrateAll() {
+	for i := range c.Profiles {
+		c.Profiles[i].Migrate()
+	}
 }
 
 // Config 完整配置
@@ -153,6 +171,8 @@ func LoadConfig(path string) (*Config, error) {
 	if cfg.Settings.Theme == "" {
 		cfg.Settings.Theme = "default"
 	}
+
+	cfg.MigrateAll()
 
 	return &cfg, nil
 }

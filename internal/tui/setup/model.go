@@ -19,7 +19,9 @@ const (
 	stepInputName
 	stepInputAnthropicURL
 	stepInputToken
-	stepInputModel
+	stepInputHaikuModel
+	stepInputSonnetModel
+	stepInputOpusModel
 	stepConfirm
 	stepDone
 )
@@ -44,12 +46,14 @@ var (
 
 // Model setup TUI 模型
 type Model struct {
-	step       step
-	presets    []string
-	selected   int
-	nameInput  textinput.Model
-	tokenInput textinput.Model
-	modelInput textinput.Model
+	step        step
+	presets     []string
+	selected    int
+	nameInput   textinput.Model
+	tokenInput  textinput.Model
+	haikuInput  textinput.Model
+	sonnetInput textinput.Model
+	opusInput   textinput.Model
 	// URL 输入
 	anthropicURLInput textinput.Model
 	isCustom          bool
@@ -72,8 +76,14 @@ func InitialModel() Model {
 	tokenInput.EchoMode = textinput.EchoPassword
 	tokenInput.EchoCharacter = '•'
 
-	modelInput := textinput.New()
-	modelInput.Placeholder = "Model name (optional, press Enter to skip)"
+	haikuInput := textinput.New()
+	haikuInput.Placeholder = "快速模型 (Haiku)"
+
+	sonnetInput := textinput.New()
+	sonnetInput.Placeholder = "主模型 (Sonnet)"
+
+	opusInput := textinput.New()
+	opusInput.Placeholder = "经济模型 (Opus)"
 
 	anthropicURLInput := textinput.New()
 	anthropicURLInput.Placeholder = "Base URL (e.g. https://api.anthropic.com)"
@@ -84,7 +94,9 @@ func InitialModel() Model {
 		selected:          0,
 		nameInput:         nameInput,
 		tokenInput:        tokenInput,
-		modelInput:        modelInput,
+		haikuInput:        haikuInput,
+		sonnetInput:       sonnetInput,
+		opusInput:         opusInput,
 		anthropicURLInput: anthropicURLInput,
 	}
 }
@@ -102,9 +114,17 @@ func InitialModelWithProfile(p config.Profile) Model {
 	tokenInput.EchoMode = textinput.EchoPassword
 	tokenInput.EchoCharacter = '•'
 
-	modelInput := textinput.New()
-	modelInput.Placeholder = "Model name (optional)"
-	modelInput.SetValue(p.Model)
+	haikuInput := textinput.New()
+	haikuInput.Placeholder = "快速模型 (Haiku)"
+	haikuInput.SetValue(p.HaikuModel)
+
+	sonnetInput := textinput.New()
+	sonnetInput.Placeholder = "主模型 (Sonnet)"
+	sonnetInput.SetValue(p.SonnetModel)
+
+	opusInput := textinput.New()
+	opusInput.Placeholder = "经济模型 (Opus)"
+	opusInput.SetValue(p.OpusModel)
 
 	anthropicURLInput := textinput.New()
 	anthropicURLInput.Placeholder = "Base URL"
@@ -128,7 +148,9 @@ func InitialModelWithProfile(p config.Profile) Model {
 		selected:          selected,
 		nameInput:         nameInput,
 		tokenInput:        tokenInput,
-		modelInput:        modelInput,
+		haikuInput:        haikuInput,
+		sonnetInput:       sonnetInput,
+		opusInput:         opusInput,
 		anthropicURLInput: anthropicURLInput,
 		isEdit:            true,
 		originalName:      p.Name,
@@ -185,9 +207,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		var cmd tea.Cmd
 		m.tokenInput, cmd = m.tokenInput.Update(msg)
 		return m, cmd
-	case stepInputModel:
+	case stepInputHaikuModel:
 		var cmd tea.Cmd
-		m.modelInput, cmd = m.modelInput.Update(msg)
+		m.haikuInput, cmd = m.haikuInput.Update(msg)
+		return m, cmd
+	case stepInputSonnetModel:
+		var cmd tea.Cmd
+		m.sonnetInput, cmd = m.sonnetInput.Update(msg)
+		return m, cmd
+	case stepInputOpusModel:
+		var cmd tea.Cmd
+		m.opusInput, cmd = m.opusInput.Update(msg)
 		return m, cmd
 	}
 
@@ -209,7 +239,9 @@ func (m *Model) handleEnter() (tea.Model, tea.Cmd) {
 				return m, nil
 			}
 			m.anthropicURLInput.SetValue(preset.AnthropicBaseURL)
-			m.modelInput.SetValue(preset.Model)
+			m.haikuInput.SetValue(preset.HaikuModel)
+			m.sonnetInput.SetValue(preset.SonnetModel)
+			m.opusInput.SetValue(preset.OpusModel)
 			m.nameInput.SetValue(preset.Name)
 			m.step = stepInputName
 			m.nameInput.Focus()
@@ -240,11 +272,21 @@ func (m *Model) handleEnter() (tea.Model, tea.Cmd) {
 			m.err = fmt.Errorf("Token 不能为空")
 			return m, nil
 		}
-		m.step = stepInputModel
+		m.step = stepInputHaikuModel
 		m.tokenInput.Blur()
-		m.modelInput.Focus()
+		m.haikuInput.Focus()
 
-	case stepInputModel:
+	case stepInputHaikuModel:
+		m.step = stepInputSonnetModel
+		m.haikuInput.Blur()
+		m.sonnetInput.Focus()
+
+	case stepInputSonnetModel:
+		m.step = stepInputOpusModel
+		m.sonnetInput.Blur()
+		m.opusInput.Focus()
+
+	case stepInputOpusModel:
 		m.saveProfile()
 		return m, tea.Quit
 
@@ -258,9 +300,17 @@ func (m *Model) handleEnter() (tea.Model, tea.Cmd) {
 
 func (m *Model) handleGoBack() (tea.Model, tea.Cmd) {
 	switch m.step {
-	case stepInputModel:
+	case stepInputOpusModel:
+		m.step = stepInputSonnetModel
+		m.opusInput.Blur()
+		m.sonnetInput.Focus()
+	case stepInputSonnetModel:
+		m.step = stepInputHaikuModel
+		m.sonnetInput.Blur()
+		m.haikuInput.Focus()
+	case stepInputHaikuModel:
 		m.step = stepInputToken
-		m.modelInput.Blur()
+		m.haikuInput.Blur()
 		m.tokenInput.Focus()
 	case stepInputToken:
 		if m.isEdit || m.isCustom {
@@ -310,23 +360,63 @@ func (m *Model) handleBackspace(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		var cmd tea.Cmd
 		m.tokenInput, cmd = m.tokenInput.Update(msg)
 		return m, cmd
-	case stepInputModel:
-		if m.modelInput.Value() == "" {
+	case stepInputHaikuModel:
+		if m.haikuInput.Value() == "" {
 			return m, nil
 		}
 		var cmd tea.Cmd
-		m.modelInput, cmd = m.modelInput.Update(msg)
+		m.haikuInput, cmd = m.haikuInput.Update(msg)
+		return m, cmd
+	case stepInputSonnetModel:
+		if m.sonnetInput.Value() == "" {
+			return m, nil
+		}
+		var cmd tea.Cmd
+		m.sonnetInput, cmd = m.sonnetInput.Update(msg)
+		return m, cmd
+	case stepInputOpusModel:
+		if m.opusInput.Value() == "" {
+			return m, nil
+		}
+		var cmd tea.Cmd
+		m.opusInput, cmd = m.opusInput.Update(msg)
 		return m, cmd
 	}
 	return m, nil
 }
 
 func (m *Model) saveProfile() {
+	haiku := m.haikuInput.Value()
+	sonnet := m.sonnetInput.Value()
+	opus := m.opusInput.Value()
+
+	// 创建模式：留空使用预设默认值
+	if !m.isEdit {
+		if haiku == "" && m.presetName != "" {
+			if preset, err := config.GetPresetByName(m.presetName); err == nil {
+				haiku = preset.HaikuModel
+			}
+		}
+		if sonnet == "" && m.presetName != "" {
+			if preset, err := config.GetPresetByName(m.presetName); err == nil {
+				sonnet = preset.SonnetModel
+			}
+		}
+		if opus == "" && m.presetName != "" {
+			if preset, err := config.GetPresetByName(m.presetName); err == nil {
+				opus = preset.OpusModel
+			}
+		}
+	}
+	// 编辑模式：直接使用输入值（包括空字符串，表示清空）
+
 	m.profile = &config.Profile{
 		Name:             m.nameInput.Value(),
 		AnthropicBaseURL: m.anthropicURLInput.Value(),
+		HaikuModel:       haiku,
+		SonnetModel:      sonnet,
+		OpusModel:        opus,
 		Token:            m.tokenInput.Value(),
-		Model:            m.modelInput.Value(),
 	}
 
 	cfgPath := config.GetConfigPath()
@@ -400,13 +490,31 @@ func (m Model) View() string {
 		fmt.Fprintf(&b, "  %s\n\n", m.tokenInput.View())
 		b.WriteString(normalStyle.Render("Enter 确认，ESC 返回"))
 
-	case stepInputModel:
+	case stepInputHaikuModel:
 		fmt.Fprintf(&b, "配置: %s\n", m.nameInput.Value())
 		if m.anthropicURLInput.Value() != "" {
 			fmt.Fprintf(&b, "Base URL: %s\n", m.anthropicURLInput.Value())
 		}
-		b.WriteString("\n输入模型名称（可选）:\n\n")
-		fmt.Fprintf(&b, "  %s\n\n", m.modelInput.View())
+		b.WriteString("\n输入快速模型 (Haiku):\n\n")
+		fmt.Fprintf(&b, "  %s\n\n", m.haikuInput.View())
+		b.WriteString(normalStyle.Render("Enter 继续，ESC 返回"))
+
+	case stepInputSonnetModel:
+		fmt.Fprintf(&b, "配置: %s\n", m.nameInput.Value())
+		if m.anthropicURLInput.Value() != "" {
+			fmt.Fprintf(&b, "Base URL: %s\n", m.anthropicURLInput.Value())
+		}
+		b.WriteString("\n输入主模型 (Sonnet):\n\n")
+		fmt.Fprintf(&b, "  %s\n\n", m.sonnetInput.View())
+		b.WriteString(normalStyle.Render("Enter 继续，ESC 返回"))
+
+	case stepInputOpusModel:
+		fmt.Fprintf(&b, "配置: %s\n", m.nameInput.Value())
+		if m.anthropicURLInput.Value() != "" {
+			fmt.Fprintf(&b, "Base URL: %s\n", m.anthropicURLInput.Value())
+		}
+		b.WriteString("\n输入经济模型 (Opus):\n\n")
+		fmt.Fprintf(&b, "  %s\n\n", m.opusInput.View())
 		b.WriteString(normalStyle.Render("Enter 保存，ESC 返回"))
 	}
 

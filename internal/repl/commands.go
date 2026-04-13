@@ -25,7 +25,7 @@ func (r *REPL) cmdList(args []string) {
 	}
 
 	table := NewTable()
-	table.Header([]string{"名称", "Base URL", "模型", "Token", "状态"})
+	table.Header([]string{"名称", "主模型", "快速模型", "经济模型", "Token", "状态"})
 
 	// 按名称排序输出
 	names := make([]string, 0, len(r.cfg.Profiles))
@@ -50,7 +50,9 @@ func (r *REPL) cmdList(args []string) {
 		table.Append([]string{
 			name,
 			p.AnthropicBaseURL,
-			p.Model,
+			p.SonnetModel,
+			p.HaikuModel,
+			p.OpusModel,
 			config.MaskToken(p.Token),
 			status,
 		})
@@ -77,8 +79,14 @@ func (r *REPL) cmdUse(args []string) {
 
 	r.currentName = profile.Name
 	PrintSuccess("已切换到配置 '%s'", profile.Name)
-	if profile.Model != "" {
-		PrintInfo("模型: %s", profile.Model)
+	if profile.SonnetModel != "" {
+		PrintInfo("主模型 (Sonnet): %s", profile.SonnetModel)
+	}
+	if profile.HaikuModel != "" {
+		PrintInfo("快速模型 (Haiku): %s", profile.HaikuModel)
+	}
+	if profile.OpusModel != "" {
+		PrintInfo("经济模型 (Opus): %s", profile.OpusModel)
 	}
 }
 
@@ -99,8 +107,14 @@ func (r *REPL) cmdCurrent(args []string) {
 	fmt.Println()
 	PrintCurrent("当前配置: %s", profile.Name)
 	fmt.Printf("  Base URL: %s\n", profile.AnthropicBaseURL)
-	if profile.Model != "" {
-		fmt.Printf("  模型: %s\n", profile.Model)
+	if profile.SonnetModel != "" {
+		fmt.Printf("  主模型 (Sonnet): %s\n", profile.SonnetModel)
+	}
+	if profile.HaikuModel != "" {
+		fmt.Printf("  快速模型 (Haiku): %s\n", profile.HaikuModel)
+	}
+	if profile.OpusModel != "" {
+		fmt.Printf("  经济模型 (Opus): %s\n", profile.OpusModel)
 	}
 	fmt.Printf("  Token: %s\n", config.MaskToken(profile.Token))
 	if profile.Name == r.cfg.Default {
@@ -158,8 +172,14 @@ func (r *REPL) cmdShow(args []string) {
 	fmt.Println()
 	fmt.Printf("配置名称: %s\n", profile.Name)
 	fmt.Printf("Base URL: %s\n", profile.AnthropicBaseURL)
-	if profile.Model != "" {
-		fmt.Printf("模型: %s\n", profile.Model)
+	if profile.SonnetModel != "" {
+		fmt.Printf("主模型 (Sonnet): %s\n", profile.SonnetModel)
+	}
+	if profile.HaikuModel != "" {
+		fmt.Printf("快速模型 (Haiku): %s\n", profile.HaikuModel)
+	}
+	if profile.OpusModel != "" {
+		fmt.Printf("经济模型 (Opus): %s\n", profile.OpusModel)
 	}
 	fmt.Printf("Token: %s\n", config.MaskToken(profile.Token))
 	fmt.Println()
@@ -291,7 +311,9 @@ func (r *REPL) cmdCopy(args []string) {
 	newProfile := config.Profile{
 		Name:             dstName,
 		AnthropicBaseURL: src.AnthropicBaseURL,
-		Model:            src.Model,
+		HaikuModel:       src.HaikuModel,
+		SonnetModel:      src.SonnetModel,
+		OpusModel:        src.OpusModel,
 		Token:            src.Token,
 	}
 
@@ -464,6 +486,7 @@ func (r *REPL) cmdImport(args []string) {
 		PrintError("解析配置失败: %v", err)
 		return
 	}
+	importCfg.MigrateAll()
 
 	if len(importCfg.Profiles) == 0 {
 		PrintWarning("文件中没有找到配置")

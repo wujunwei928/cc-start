@@ -2,8 +2,10 @@
 package config
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -280,6 +282,109 @@ func TestLoadConfigWithEmptySettings(t *testing.T) {
 
 	if cfg.Settings.Theme != "default" {
 		t.Errorf("Settings.Theme = %s, want default", cfg.Settings.Theme)
+	}
+}
+
+func TestProfileMigrate(t *testing.T) {
+	// 旧格式 JSON 只有一个 model 字段
+	oldJSON := `{"name":"test","model":"glm-5","token":"sk-xxx"}`
+	var p Profile
+	if err := json.Unmarshal([]byte(oldJSON), &p); err != nil {
+		t.Fatalf("unmarshal failed: %v", err)
+	}
+
+	// 迁移前：LegacyModel 有值，SonnetModel 为空
+	if p.LegacyModel != "glm-5" {
+		t.Fatalf("LegacyModel should be 'glm-5', got '%s'", p.LegacyModel)
+	}
+	if p.SonnetModel != "" {
+		t.Fatalf("SonnetModel should be empty before migrate, got '%s'", p.SonnetModel)
+	}
+
+	p.Migrate()
+
+	// 迁移后：SonnetModel 有值，LegacyModel 清空
+	if p.SonnetModel != "glm-5" {
+		t.Errorf("SonnetModel should be 'glm-5' after migrate, got '%s'", p.SonnetModel)
+	}
+	if p.LegacyModel != "" {
+		t.Errorf("LegacyModel should be empty after migrate, got '%s'", p.LegacyModel)
+	}
+}
+
+func TestProfileMigrateNoOverwrite(t *testing.T) {
+	// 新格式 JSON 已有 sonnet_model
+	newJSON := `{"name":"test","sonnet_model":"new-model","model":"old-model","token":"sk-xxx"}`
+	var p Profile
+	if err := json.Unmarshal([]byte(newJSON), &p); err != nil {
+		t.Fatalf("unmarshal failed: %v", err)
+	}
+
+	p.Migrate()
+
+	// 已有 sonnet_model 时，不应被 legacyModel 覆盖
+	if p.SonnetModel != "new-model" {
+		t.Errorf("SonnetModel should remain 'new-model', got '%s'", p.SonnetModel)
+	}
+}
+
+func TestProfileMigrateEmpty(t *testing.T) {
+	p := Profile{Name: "test", Token: "xxx"}
+	p.Migrate() // 不应 panic
+	if p.SonnetModel != "" {
+		t.Errorf("SonnetModel should be empty, got '%s'", p.SonnetModel)
+	}
+}
+
+func TestConfigMigrateAll(t *testing.T) {
+	oldJSON := `{"profiles":[{"name":"a","model":"m1","token":"t1"},{"name":"b","model":"m2","token":"t2"}]}`
+	var cfg Config
+	if err := json.Unmarshal([]byte(oldJSON), &cfg); err != nil {
+		t.Fatalf("unmarshal failed: %v", err)
+	}
+	cfg.MigrateAll()
+	if cfg.Profiles[0].SonnetModel != "m1" {
+		t.Errorf("profiles[0].SonnetModel should be 'm1', got '%s'", cfg.Profiles[0].SonnetModel)
+	}
+	if cfg.Profiles[1].SonnetModel != "m2" {
+		t.Errorf("profiles[1].SonnetModel should be 'm2', got '%s'", cfg.Profiles[1].SonnetModel)
+	}
+}
+
+func TestMigrateNotInOutput(t *testing.T) {
+	oldJSON := `{"name":"test","model":"glm-5","token":"sk-xxx"}`
+	var p Profile
+	json.Unmarshal([]byte(oldJSON), &p)
+	p.Migrate()
+
+	data, err := json.Marshal(p)
+	if err != nil {
+		t.Fatalf("marshal failed: %v", err)
+	}
+	if strings.Contains(string(data), `"model"`) {
+		t.Errorf("migrated profile should not contain 'model' key in JSON output: %s", string(data))
+	}
+}
+
+func TestNewProfileSerialization(t *testing.T) {
+	p := Profile{
+		Name:             "test",
+		AnthropicBaseURL: "https://example.com",
+		HaikuModel:       "haiku-model",
+		SonnetModel:      "sonnet-model",
+		OpusModel:        "opus-model",
+		Token:            "sk-xxx",
+	}
+	data, err := json.Marshal(p)
+	if err != nil {
+		t.Fatalf("marshal failed: %v", err)
+	}
+	s := string(data)
+	if !strings.Contains(s, `"haiku_model"`) || !strings.Contains(s, `"sonnet_model"`) || !strings.Contains(s, `"opus_model"`) {
+		t.Errorf("new profile should contain haiku_model, sonnet_model, opus_model: %s", s)
+	}
+	if strings.Contains(s, `"model"`) {
+		t.Errorf("new profile should not contain 'model' key: %s", s)
 	}
 }
 

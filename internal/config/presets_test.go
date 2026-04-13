@@ -35,7 +35,9 @@ func TestGetPresetByName(t *testing.T) {
 			expected: &Profile{
 				Name:             "anthropic",
 				AnthropicBaseURL: "https://api.anthropic.com",
-				Model:            "claude-sonnet-4-5-20250929",
+				HaikuModel:       "claude-haiku-4-5-20251001",
+				SonnetModel:      "claude-sonnet-4-5-20250929",
+				OpusModel:        "claude-opus-4-6",
 			},
 		},
 		{
@@ -43,7 +45,9 @@ func TestGetPresetByName(t *testing.T) {
 			expected: &Profile{
 				Name:             "moonshot",
 				AnthropicBaseURL: "https://api.kimi.com/coding/",
-				Model:            "kimi-k2.5",
+				HaikuModel:       "kimi-k2.5",
+				SonnetModel:      "kimi-k2.5",
+				OpusModel:        "kimi-k2.5",
 			},
 		},
 		{
@@ -51,7 +55,9 @@ func TestGetPresetByName(t *testing.T) {
 			expected: &Profile{
 				Name:             "bigmodel",
 				AnthropicBaseURL: "https://open.bigmodel.cn/api/anthropic",
-				Model:            "glm-5",
+				HaikuModel:       "glm-5-turbo",
+				SonnetModel:      "glm-5-turbo",
+				OpusModel:        "glm-5.1",
 			},
 		},
 		{
@@ -59,7 +65,9 @@ func TestGetPresetByName(t *testing.T) {
 			expected: &Profile{
 				Name:             "deepseek",
 				AnthropicBaseURL: "https://api.deepseek.com/anthropic",
-				Model:            "deepseek-chat",
+				HaikuModel:       "deepseek-chat",
+				SonnetModel:      "deepseek-chat",
+				OpusModel:        "deepseek-chat",
 			},
 		},
 		{
@@ -67,7 +75,9 @@ func TestGetPresetByName(t *testing.T) {
 			expected: &Profile{
 				Name:             "minimax",
 				AnthropicBaseURL: "https://api.minimaxi.com/anthropic",
-				Model:            "MiniMax-M2.7",
+				HaikuModel:       "MiniMax-M2.7",
+				SonnetModel:      "MiniMax-M2.7",
+				OpusModel:        "MiniMax-M2.7",
 			},
 		},
 	}
@@ -84,8 +94,14 @@ func TestGetPresetByName(t *testing.T) {
 			if p.AnthropicBaseURL != tt.expected.AnthropicBaseURL {
 				t.Errorf("expected baseURL '%s', got '%s'", tt.expected.AnthropicBaseURL, p.AnthropicBaseURL)
 			}
-			if p.Model != tt.expected.Model {
-				t.Errorf("expected model '%s', got '%s'", tt.expected.Model, p.Model)
+			if p.HaikuModel != tt.expected.HaikuModel {
+				t.Errorf("expected haikuModel '%s', got '%s'", tt.expected.HaikuModel, p.HaikuModel)
+			}
+			if p.SonnetModel != tt.expected.SonnetModel {
+				t.Errorf("expected sonnetModel '%s', got '%s'", tt.expected.SonnetModel, p.SonnetModel)
+			}
+			if p.OpusModel != tt.expected.OpusModel {
+				t.Errorf("expected opusModel '%s', got '%s'", tt.expected.OpusModel, p.OpusModel)
 			}
 		})
 	}

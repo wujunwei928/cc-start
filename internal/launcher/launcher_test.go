@@ -88,7 +88,7 @@ func TestBuildSettingsJSON(t *testing.T) {
 		Name:             "moonshot",
 		AnthropicBaseURL: "https://api.kimi.com/coding/",
 		Token:            "test-token",
-		Model:            "kimi-k2.5",
+		SonnetModel:      "kimi-k2.5",
 	}
 
 	settings := BuildSettings(profile)
@@ -118,11 +118,60 @@ func TestBuildSettingsJSON(t *testing.T) {
 	}
 }
 
+func TestBuildSettingsTripleModel(t *testing.T) {
+	profile := &config.Profile{
+		Name:             "bigmodel",
+		AnthropicBaseURL: "https://open.bigmodel.cn/api/anthropic",
+		HaikuModel:       "glm-5-turbo",
+		SonnetModel:      "glm-5-turbo",
+		OpusModel:        "glm-5.1",
+		Token:            "sk-xxx",
+	}
+	settings := BuildSettings(profile)
+	env, ok := settings["env"].(map[string]string)
+	if !ok {
+		t.Fatal("settings should have env map")
+	}
+	if env["ANTHROPIC_DEFAULT_HAIKU_MODEL"] != "glm-5-turbo" {
+		t.Errorf("expected haiku model 'glm-5-turbo', got '%s'", env["ANTHROPIC_DEFAULT_HAIKU_MODEL"])
+	}
+	if env["ANTHROPIC_DEFAULT_SONNET_MODEL"] != "glm-5-turbo" {
+		t.Errorf("expected sonnet model 'glm-5-turbo', got '%s'", env["ANTHROPIC_DEFAULT_SONNET_MODEL"])
+	}
+	if env["ANTHROPIC_DEFAULT_OPUS_MODEL"] != "glm-5.1" {
+		t.Errorf("expected opus model 'glm-5.1', got '%s'", env["ANTHROPIC_DEFAULT_OPUS_MODEL"])
+	}
+}
+
+func TestBuildSettingsPartialModel(t *testing.T) {
+	profile := &config.Profile{
+		Name:             "test",
+		AnthropicBaseURL: "https://example.com",
+		SonnetModel:      "only-sonnet",
+		Token:            "sk-xxx",
+	}
+	settings := BuildSettings(profile)
+	env, ok := settings["env"].(map[string]string)
+	if !ok {
+		t.Fatal("settings should have env map")
+	}
+	// 只设了 SonnetModel，其他两个不应出现
+	if env["ANTHROPIC_DEFAULT_SONNET_MODEL"] != "only-sonnet" {
+		t.Errorf("expected sonnet model 'only-sonnet', got '%s'", env["ANTHROPIC_DEFAULT_SONNET_MODEL"])
+	}
+	if _, exists := env["ANTHROPIC_DEFAULT_HAIKU_MODEL"]; exists {
+		t.Error("haiku model should not be set when empty")
+	}
+	if _, exists := env["ANTHROPIC_DEFAULT_OPUS_MODEL"]; exists {
+		t.Error("opus model should not be set when empty")
+	}
+}
+
 func TestMergeConfig(t *testing.T) {
 	profile := &config.Profile{
 		Name:             "test",
 		AnthropicBaseURL: "https://anthropic.example.com",
-		Model:            "model-v1",
+		SonnetModel:      "model-v1",
 		Token:            "profile-token",
 	}
 

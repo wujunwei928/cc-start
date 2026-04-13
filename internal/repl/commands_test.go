@@ -20,8 +20,8 @@ func setupTestREPL(t *testing.T) (*REPL, string) {
 	// 创建测试配置
 	cfg := &config.Config{
 		Profiles: []config.Profile{
-			{Name: "test1", AnthropicBaseURL: "https://api.test1.com", Token: "token1", Model: "model1"},
-			{Name: "test2", AnthropicBaseURL: "https://api.test2.com", Token: "token2", Model: "model2"},
+			{Name: "test1", AnthropicBaseURL: "https://api.test1.com", Token: "token1", SonnetModel: "model1"},
+			{Name: "test2", AnthropicBaseURL: "https://api.test2.com", Token: "token2", SonnetModel: "model2"},
 		},
 		Default: "test1",
 	}

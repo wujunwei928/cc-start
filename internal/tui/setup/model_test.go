@@ -53,8 +53,8 @@ func TestTokenInputBackspace(t *testing.T) {
 	}
 }
 
-// TestModelInputBackspace 测试模型输入框 Backspace 删除功能
-func TestModelInputBackspace(t *testing.T) {
+// TestSonnetInputBackspace 测试 Sonnet 模型输入框 Backspace 删除功能
+func TestSonnetInputBackspace(t *testing.T) {
 	m := InitialModel()
 
 	// 选择 anthropic 预设
@@ -65,20 +65,28 @@ func TestModelInputBackspace(t *testing.T) {
 	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	m = toModel(result)
 
-	// 验证预设的模型值已设置
-	initialModel := m.modelInput.Value()
-	if initialModel == "" {
-		t.Fatal("预设模型值不应为空")
+	// 验证预设的 sonnet 模型值已设置
+	initialSonnet := m.sonnetInput.Value()
+	if initialSonnet == "" {
+		t.Fatal("预设 sonnet 模型值不应为空")
 	}
 
-	// 输入 token 并进入模型步骤
+	// 输入 token 并经过 haiku 步骤到达 sonnet 步骤
 	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("test-token")})
 	m = toModel(result)
 	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	m = toModel(result)
 
-	if m.step != stepInputModel {
-		t.Fatalf("期望步骤为 stepInputModel，实际为 %d", m.step)
+	if m.step != stepInputHaikuModel {
+		t.Fatalf("期望步骤为 stepInputHaikuModel，实际为 %d", m.step)
+	}
+
+	// 跳过 haiku 步骤
+	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m = toModel(result)
+
+	if m.step != stepInputSonnetModel {
+		t.Fatalf("期望步骤为 stepInputSonnetModel，实际为 %d", m.step)
 	}
 
 	// 按 Backspace 删除字符
@@ -86,8 +94,8 @@ func TestModelInputBackspace(t *testing.T) {
 	m = toModel(result)
 
 	// 验证删除成功
-	if m.modelInput.Value() == initialModel {
-		t.Errorf("Backspace 应该删除字符，但值未改变: %s", m.modelInput.Value())
+	if m.sonnetInput.Value() == initialSonnet {
+		t.Errorf("Backspace 应该删除字符，但值未改变: %s", m.sonnetInput.Value())
 	}
 }
 
@@ -122,8 +130,8 @@ func TestNameInputBackspace(t *testing.T) {
 	}
 }
 
-// TestModelInputCanType 测试模型输入框可以输入新字符
-func TestModelInputCanType(t *testing.T) {
+// TestSonnetInputCanType 测试 Sonnet 模型输入框可以输入新字符
+func TestSonnetInputCanType(t *testing.T) {
 	m := InitialModel()
 
 	// 选择 anthropic 预设
@@ -134,14 +142,16 @@ func TestModelInputCanType(t *testing.T) {
 	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	m = toModel(result)
 
-	// 输入 token 并进入下一步
+	// 输入 token 并经过 haiku 步骤到达 sonnet 步骤
 	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("test-token")})
 	m = toModel(result)
 	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	m = toModel(result)
+	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m = toModel(result)
 
-	if m.step != stepInputModel {
-		t.Fatalf("期望步骤为 stepInputModel，实际为 %d", m.step)
+	if m.step != stepInputSonnetModel {
+		t.Fatalf("期望步骤为 stepInputSonnetModel，实际为 %d", m.step)
 	}
 
 	// 尝试输入新字符
@@ -149,17 +159,17 @@ func TestModelInputCanType(t *testing.T) {
 	m = toModel(result)
 
 	// 验证新字符已添加
-	value := m.modelInput.Value()
+	value := m.sonnetInput.Value()
 	if len(value) < len("claude-sonnet-4-5-20250929") {
 		t.Errorf("输入字符应该被添加，但值变短了: %s", value)
 	}
 }
 
-// TestEscGoBackFromModel 测试 ESC 从模型步骤返回上一步
-func TestEscGoBackFromModel(t *testing.T) {
+// TestEscGoBackFromSonnet 测试 ESC 从 Sonnet 步骤返回 Haiku 步骤
+func TestEscGoBackFromSonnet(t *testing.T) {
 	m := InitialModel()
 
-	// 选择预设，确认名称，输入 token，到达模型步骤
+	// 选择预设，确认名称，输入 token，经过 haiku 到达 sonnet 步骤
 	result, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	m = toModel(result)
 	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyEnter})
@@ -168,17 +178,19 @@ func TestEscGoBackFromModel(t *testing.T) {
 	m = toModel(result)
 	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	m = toModel(result)
+	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m = toModel(result)
 
-	if m.step != stepInputModel {
-		t.Fatalf("期望步骤为 stepInputModel，实际为 %d", m.step)
+	if m.step != stepInputSonnetModel {
+		t.Fatalf("期望步骤为 stepInputSonnetModel，实际为 %d", m.step)
 	}
 
-	// 按 ESC 返回上一步
+	// 按 ESC 返回上一步（Haiku）
 	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyEsc})
 	m = toModel(result)
 
-	if m.step != stepInputToken {
-		t.Errorf("ESC 应该返回 token 步骤，期望 stepInputToken，实际 %d", m.step)
+	if m.step != stepInputHaikuModel {
+		t.Errorf("ESC 应该返回 haiku 步骤，期望 stepInputHaikuModel，实际 %d", m.step)
 	}
 }
 
@@ -239,32 +251,35 @@ func TestBackspaceNotGoBack(t *testing.T) {
 	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	m = toModel(result)
 
-	// 输入 token 并进入下一步
+	// 输入 token 并经过 haiku/sonnet 到达 opus 步骤
 	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("test-token")})
 	m = toModel(result)
 	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	m = toModel(result)
+	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m = toModel(result)
+	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m = toModel(result)
 
-	if m.step != stepInputModel {
-		t.Fatalf("期望步骤为 stepInputModel，实际为 %d", m.step)
+	if m.step != stepInputOpusModel {
+		t.Fatalf("期望步骤为 stepInputOpusModel，实际为 %d", m.step)
 	}
 
-	// 清空模型输入框（通过多次按 Backspace）
-	initialValue := m.modelInput.Value()
+	// 清空 opus 输入框（通过多次按 Backspace）
+	initialValue := m.opusInput.Value()
 	for i := 0; i < len(initialValue)+10; i++ {
 		result, _ = m.Update(tea.KeyMsg{Type: tea.KeyBackspace})
 		m = toModel(result)
 	}
 
 	// 验证：即使输入框为空，按 Backspace 也不应返回上一步
-	// 步骤应该仍然是 stepInputModel，不应变成 stepInputToken
-	if m.step != stepInputModel {
-		t.Errorf("Backspace 不应导致步骤改变。期望 stepInputModel，实际 %d", m.step)
+	if m.step != stepInputOpusModel {
+		t.Errorf("Backspace 不应导致步骤改变。期望 stepInputOpusModel，实际 %d", m.step)
 	}
 
 	// 验证输入框确实为空
-	if m.modelInput.Value() != "" {
-		t.Errorf("输入框应为空，实际为 '%s'", m.modelInput.Value())
+	if m.opusInput.Value() != "" {
+		t.Errorf("输入框应为空，实际为 '%s'", m.opusInput.Value())
 	}
 }
 
@@ -285,15 +300,17 @@ func TestBackspaceNotDeletePreviousStep(t *testing.T) {
 	m = toModel(result)
 	tokenValue := m.tokenInput.Value()
 
-	// 进入下一步
+	// 进入 haiku/sonnet 步骤
+	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m = toModel(result)
 	result, _ = m.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	m = toModel(result)
 
-	if m.step != stepInputModel {
-		t.Fatalf("期望步骤为 stepInputModel，实际为 %d", m.step)
+	if m.step != stepInputSonnetModel {
+		t.Fatalf("期望步骤为 stepInputSonnetModel，实际为 %d", m.step)
 	}
 
-	// 在模型步骤多次按 Backspace（超过输入内容长度）
+	// 在 sonnet 步骤多次按 Backspace（超过输入内容长度）
 	for i := 0; i < 50; i++ {
 		result, _ = m.Update(tea.KeyMsg{Type: tea.KeyBackspace})
 		m = toModel(result)

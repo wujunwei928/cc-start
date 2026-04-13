@@ -392,8 +392,14 @@ func (m *Model) cmdUse(args []string) string {
 
 	m.currentProfile = profile.Name
 	result := fmt.Sprintf("✓ 已切换到配置 '%s'", profile.Name)
-	if profile.Model != "" {
-		result += fmt.Sprintf("\n● 模型: %s", profile.Model)
+	if profile.SonnetModel != "" {
+		result += fmt.Sprintf("\n● 主模型 (Sonnet): %s", profile.SonnetModel)
+	}
+	if profile.HaikuModel != "" {
+		result += fmt.Sprintf("\n● 快速模型 (Haiku): %s", profile.HaikuModel)
+	}
+	if profile.OpusModel != "" {
+		result += fmt.Sprintf("\n● 经济模型 (Opus): %s", profile.OpusModel)
 	}
 	return result
 }
@@ -440,8 +446,14 @@ func (m *Model) cmdShow(args []string) string {
 	var buf strings.Builder
 	buf.WriteString(fmt.Sprintf("\n配置名称: %s\n", profile.Name))
 	buf.WriteString(fmt.Sprintf("Base URL: %s\n", profile.AnthropicBaseURL))
-	if profile.Model != "" {
-		buf.WriteString(fmt.Sprintf("模型: %s\n", profile.Model))
+	if profile.SonnetModel != "" {
+		buf.WriteString(fmt.Sprintf("主模型 (Sonnet): %s\n", profile.SonnetModel))
+	}
+	if profile.HaikuModel != "" {
+		buf.WriteString(fmt.Sprintf("快速模型 (Haiku): %s\n", profile.HaikuModel))
+	}
+	if profile.OpusModel != "" {
+		buf.WriteString(fmt.Sprintf("经济模型 (Opus): %s\n", profile.OpusModel))
 	}
 	buf.WriteString(fmt.Sprintf("Token: %s\n", config.MaskToken(profile.Token)))
 	return buf.String()
@@ -509,7 +521,9 @@ func (m *Model) cmdCopy(args []string) string {
 	newProfile := config.Profile{
 		Name:             dstName,
 		AnthropicBaseURL: src.AnthropicBaseURL,
-		Model:            src.Model,
+		HaikuModel:       src.HaikuModel,
+		SonnetModel:      src.SonnetModel,
+		OpusModel:        src.OpusModel,
 		Token:            src.Token,
 	}
 
@@ -664,6 +678,7 @@ func (m *Model) cmdImport(args []string) string {
 	if err := json.Unmarshal(data, &importCfg); err != nil {
 		return "✗ 解析配置失败: " + err.Error()
 	}
+	importCfg.MigrateAll()
 
 	if len(importCfg.Profiles) == 0 {
 		return "⚠ 文件中没有找到配置"
@@ -870,8 +885,14 @@ func (m Model) formatProfileList() string {
 		if p.AnthropicBaseURL != "" {
 			buf.WriteString(fmt.Sprintf("    Base URL: %s\n", p.AnthropicBaseURL))
 		}
-		if p.Model != "" {
-			buf.WriteString(fmt.Sprintf("    模型: %s\n", p.Model))
+		if p.SonnetModel != "" {
+			buf.WriteString(fmt.Sprintf("    主模型 (Sonnet): %s\n", p.SonnetModel))
+		}
+		if p.HaikuModel != "" {
+			buf.WriteString(fmt.Sprintf("    快速模型 (Haiku): %s\n", p.HaikuModel))
+		}
+		if p.OpusModel != "" {
+			buf.WriteString(fmt.Sprintf("    经济模型 (Opus): %s\n", p.OpusModel))
 		}
 	}
 	return buf.String()
@@ -893,8 +914,14 @@ func (m Model) formatCurrentProfile() string {
 	if profile.AnthropicBaseURL != "" {
 		buf.WriteString(fmt.Sprintf("  Base URL: %s\n", profile.AnthropicBaseURL))
 	}
-	if profile.Model != "" {
-		buf.WriteString(fmt.Sprintf("  模型: %s\n", profile.Model))
+	if profile.SonnetModel != "" {
+		buf.WriteString(fmt.Sprintf("  主模型 (Sonnet): %s\n", profile.SonnetModel))
+	}
+	if profile.HaikuModel != "" {
+		buf.WriteString(fmt.Sprintf("  快速模型 (Haiku): %s\n", profile.HaikuModel))
+	}
+	if profile.OpusModel != "" {
+		buf.WriteString(fmt.Sprintf("  经济模型 (Opus): %s\n", profile.OpusModel))
 	}
 	buf.WriteString(fmt.Sprintf("  Token: %s\n", config.MaskToken(profile.Token)))
 	if profile.Name == m.config.Default {

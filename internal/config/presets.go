@@ -8,27 +8,37 @@ var presets = []Profile{
 	{
 		Name:             "anthropic",
 		AnthropicBaseURL: "https://api.anthropic.com",
-		Model:            "claude-sonnet-4-5-20250929",
+		HaikuModel:       "claude-haiku-4-5-20251001",
+		SonnetModel:      "claude-sonnet-4-5-20250929",
+		OpusModel:        "claude-opus-4-6",
 	},
 	{
 		Name:             "moonshot",
 		AnthropicBaseURL: "https://api.kimi.com/coding/",
-		Model:            "kimi-k2.5",
+		HaikuModel:       "kimi-k2.5",
+		SonnetModel:      "kimi-k2.5",
+		OpusModel:        "kimi-k2.5",
 	},
 	{
 		Name:             "bigmodel",
 		AnthropicBaseURL: "https://open.bigmodel.cn/api/anthropic",
-		Model:            "glm-5",
+		HaikuModel:       "glm-5-turbo",
+		SonnetModel:      "glm-5-turbo",
+		OpusModel:        "glm-5.1",
 	},
 	{
 		Name:             "deepseek",
 		AnthropicBaseURL: "https://api.deepseek.com/anthropic",
-		Model:            "deepseek-chat",
+		HaikuModel:       "deepseek-chat",
+		SonnetModel:      "deepseek-chat",
+		OpusModel:        "deepseek-chat",
 	},
 	{
 		Name:             "minimax",
 		AnthropicBaseURL: "https://api.minimaxi.com/anthropic",
-		Model:            "MiniMax-M2.7",
+		HaikuModel:       "MiniMax-M2.7",
+		SonnetModel:      "MiniMax-M2.7",
+		OpusModel:        "MiniMax-M2.7",
 	},
 }
 

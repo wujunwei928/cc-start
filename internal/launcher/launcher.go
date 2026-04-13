@@ -21,6 +21,17 @@ func BuildSettings(profile *config.Profile) map[string]interface{} {
 		env["ANTHROPIC_BASE_URL"] = profile.AnthropicBaseURL
 	}
 
+	// 注入三个层级的模型映射
+	if profile.HaikuModel != "" {
+		env["ANTHROPIC_DEFAULT_HAIKU_MODEL"] = profile.HaikuModel
+	}
+	if profile.SonnetModel != "" {
+		env["ANTHROPIC_DEFAULT_SONNET_MODEL"] = profile.SonnetModel
+	}
+	if profile.OpusModel != "" {
+		env["ANTHROPIC_DEFAULT_OPUS_MODEL"] = profile.OpusModel
+	}
+
 	return map[string]interface{}{
 		"env": env,
 	}
@@ -42,8 +53,8 @@ type LaunchConfig struct {
 func MergeConfig(cfg *LaunchConfig) (model, baseURL, token string) {
 	// Profile 覆盖
 	if cfg.Profile != nil {
-		if cfg.Profile.Model != "" {
-			model = cfg.Profile.Model
+		if cfg.Profile.SonnetModel != "" {
+			model = cfg.Profile.SonnetModel
 		}
 		baseURL = cfg.Profile.AnthropicBaseURL
 		if cfg.Profile.Token != "" {
@@ -74,10 +85,17 @@ func Launch(cfg *LaunchConfig) error {
 		return fmt.Errorf("未配置 token，请指定 profile 或通过 -t/--token 参数传入")
 	}
 
-	// 构建合并后的 effectiveProfile 用于 BuildSettings
+	// 安全获取原始 profile（可能为 nil，如只传 -t 而不选 profile）
+	var srcProfile config.Profile
+	if cfg.Profile != nil {
+		srcProfile = *cfg.Profile
+	}
+
 	effectiveProfile := &config.Profile{
 		AnthropicBaseURL: baseURL,
-		Model:            model,
+		HaikuModel:       srcProfile.HaikuModel, // 继承原始值
+		SonnetModel:      model,                 // CLI -m 覆盖 SonnetModel
+		OpusModel:        srcProfile.OpusModel,  // 继承原始值
 		Token:            token,
 	}
 
@@ -86,11 +104,6 @@ func Launch(cfg *LaunchConfig) error {
 	settingsJSON, _ := json.Marshal(settings)
 
 	args := []string{"--settings", string(settingsJSON)}
-
-	// 添加模型参数
-	if model != "" {
-		args = append(args, "--model", model)
-	}
 
 	// YOLO 模式：自动接受所有操作
 	if cfg.Yolo {
@@ -114,13 +127,19 @@ func Launch(cfg *LaunchConfig) error {
 		}
 	}
 
-	// 打印启动信息
+	// 打印启动信息（使用 effectiveProfile，反映 CLI 覆盖后的实际生效值）
 	fmt.Printf("🚀 使用配置启动 Claude Code...\n")
-	if model != "" {
-		fmt.Printf("   模型: %s\n", model)
+	if effectiveProfile.HaikuModel != "" {
+		fmt.Printf("   快速模型 (Haiku): %s\n", effectiveProfile.HaikuModel)
+	}
+	if effectiveProfile.SonnetModel != "" {
+		fmt.Printf("   主模型 (Sonnet):  %s\n", effectiveProfile.SonnetModel)
+	}
+	if effectiveProfile.OpusModel != "" {
+		fmt.Printf("   经济模型 (Opus):   %s\n", effectiveProfile.OpusModel)
 	}
 	if baseURL != "" {
-		fmt.Printf("   Base URL: %s\n", baseURL)
+		fmt.Printf("   Base URL:         %s\n", baseURL)
 	}
 	fmt.Println()
 
