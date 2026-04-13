@@ -448,16 +448,22 @@ effectiveProfile := &config.Profile{
 改为：
 
 ```go
+// 安全获取原始 profile（可能为 nil，如只传 -t 而不选 profile）
+var srcProfile config.Profile
+if cfg.Profile != nil {
+    srcProfile = *cfg.Profile
+}
+
 effectiveProfile := &config.Profile{
     AnthropicBaseURL: baseURL,
-    HaikuModel:       profile.HaikuModel,   // 继承原始值
-    SonnetModel:      model,                  // CLI -m 覆盖 SonnetModel
-    OpusModel:        profile.OpusModel,     // 继承原始值
+    HaikuModel:       srcProfile.HaikuModel,   // 继承原始值
+    SonnetModel:      model,                     // CLI -m 覆盖 SonnetModel
+    OpusModel:        srcProfile.OpusModel,     // 继承原始值
     Token:            token,
 }
 ```
 
-关键：`HaikuModel` 和 `OpusModel` 必须从原始 `profile` 继承，CLI 没有对应的覆盖参数。只有 `SonnetModel` 被 CLI `-m` 覆盖。
+关键：`HaikuModel` 和 `OpusModel` 必须从原始 `profile` 继承，CLI 没有对应的覆盖参数。只有 `SonnetModel` 被 CLI `-m` 覆盖。当 profile 为 nil 时（如只传 `-t/--token`），`srcProfile` 为零值结构体，HaikuModel/OpusModel 为空，BuildSettings 不会注入对应环境变量，行为正确。
 
 - [ ] **Step 6: 修复现有测试**
 
