@@ -42,23 +42,20 @@ REPL 中可用命令：
 | `help` | 显示帮助 |
 | `exit` | 退出 REPL |
 
-### 启动 AI 编程助手
+### 启动 Claude Code
 
 ```bash
-# 启动 Claude Code CLI
+# 使用默认配置启动
 cc-start claude
 
 # 使用指定配置启动
 cc-start claude moonshot
 
-# 启动 OpenAI Codex CLI（指定模型）
-cc-start codex -m gpt-4
-
-# 传递参数给工具
+# 传递参数给 Claude
 cc-start claude moonshot -- --dangerously-skip-permissions
 
-# 启动 OpenCode
-cc-start opencode deepseek
+# 快捷模式（自动确认）
+cc-start claude -y
 ```
 
 ### 命令行配置管理
@@ -79,9 +76,10 @@ cc-start delete moonshot
 | 供应商 | Base URL | 默认模型 |
 |--------|----------|----------|
 | Anthropic | https://api.anthropic.com | claude-sonnet-4-5-20250929 |
-| Moonshot | https://api.kimi.com/coding/ | moonshot-v1-8k |
+| Moonshot | https://api.kimi.com/coding/ | kimi-k2.5 |
 | BigModel | https://open.bigmodel.cn/api/anthropic | glm-5 |
 | DeepSeek | https://api.deepseek.com/anthropic | deepseek-chat |
+| MiniMax | https://api.minimaxi.com/anthropic | MiniMax-M2.7 |
 
 ## 配置文件
 
