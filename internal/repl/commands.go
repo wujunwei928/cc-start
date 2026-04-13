@@ -381,8 +381,7 @@ func (r *REPL) cmdTest(args []string) {
 
 	baseURL := profile.AnthropicBaseURL
 	if baseURL == "" {
-		PrintWarning("未配置 Base URL")
-		return
+		baseURL = "https://api.anthropic.com"
 	}
 
 	// 使用 curl 测试连接

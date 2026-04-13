@@ -589,10 +589,10 @@ func (m *Model) cmdTest(args []string) string {
 
 	result := fmt.Sprintf("● 测试配置 '%s' 的 API 连通性...\n", name)
 
-	// 优先测试 Base URL
+	// 优先测试 Base URL，为空时回退到官方端点
 	baseURL := profile.AnthropicBaseURL
 	if baseURL == "" {
-		return result + "✗ 未配置任何 Base URL"
+		baseURL = "https://api.anthropic.com"
 	}
 
 	// 使用 curl 测试连接
