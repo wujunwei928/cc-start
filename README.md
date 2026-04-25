@@ -77,8 +77,8 @@ cc-start delete moonshot
 |--------|----------|----------|
 | Anthropic | https://api.anthropic.com | claude-sonnet-4-5-20250929 |
 | Moonshot | https://api.kimi.com/coding/ | kimi-k2.5 |
-| BigModel | https://open.bigmodel.cn/api/anthropic | glm-5 |
-| DeepSeek | https://api.deepseek.com/anthropic | deepseek-chat |
+| BigModel | https://open.bigmodel.cn/api/anthropic | glm-5-turbo / glm-5.1 |
+| DeepSeek | https://api.deepseek.com/anthropic | deepseek-v4-flash / deepseek-v4-pro |
 | MiniMax | https://api.minimaxi.com/anthropic | MiniMax-M2.7 |
 
 ## 配置文件

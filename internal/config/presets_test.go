@@ -65,9 +65,9 @@ func TestGetPresetByName(t *testing.T) {
 			expected: &Profile{
 				Name:             "deepseek",
 				AnthropicBaseURL: "https://api.deepseek.com/anthropic",
-				HaikuModel:       "deepseek-chat",
-				SonnetModel:      "deepseek-chat",
-				OpusModel:        "deepseek-chat",
+				HaikuModel:       "deepseek-v4-flash",
+				SonnetModel:      "deepseek-v4-flash",
+				OpusModel:        "deepseek-v4-pro",
 			},
 		},
 		{
