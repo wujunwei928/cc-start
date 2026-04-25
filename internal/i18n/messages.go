@@ -54,4 +54,6 @@ const (
 	MsgErrInvalidLanguage = "error.invalid_language"
 	MsgErrInvalidTheme    = "error.invalid_theme"
 	MsgErrProfileNotFound = "error.profile_not_found"
+	MsgErrClaudeNotFound  = "error.claude_not_found"
+	MsgErrClaudeVersion   = "error.claude_version"
 )

@@ -6,9 +6,32 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/wujunwei928/cc-start/internal/config"
 )
+
+// CheckClaudeInstalled 检查 claude CLI 是否在 PATH 中
+func CheckClaudeInstalled() (string, error) {
+	path, err := exec.LookPath("claude")
+	if err != nil {
+		return "", fmt.Errorf("claude CLI 未安装或不在 PATH 中\n\n" +
+			"安装方法:\n" +
+			"  npm install -g @anthropic-ai/claude-code\n\n" +
+			"详见: https://code.claude.com/docs/en/overview")
+	}
+	return path, nil
+}
+
+// GetClaudeVersion 获取 claude CLI 的版本信息
+func GetClaudeVersion(claudePath string) (string, error) {
+	cmd := exec.Command(claudePath, "--version")
+	output, err := cmd.Output()
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(output)), nil
+}
 
 // BuildSettings 构建 Claude Code 设置 JSON
 func BuildSettings(profile *config.Profile) map[string]interface{} {
@@ -85,6 +108,12 @@ func Launch(cfg *LaunchConfig) error {
 		return fmt.Errorf("未配置 token，请指定 profile 或通过 -t/--token 参数传入")
 	}
 
+	// 检测 claude CLI 是否已安装
+	claudePath, err := CheckClaudeInstalled()
+	if err != nil {
+		return err
+	}
+
 	// 安全获取原始 profile（可能为 nil，如只传 -t 而不选 profile）
 	var srcProfile config.Profile
 	if cfg.Profile != nil {
@@ -113,8 +142,8 @@ func Launch(cfg *LaunchConfig) error {
 	// 添加工具原生参数
 	args = append(args, cfg.ToolArgs...)
 
-	// 创建命令
-	cmd := exec.Command("claude", args...)
+	// 创建命令（使用 LookPath 解析的绝对路径）
+	cmd := exec.Command(claudePath, args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -129,6 +158,9 @@ func Launch(cfg *LaunchConfig) error {
 
 	// 打印启动信息（使用 effectiveProfile，反映 CLI 覆盖后的实际生效值）
 	fmt.Printf("🚀 使用配置启动 Claude Code...\n")
+	if version, err := GetClaudeVersion(claudePath); err == nil && version != "" {
+		fmt.Printf("   Claude CLI:       %s\n", version)
+	}
 	if effectiveProfile.HaikuModel != "" {
 		fmt.Printf("   快速模型 (Haiku): %s\n", effectiveProfile.HaikuModel)
 	}

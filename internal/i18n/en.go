@@ -52,5 +52,7 @@ func getEnTranslations() map[string]string {
 		MsgErrInvalidLanguage: "Unsupported language: %s",
 		MsgErrInvalidTheme:    "Unsupported theme: %s",
 		MsgErrProfileNotFound: "Profile '%s' not found",
+		MsgErrClaudeNotFound:  "claude CLI is not installed or not in PATH",
+		MsgErrClaudeVersion:   "Claude CLI version: %s",
 	}
 }

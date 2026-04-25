@@ -52,5 +52,7 @@ func getZhTranslations() map[string]string {
 		MsgErrInvalidLanguage: "不支持的语言: %s",
 		MsgErrInvalidTheme:    "不支持的主题: %s",
 		MsgErrProfileNotFound: "配置 '%s' 不存在",
+		MsgErrClaudeNotFound:  "claude CLI 未安装或不在 PATH 中",
+		MsgErrClaudeVersion:   "Claude CLI 版本: %s",
 	}
 }

@@ -52,5 +52,7 @@ func getJaTranslations() map[string]string {
 		MsgErrInvalidLanguage: "サポートされていない言語: %s",
 		MsgErrInvalidTheme:    "サポートされていないテーマ: %s",
 		MsgErrProfileNotFound: "プロファイル '%s' が見つかりません",
+		MsgErrClaudeNotFound:  "claude CLI がインストールされていないか、PATH にありません",
+		MsgErrClaudeVersion:   "Claude CLI バージョン: %s",
 	}
 }

@@ -3,6 +3,7 @@ package launcher
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/wujunwei928/cc-start/internal/config"
@@ -164,6 +165,25 @@ func TestBuildSettingsPartialModel(t *testing.T) {
 	}
 	if _, exists := env["ANTHROPIC_DEFAULT_OPUS_MODEL"]; exists {
 		t.Error("opus model should not be set when empty")
+	}
+}
+
+func TestCheckClaudeInstalled(t *testing.T) {
+	path, err := CheckClaudeInstalled()
+
+	if err != nil {
+		// 未安装时，应返回包含安装指引的错误消息
+		if !strings.Contains(err.Error(), "npm install -g") {
+			t.Errorf("error message should contain installation instructions, got: %v", err)
+		}
+		if path != "" {
+			t.Errorf("path should be empty when claude is not found, got: %s", path)
+		}
+	} else {
+		// 已安装时，应返回非空路径
+		if path == "" {
+			t.Error("path should not be empty when claude is found")
+		}
 	}
 }
 
