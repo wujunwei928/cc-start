@@ -86,4 +86,5 @@ Launcher 中 `MergeConfig` 的优先级：命令行 `-m` > Profile > 默认值�
 - **添加 REPL 命令**：`commands.go` 添加 `cmdXxx` → `ExecuteCommand` switch 注册 → `cmdHelp` 更新
 - **添加主题**：`internal/theme/presets.go` 的 `presets` 切片，确保对比度足够
 - **添加 i18n 消息**：`messages.go` 常量 → `zh.go`/`en.go`/`ja.go` 翻译
-- **添加供应商预设**：`internal/config/presets.go` 的 `presets` 切片
+- **添加供应商预设**：需同步修改 3 个文件 — `internal/config/presets.go`（`presets` 切片添加条目）、`internal/config/presets_test.go`（添加对应测试用例）、`README.md`（供应商表格添加行）
+- **修改供应商默认模型**：需同步修改 3 个文件 — `internal/config/presets.go`（预设定义）、`internal/config/presets_test.go`（测试期望值）、`README.md`（供应商表格描述）
